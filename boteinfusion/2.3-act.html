@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 2 · Drag &amp; Drop: Tools &amp; Platforms</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #001489;
+    --blue:   #007DBA;
+    --yellow: #FFC600;
+    --white:  #ffffff;
+    --light:  #f0f4fb;
+    --mid:    #d6e4f0;
+    --text:   #1a1a2e;
+    --muted:  #5a6a8a;
+    --correct:#27ae60;
+    --wrong:  #e74c3c;
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 60px;
+    user-select: none;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: 28px 40px 22px;
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%);
+  }
+  .header-badge {
+    background: var(--yellow);
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .header-text h1 {
+    font-size: clamp(17px, 3vw, 22px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .header-text p {
+    font-size: 13px;
+    color: rgba(255,255,255,.65);
+    margin-top: 4px;
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+  }
+
+  /* ── INTRO ── */
+  .intro {
+    background: var(--blue);
+    color: var(--white);
+    padding: 18px 40px;
+    font-size: 14px;
+    line-height: 1.7;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .intro-icon { font-size: 26px; flex-shrink: 0; }
+  .intro strong { color: var(--yellow); }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 860px;
+    margin: 32px auto 0;
+    padding: 0 24px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── TOOL POOL ── */
+  .tools-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 36px;
+    min-height: 68px;
+    padding: 16px;
+    background: var(--white);
+    border-radius: 12px;
+    border: 2px dashed var(--mid);
+    transition: border-color .2s, background .2s;
+  }
+  .tools-pool.drag-over {
+    border-color: var(--blue);
+    background: #eef4fc;
+  }
+
+  /* ── CHIP ── */
+  .tool-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: grab;
+    box-shadow: 0 3px 10px rgba(0,20,137,.2);
+    transition: transform .15s, box-shadow .15s, opacity .2s;
+    touch-action: none;
+  }
+  .tool-chip:active { cursor: grabbing; }
+  .tool-chip.dragging { opacity: .35; transform: scale(.96); }
+  .tool-chip .chip-icon { font-size: 16px; }
+
+  .tool-chip.correct-placed {
+    background: var(--correct);
+    cursor: default;
+    box-shadow: 0 3px 10px rgba(39,174,96,.25);
+  }
+  .tool-chip.wrong-flash {
+    background: var(--wrong);
+    animation: shake .38s ease;
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-7px); }
+    75%      { transform: translateX(7px); }
+  }
+
+  /* ── PLATFORM GRID ── */
+  .platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .platform-col {
+    background: var(--white);
+    border-radius: 12px;
+    border: 2px solid var(--mid);
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,20,137,.06);
+    transition: border-color .2s, box-shadow .2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .platform-col.drag-over {
+    border-color: var(--blue);
+    box-shadow: 0 4px 20px rgba(0,125,186,.2);
+  }
+  .platform-col.all-correct { border-color: var(--correct); }
+
+  .platform-header {
+    background: var(--navy);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .platform-icon { font-size: 22px; flex-shrink: 0; }
+  .platform-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.3;
+  }
+  .platform-name span {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(255,255,255,.6);
+    margin-top: 2px;
+  }
+
+  .drop-zone {
+    min-height: 82px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+  }
+  .drop-zone::after {
+    content: 'Drop here';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--mid);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  .drop-zone.has-chip::after { opacity: 0; }
+
+  .drop-zone .tool-chip {
+    width: 100%;
+    justify-content: center;
+    font-size: 12.5px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .04em;
+    transition: all .2s;
+  }
+  .btn-check { background: var(--navy); color: var(--white); }
+  .btn-check:hover:not(:disabled) { background: var(--blue); }
+  .btn-check:disabled { opacity: .38; cursor: default; }
+  .btn-reset { background: var(--white); color: var(--navy); border: 2px solid var(--mid); }
+  .btn-reset:hover { border-color: var(--navy); }
+
+  /* ── RESULTS ── */
+  #results {
+    display: none;
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,20,137,.1);
+    padding: 36px 32px;
+    text-align: center;
+    border-top: 5px solid var(--yellow);
+    margin-bottom: 32px;
+  }
+  #results.show { display: block; animation: fadeIn .4s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-icon  { font-size: 52px; margin-bottom: 12px; }
+  .results-score { font-size: 48px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .results-score span { font-size: 22px; color: var(--muted); }
+  .results-label { font-size: 15px; color: var(--muted); margin: 6px 0 18px; font-family: 'Source Serif 4', serif; }
+  .results-msg   { font-size: 14.5px; line-height: 1.7; color: var(--text); max-width: 500px; margin: 0 auto 24px; }
+
+  /* ── EXPLANATION TABLE ── */
+  .explain-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+    font-size: 13px;
+    text-align: left;
+  }
+  .explain-table th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 14px;
+    font-weight: 600;
+  }
+  .explain-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--mid);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .explain-table tr:last-child td { border-bottom: none; }
+  .explain-table tr:nth-child(even) td { background: #f7f9ff; }
+  .explain-table .note { font-family: 'Source Serif 4', serif; color: var(--muted); }
+
+  .btn-reset-final {
+    background: var(--navy); color: var(--white);
+    border: none; padding: 13px 28px; border-radius: 8px;
+    font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: background .2s; margin-top: 24px;
+  }
+  .btn-reset-final:hover { background: var(--blue); }
+
+  @media (max-width: 560px) {
+    header { padding: 20px 18px 18px; }
+    .intro  { padding: 14px 18px; }
+    main    { padding: 0 14px; }
+    .platforms-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 400px) {
+    .platforms-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Back on Track</div>
+  <div class="header-text">
+    <h1>Module 2 · Improved Presentation Skills</h1>
+    <p>Self-Assessment — Video Segment 3: Annotations &amp; Editable Slides</p>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🖱️</span>
+  <div>
+    <strong>Drag &amp; Drop:</strong> Each annotation tool from the video belongs to a specific platform. <strong>Drag each tool</strong> into the correct platform column. Once all tools are placed, press <strong>Check my answers</strong>.
+  </div>
+</div>
+
+<main>
+
+  <!-- TOOL POOL -->
+  <p class="section-label">Tools — drag these into the correct platform below</p>
+  <div class="tools-pool" id="toolPool"
+       ondragover="onPoolOver(event)"
+       ondragleave="onPoolLeave(event)"
+       ondrop="onPoolDrop(event)">
+
+    <div class="tool-chip" id="chip-annotate"  draggable="true"
+         ondragstart="onDragStart(event,'chip-annotate')"  ondragend="onDragEnd()">
+      <span class="chip-icon">🌐</span> annotate.net
+    </div>
+    <div class="tool-chip" id="chip-classpoint" draggable="true"
+         ondragstart="onDragStart(event,'chip-classpoint')" ondragend="onDragEnd()">
+      <span class="chip-icon">📊</span> ClassPoint.io
+    </div>
+    <div class="tool-chip" id="chip-draw"      draggable="true"
+         ondragstart="onDragStart(event,'chip-draw')"      ondragend="onDragEnd()">
+      <span class="chip-icon">✏️</span> Word Draw Tools
+    </div>
+    <div class="tool-chip" id="chip-edge"      draggable="true"
+         ondragstart="onDragStart(event,'chip-edge')"      ondragend="onDragEnd()">
+      <span class="chip-icon">📄</span> Edge Built-in Annotator
+    </div>
+    <div class="tool-chip" id="chip-editable"  draggable="true"
+         ondragstart="onDragStart(event,'chip-editable')"  ondragend="onDragEnd()">
+      <span class="chip-icon">🖼️</span> Full-Screen Editable Slides
+    </div>
+
+  </div>
+
+  <!-- PLATFORM COLUMNS -->
+  <p class="section-label">Platforms — drop the correct tool into each column</p>
+  <div class="platforms-grid">
+
+    <div class="platform-col" id="col-browser">
+      <div class="platform-header">
+        <span class="platform-icon">🌐</span>
+        <div class="platform-name">Web Browser<span>Websites &amp; browser-based content</span></div>
+      </div>
+      <div class="drop-zone" id="zone-browser"
+           ondragover="onZoneOver(event,'zone-browser')"
+           ondragleave="onZoneLeave('zone-browser')"
+           ondrop="onZoneDrop(event,'zone-browser')"></div>
+    </div>
+
+    <div class="platform-col" id="col-ppt">
+      <div class="platform-header">
+        <span class="platform-icon">📊</span>
+        <div class="platform-name">PowerPoint<span>Desktop presentation software</span></div>
+      </div>
+      <div class="drop-zone" id="zone-ppt"
+           ondragover="onZoneOver(event,'zone-ppt')"
+           ondragleave="onZoneLeave('zone-ppt')"
+           ondrop="onZoneDrop(event,'zone-ppt')"></div>
+    </div>
+
+    <div class="platform-col" id="col-word">
+      <div class="platform-header">
+        <span class="platform-icon">📝</span>
+        <div class="platform-name">Microsoft Word<span>Documents &amp; text files</span></div>
+      </div>
+      <div class="drop-zone" id="zone-word"
+           ondragover="onZoneOver(event,'zone-word')"
+           ondragleave="onZoneLeave('zone-word')"
+           ondrop="onZoneDrop(event,'zone-word')"></div>
+    </div>
+
+    <div class="platform-col" id="col-pdf">
+      <div class="platform-header">
+        <span class="platform-icon">📄</span>
+        <div class="platform-name">PDF (in Edge)<span>PDF files opened in Edge browser</span></div>
+      </div>
+      <div class="drop-zone" id="zone-pdf"
+           ondragover="onZoneOver(event,'zone-pdf')"
+           ondragleave="onZoneLeave('zone-pdf')"
+           ondrop="onZoneDrop(event,'zone-pdf')"></div>
+    </div>
+
+    <div class="platform-col" id="col-slides">
+      <div class="platform-header">
+        <span class="platform-icon">🖥️</span>
+        <div class="platform-name">Google Slides / PowerPoint<span>Live editable teaching mode</span></div>
+      </div>
+      <div class="drop-zone" id="zone-slides"
+           ondragover="onZoneOver(event,'zone-slides')"
+           ondragleave="onZoneLeave('zone-slides')"
+           ondrop="onZoneDrop(event,'zone-slides')"></div>
+    </div>
+
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="btn-row">
+    <button class="btn btn-check" id="checkBtn" onclick="checkAnswers()" disabled>✓ Check my answers</button>
+    <button class="btn btn-reset" onclick="resetAll()">↩ Start over</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="results-icon" id="resultsIcon"></div>
+    <div class="results-score" id="resultsScore"></div>
+    <div class="results-label">tools correctly matched</div>
+    <p class="results-msg" id="resultsMsg"></p>
+
+    <table class="explain-table">
+      <thead>
+        <tr>
+          <th>Tool</th>
+          <th>Correct Platform</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>🌐 annotate.net</strong></td>
+          <td>Web Browser</td>
+          <td class="note">annotate.net is web-based — it writes on websites and browser content only. It doesn't work inside desktop apps like PowerPoint or Word.</td>
+        </tr>
+        <tr>
+          <td><strong>📊 ClassPoint.io</strong></td>
+          <td>PowerPoint</td>
+          <td class="note">ClassPoint is a PowerPoint extension adding advanced pens, highlighters, shapes and notes directly inside PowerPoint presentations.</td>
+        </tr>
+        <tr>
+          <td><strong>✏️ Word Draw Tools</strong></td>
+          <td>Microsoft Word</td>
+          <td class="note">Word's Draw tab enables pens, pencils and highlighters for annotating documents live. It must be added via "Customize the Ribbon" as it's hidden by default.</td>
+        </tr>
+        <tr>
+          <td><strong>📄 Edge Built-in Annotator</strong></td>
+          <td>PDF (in Edge)</td>
+          <td class="note">Edge has built-in PDF annotation tools in its toolbar. Jakob recommended keeping the browser in normal view — not F11 — so these tools stay accessible.</td>
+        </tr>
+        <tr>
+          <td><strong>🖼️ Full-Screen Editable Slides</strong></td>
+          <td>Google Slides / PowerPoint</td>
+          <td class="note">By hiding panels and pressing F11 while staying in editor view (not slideshow mode), teachers get a full-screen live workspace to type, add images and annotate in real time.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="btn-reset-final" onclick="resetAll()">↩ Try Again</button>
+  </div>
+
+</main>
+
+<script>
+  /* ── DATA ── */
+  const CORRECT = {
+    'chip-annotate':   'zone-browser',
+    'chip-classpoint': 'zone-ppt',
+    'chip-draw':       'zone-word',
+    'chip-edge':       'zone-pdf',
+    'chip-editable':   'zone-slides'
+  };
+
+  // current zone id or null (= pool)
+  const chipLoc = {
+    'chip-annotate':   null,
+    'chip-classpoint': null,
+    'chip-draw':       null,
+    'chip-edge':       null,
+    'chip-editable':   null
+  };
+
+  let dragging = null;
+  let locked   = false;
+
+  /* ── DRAG (desktop) ── */
+  function onDragStart(e, id) {
+    if (locked) { e.preventDefault(); return; }
+    dragging = id;
+    setTimeout(() => document.getElementById(id).classList.add('dragging'), 0);
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function onDragEnd() {
+    if (dragging) document.getElementById(dragging).classList.remove('dragging');
+    dragging = null;
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  }
+
+  function onPoolOver(e)  { e.preventDefault(); document.getElementById('toolPool').classList.add('drag-over'); }
+  function onPoolLeave(e) { document.getElementById('toolPool').classList.remove('drag-over'); }
+  function onPoolDrop(e)  { e.preventDefault(); document.getElementById('toolPool').classList.remove('drag-over'); if (dragging) returnToPool(dragging); }
+
+  function onZoneOver(e, zid)  { e.preventDefault(); document.getElementById(zid).classList.add('drag-over'); }
+  function onZoneLeave(zid)    { document.getElementById(zid).classList.remove('drag-over'); }
+  function onZoneDrop(e, zid)  { e.preventDefault(); document.getElementById(zid).classList.remove('drag-over'); if (dragging) placeInZone(dragging, zid); }
+
+  /* ── PLACEMENT ── */
+  function placeInZone(chipId, zoneId) {
+    const zone = document.getElementById(zoneId);
+    // Evict any existing chip
+    const existing = zone.querySelector('.tool-chip');
+    if (existing && existing.id !== chipId) returnToPool(existing.id);
+
+    const chip = document.getElementById(chipId);
+    chip.parentElement.removeChild(chip);
+    chip.classList.remove('dragging', 'correct-placed', 'wrong-flash');
+    zone.appendChild(chip);
+    zone.classList.add('has-chip');
+    chipLoc[chipId] = zoneId;
+    refreshCheckBtn();
+  }
+
+  function returnToPool(chipId) {
+    const chip     = document.getElementById(chipId);
+    const oldZone  = chipLoc[chipId];
+    if (oldZone) {
+      const z = document.getElementById(oldZone);
+      if (z.contains(chip)) z.removeChild(chip);
+      z.classList.remove('has-chip');
+    }
+    chip.classList.remove('correct-placed', 'wrong-flash', 'dragging');
+    document.getElementById('toolPool').appendChild(chip);
+    chipLoc[chipId] = null;
+    refreshCheckBtn();
+  }
+
+  function refreshCheckBtn() {
+    document.getElementById('checkBtn').disabled =
+      locked || Object.values(chipLoc).some(v => v === null);
+  }
+
+  /* ── CHECK ── */
+  function checkAnswers() {
+    if (locked) return;
+    locked = true;
+    let score = 0;
+
+    Object.entries(CORRECT).forEach(([chipId, correctZone]) => {
+      const chip = document.getElementById(chipId);
+      if (chipLoc[chipId] === correctZone) {
+        chip.classList.add('correct-placed');
+        score++;
+      } else {
+        chip.classList.add('wrong-flash');
+        setTimeout(() => chip.classList.remove('wrong-flash'), 420);
+      }
+    });
+
+    document.getElementById('checkBtn').disabled = true;
+    showResults(score);
+  }
+
+  function showResults(score) {
+    const total = Object.keys(CORRECT).length;
+    const pct   = Math.round(score / total * 100);
+    let icon, msg;
+    if (pct === 100) {
+      icon = '🏆'; msg = 'Perfect! You matched every tool to its correct platform. You clearly understand which annotation approach fits each teaching context.';
+    } else if (pct >= 60) {
+      icon = '👍'; msg = 'Good effort — you got most of them right. Check the explanation table below to see where any mismatches happened and why the distinction matters.';
+    } else {
+      icon = '🔄'; msg = 'It\'s worth revisiting the video for this section. The explanation table below walks through exactly why each tool belongs to its platform.';
+    }
+    document.getElementById('resultsIcon').textContent = icon;
+    document.getElementById('resultsScore').innerHTML  = score + '<span> / ' + total + '</span>';
+    document.getElementById('resultsMsg').textContent  = msg;
+    const r = document.getElementById('results');
+    r.classList.add('show');
+    setTimeout(() => r.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+  }
+
+  /* ── RESET ── */
+  function resetAll() {
+    locked = false;
+    const pool = document.getElementById('toolPool');
+    Object.keys(chipLoc).forEach(chipId => {
+      const chip = document.getElementById(chipId);
+      chip.classList.remove('correct-placed', 'wrong-flash', 'dragging');
+      if (!pool.contains(chip)) pool.appendChild(chip);
+      chipLoc[chipId] = null;
+    });
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('has-chip'));
+    document.querySelectorAll('.platform-col').forEach(c => c.classList.remove('all-correct'));
+    document.getElementById('results').classList.remove('show');
+    refreshCheckBtn();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ── TOUCH SUPPORT ── */
+  (function() {
+    let tChip = null, tClone = null;
+
+    function zoneAt(x, y) {
+      for (const z of document.querySelectorAll('.drop-zone')) {
+        const r = z.getBoundingClientRect();
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return z;
+      }
+      const p = document.getElementById('toolPool').getBoundingClientRect();
+      const px = document.getElementById('toolPool');
+      if (x >= p.left && x <= p.right && y >= p.top && y <= p.bottom) return px;
+      return null;
+    }
+
+    document.addEventListener('touchstart', e => {
+      if (locked) return;
+      const chip = e.target.closest('.tool-chip');
+      if (!chip) return;
+      e.preventDefault();
+      tChip = chip;
+      const r = chip.getBoundingClientRect();
+      tClone = chip.cloneNode(true);
+      Object.assign(tClone.style, {
+        position:'fixed', left:r.left+'px', top:r.top+'px',
+        width:r.width+'px', zIndex:9999, opacity:'.85',
+        pointerEvents:'none', transition:'none'
+      });
+      document.body.appendChild(tClone);
+      chip.classList.add('dragging');
+    }, { passive: false });
+
+    document.addEventListener('touchmove', e => {
+      if (!tChip) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      tClone.style.left = (t.clientX - tClone.offsetWidth/2)  + 'px';
+      tClone.style.top  = (t.clientY - tClone.offsetHeight/2) + 'px';
+    }, { passive: false });
+
+    document.addEventListener('touchend', e => {
+      if (!tChip) return;
+      const t = e.changedTouches[0];
+      document.body.removeChild(tClone); tClone = null;
+      tChip.classList.remove('dragging');
+      const target = zoneAt(t.clientX, t.clientY);
+      if (target && target.classList.contains('drop-zone')) {
+        dragging = tChip.id; placeInZone(tChip.id, target.id);
+      } else if (target && target.id === 'toolPool') {
+        dragging = tChip.id; returnToPool(tChip.id);
+      }
+      dragging = null; tChip = null;
+    }, { passive: false });
+  })();
+</script>
+</body>
+</html>

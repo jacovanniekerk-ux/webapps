@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 2 · Spot the Mistake: Graphics &amp; Screen Use</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:        #001489;
+    --blue:        #007DBA;
+    --yellow:      #FFC600;
+    --white:       #ffffff;
+    --light:       #f0f4fb;
+    --mid:         #d6e4f0;
+    --text:        #1a1a2e;
+    --muted:       #5a6a8a;
+    --correct:     #27ae60;
+    --correct-bg:  #e8f7ee;
+    --wrong:       #e74c3c;
+    --wrong-bg:    #fdecea;
+    --neutral-bdr: #c8d8ea;
+    --reveal-bg:   #eef4fc;
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: 28px 40px 22px;
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%);
+  }
+  .header-badge {
+    background: var(--yellow);
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .header-text h1 {
+    font-size: clamp(17px, 3vw, 22px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .header-text p {
+    font-size: 13px;
+    color: rgba(255,255,255,.65);
+    margin-top: 4px;
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+  }
+
+  /* ── INTRO ── */
+  .intro {
+    background: var(--blue);
+    color: var(--white);
+    padding: 18px 40px;
+    font-size: 14px;
+    line-height: 1.7;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .intro-icon { font-size: 26px; flex-shrink: 0; }
+  .intro strong { color: var(--yellow); }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 820px;
+    margin: 36px auto 0;
+    padding: 0 24px;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+  .progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .06em;
+    white-space: nowrap;
+  }
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--mid);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--navy), var(--blue));
+    border-radius: 99px;
+    width: 0%;
+    transition: width .5s ease;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,20,137,.08);
+    margin-bottom: 28px;
+    overflow: hidden;
+    border: 1.5px solid transparent;
+    transition: border-color .3s;
+  }
+  .card.locked-correct { border-color: var(--correct); }
+  .card.locked-wrong   { border-color: var(--wrong); }
+
+  .card-header {
+    background: var(--navy);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .q-number {
+    background: var(--yellow);
+    color: var(--navy);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .q-label {
+    color: rgba(255,255,255,.7);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .q-label em { color: var(--yellow); font-style: normal; font-weight: 700; }
+
+  .card-body { padding: 22px 24px 0; }
+
+  /* ── SCENARIO BOX ── */
+  .scenario-box {
+    background: #f7f9ff;
+    border: 1.5px solid var(--mid);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .scenario-box::before {
+    content: '📋 Scenario';
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  .scenario-text {
+    font-family: 'Source Serif 4', serif;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .scenario-text .hl {
+    background: rgba(255,198,0,.28);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-style: normal;
+    font-weight: 600;
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+  }
+
+  .prompt {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 14px;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+  .opt-btn {
+    width: 100%;
+    text-align: left;
+    padding: 13px 16px;
+    border-radius: 8px;
+    border: 2px solid var(--neutral-bdr);
+    background: var(--white);
+    font-family: 'Sora', sans-serif;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--blue);
+    background: #f0f6ff;
+    transform: translateX(3px);
+  }
+  .opt-btn:disabled { cursor: default; }
+
+  .opt-letter {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--mid);
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+    margin-top: 1px;
+  }
+
+  .opt-btn.sel-correct { border-color: var(--correct); background: var(--correct-bg); }
+  .opt-btn.sel-correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt-btn.sel-wrong   { border-color: var(--wrong);   background: var(--wrong-bg); }
+  .opt-btn.sel-wrong   .opt-letter { background: var(--wrong);   color: #fff; }
+  .opt-btn.show-correct{ border-color: var(--correct); background: var(--correct-bg); opacity: .82; }
+  .opt-btn.show-correct .opt-letter { background: var(--correct); color: #fff; }
+
+  /* ── REVEAL ── */
+  .reveal-panel {
+    display: none;
+    background: var(--reveal-bg);
+    border-left: 4px solid var(--blue);
+    border-radius: 0 0 12px 12px;
+    padding: 18px 22px;
+    animation: slideDown .35s ease;
+  }
+  .reveal-panel.show { display: block; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .verdict-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .verdict-badge {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; padding: 4px 12px; border-radius: 20px;
+  }
+  .verdict-badge.correct { background: var(--correct); color: #fff; }
+  .verdict-badge.wrong   { background: var(--wrong);   color: #fff; }
+  .verdict-sub { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+  .reveal-panel p {
+    font-family: 'Source Serif 4', serif;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: #2c3e60;
+    margin-bottom: 8px;
+  }
+  .reveal-panel p:last-child { margin-bottom: 0; }
+  .reveal-panel strong { font-family: 'Sora', sans-serif; color: var(--navy); }
+
+  .tip {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(0,125,186,.1);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--blue);
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+  }
+  .tip::before { content: '💡 '; }
+
+  /* ── RESULTS ── */
+  #results {
+    display: none;
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,20,137,.1);
+    padding: 36px 32px;
+    text-align: center;
+    border-top: 5px solid var(--yellow);
+    margin-bottom: 32px;
+  }
+  #results.show { display: block; animation: fadeIn .4s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-icon  { font-size: 52px; margin-bottom: 12px; }
+  .results-score { font-size: 48px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .results-score span { font-size: 22px; color: var(--muted); }
+  .results-label { font-size: 15px; color: var(--muted); margin: 6px 0 18px; font-family: 'Source Serif 4', serif; }
+  .results-msg   { font-size: 14.5px; line-height: 1.7; color: var(--text); max-width: 500px; margin: 0 auto 24px; }
+
+  .btn-reset-final {
+    background: var(--navy); color: var(--white);
+    border: none; padding: 13px 28px; border-radius: 8px;
+    font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-reset-final:hover { background: var(--blue); }
+
+  @media (max-width: 520px) {
+    header { padding: 20px 18px 18px; }
+    .intro  { padding: 14px 18px; }
+    main    { padding: 0 14px; }
+    .card-body { padding: 16px 14px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Back on Track</div>
+  <div class="header-text">
+    <h1>Module 2 · Improved Presentation Skills</h1>
+    <p>Self-Assessment — Video Segment 2: Graphics &amp; Maximising Screen Use</p>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🔍</span>
+  <div>
+    <strong>Spot the Mistake:</strong> Each scenario shows a teacher using the tools and techniques from the video. Read carefully and <strong>identify what they did wrong</strong>. Select your answer to reveal a full explanation.
+  </div>
+</div>
+
+<main>
+
+  <div class="progress-bar-wrap">
+    <span class="progress-label">Progress</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-label" id="progressText">0 / 6</span>
+  </div>
+
+  <!-- ══ S1: Watermarked image ══ -->
+  <div class="card" id="card-1">
+    <div class="card-header">
+      <span class="q-number">Scenario 1</span>
+      <span class="q-label">Spot the <em>Mistake</em></span>
+    </div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">
+          Ms Khumalo needs a diagram of the water cycle for her Geography lesson. She searches Google Images, finds a clear, colourful diagram and adds it directly to her slide. During the lesson, her learners point out that the image has <span class="hl">a large "Shutterstock" logo stamped across it</span>. She says it doesn't matter — the content is still visible behind it.
+        </p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-1">
+        <button class="opt-btn" onclick="answer(1,'A')"><span class="opt-letter">A</span> She should have used Bing Images instead of Google Images for better results.</button>
+        <button class="opt-btn" onclick="answer(1,'B')"><span class="opt-letter">B</span> She used a watermarked paid image when free, high-quality alternatives are readily available on dedicated graphic websites — and then dismissed the problem rather than fixing it.</button>
+        <button class="opt-btn" onclick="answer(1,'C')"><span class="opt-letter">C</span> The image she chose was too colourful and would cause cognitive overload for learners.</button>
+        <button class="opt-btn" onclick="answer(1,'D')"><span class="opt-letter">D</span> Geography diagrams should never be sourced online — they must be created by the teacher.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-1">
+      <div class="verdict-row">
+        <span class="verdict-badge" id="vbadge-1"></span>
+        <span class="verdict-sub"  id="vsub-1"></span>
+      </div>
+      <p>As Jakob explained, watermarks appear on <strong>paid images from sites like Shutterstock</strong> — and there is no longer any excuse for using them. Sites like <strong>Freepik, Unsplash, Pixabay, and Flaticon</strong> all offer extensive free, watermark-free images. Simply filtering to "Free" on Freepik immediately removes all paid options.</p>
+      <p>Dismissing the watermark compounds the mistake — it undermines the <strong>aesthetic value</strong> of the lesson and signals to learners that visual quality doesn't matter.</p>
+      <div class="tip">Go to Freepik → search your topic → click "Free" to filter. You'll find thousands of high-quality, watermark-free options in seconds.</div>
+    </div>
+  </div>
+
+  <!-- ══ S2: Aspect ratio stretching ══ -->
+  <div class="card" id="card-2">
+    <div class="card-header">
+      <span class="q-number">Scenario 2</span>
+      <span class="q-label">Spot the <em>Mistake</em></span>
+    </div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">
+          Mr Petersen inserts a photo of a laboratory into his Science slide. It's a bit too narrow for the space, so he <span class="hl">clicks the middle handle on the right edge and drags it outward</span> until it fills the frame. The beakers in the image now look oddly wide. He decides it's close enough and moves on.
+        </p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-2">
+        <button class="opt-btn" onclick="answer(2,'A')"><span class="opt-letter">A</span> He should have chosen a different image — laboratory photos are not suitable for slides.</button>
+        <button class="opt-btn" onclick="answer(2,'B')"><span class="opt-letter">B</span> He dragged from the side handle, which stretches the image and distorts its aspect ratio. He should have used a corner handle — holding Ctrl to resize proportionally.</button>
+        <button class="opt-btn" onclick="answer(2,'C')"><span class="opt-letter">C</span> He resized the image at all — images on slides should never be resized after insertion.</button>
+        <button class="opt-btn" onclick="answer(2,'D')"><span class="opt-letter">D</span> The image was too large to begin with and should have been reduced, not enlarged.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-2">
+      <div class="verdict-row">
+        <span class="verdict-badge" id="vbadge-2"></span>
+        <span class="verdict-sub"  id="vsub-2"></span>
+      </div>
+      <p>Jakob demonstrated exactly this mistake — dragging from a <strong>side or top/bottom handle</strong> resizes only one dimension, squashing or stretching the image. This destroys the <strong>aspect ratio</strong>, making images look like "science experiments."</p>
+      <p>The fix is simple: always resize from a <strong>corner handle</strong>, and hold <strong>Ctrl</strong> while dragging to lock the aspect ratio. This ensures the image scales uniformly in all directions.</p>
+      <div class="tip">Always use the corner handles when resizing images. Holding Ctrl locks the aspect ratio so your image never gets distorted — no matter how far you drag.</div>
+    </div>
+  </div>
+
+  <!-- ══ S3: Copying thumbnail from Google Images ══ -->
+  <div class="card" id="card-3">
+    <div class="card-header">
+      <span class="q-number">Scenario 3</span>
+      <span class="q-label">Spot the <em>Mistake</em></span>
+    </div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">
+          Ms Abrahams needs a map of South Africa for her lesson. She opens Google Images, sees a suitable map appear in the results, <span class="hl">right-clicks the small thumbnail preview and copies it directly</span> into her slide. When she enlarges it to fill the slide, the text on the map becomes completely unreadable and the image looks pixelated.
+        </p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-3">
+        <button class="opt-btn" onclick="answer(3,'A')"><span class="opt-letter">A</span> She should not have used a map image — maps are too complex for presentation slides.</button>
+        <button class="opt-btn" onclick="answer(3,'B')"><span class="opt-letter">B</span> She copied the low-resolution thumbnail instead of first clicking on the image to enlarge it, or going directly to the source website to get the full-resolution version.</button>
+        <button class="opt-btn" onclick="answer(3,'C')"><span class="opt-letter">C</span> She used Google Images at all — Google Images should never be used to find maps.</button>
+        <button class="opt-btn" onclick="answer(3,'D')"><span class="opt-letter">D</span> She made the image too large for the slide — it should have stayed at its original small size.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-3">
+      <div class="verdict-row">
+        <span class="verdict-badge" id="vbadge-3"></span>
+        <span class="verdict-sub"  id="vsub-3"></span>
+      </div>
+      <p>Jakob explained that Google Images shows <strong>thumbnails</strong> — small, low-resolution previews that load quickly. Copying a thumbnail and then enlarging it causes rapid <strong>pixelation</strong>, making text and fine details unreadable.</p>
+      <p>The correct approach: <strong>click the thumbnail first</strong> to load the larger version, and copy or download from there. Even better — go directly to the source website and save the full-resolution original.</p>
+      <div class="tip">Never copy a Google Images thumbnail directly. Click it to enlarge first — or go to the original website for the highest quality version of the image.</div>
+    </div>
+  </div>
+
+  <!-- ══ S4: Freepik — using paid/watermarked image ══ -->
+  <div class="card" id="card-4">
+    <div class="card-header">
+      <span class="q-number">Scenario 4</span>
+      <span class="q-label">Spot the <em>Mistake</em></span>
+    </div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">
+          Mr Daniels visits Freepik to find a cartoon teacher image. He sees a great option in the results, downloads it and inserts it into his presentation — only to notice it has a watermark. He assumes Freepik doesn't actually offer free images and <span class="hl">gives up and goes back to Google Images</span>.
+        </p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-4">
+        <button class="opt-btn" onclick="answer(4,'A')"><span class="opt-letter">A</span> He should have used Unsplash instead, as Freepik only has paid images.</button>
+        <button class="opt-btn" onclick="answer(4,'B')"><span class="opt-letter">B</span> He downloaded a premium (paid) image without filtering for free images first. On Freepik, paid images are marked with a crown icon — clicking "Free" filters these out immediately.</button>
+        <button class="opt-btn" onclick="answer(4,'C')"><span class="opt-letter">C</span> Cartoon images are not allowed to be used in educational presentations without permission.</button>
+        <button class="opt-btn" onclick="answer(4,'D')"><span class="opt-letter">D</span> He used a cartoon style image, which is unprofessional for teacher use.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-4">
+      <div class="verdict-row">
+        <span class="verdict-badge" id="vbadge-4"></span>
+        <span class="verdict-sub"  id="vsub-4"></span>
+      </div>
+      <p>Freepik shows both <strong>free and premium (paid) images</strong> in its results. Premium images are marked with a <strong>crown icon</strong> — these will have watermarks if downloaded without a subscription. The solution is simply to click the <strong>"Free" filter</strong> button, which immediately removes all paid options from the results.</p>
+      <p>Going back to Google Images because of this is the wrong conclusion — Freepik has thousands of high-quality free images, including cartoons and illustrated styles.</p>
+      <div class="tip">On Freepik, always click the "Free" filter before choosing an image. The crown icon = paid. No crown + Free filter = safe to use, no watermark.</div>
+    </div>
+  </div>
+
+  <!-- ══ S5: Presenting without going full screen ══ -->
+  <div class="card" id="card-5">
+    <div class="card-header">
+      <span class="q-number">Scenario 5</span>
+      <span class="q-label">Spot the <em>Mistake</em></span>
+    </div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">
+          Ms Visser projects her PowerPoint lesson directly from the editing view. The slide she is teaching occupies <span class="hl">less than half the projected screen</span>, with the ribbon toolbar, slide panel, notes area and taskbar all visible. She explains to learners that this is just how PowerPoint works.
+        </p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-5">
+        <button class="opt-btn" onclick="answer(5,'A')"><span class="opt-letter">A</span> She should have switched to Google Slides instead, which uses screen space more efficiently.</button>
+        <button class="opt-btn" onclick="answer(5,'B')"><span class="opt-letter">B</span> She is presenting from the editing view, which wastes over 50% of the screen on toolbars and panels. She should switch to Slideshow/Presentation mode so the slide fills the entire screen.</button>
+        <button class="opt-btn" onclick="answer(5,'C')"><span class="opt-letter">C</span> She should have used a larger monitor — the problem is the screen size, not the software.</button>
+        <button class="opt-btn" onclick="answer(5,'D')"><span class="opt-letter">D</span> Notes should always be hidden, but the ribbon and slide panel are necessary during lessons.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-5">
+      <div class="verdict-row">
+        <span class="verdict-badge" id="vbadge-5"></span>
+        <span class="verdict-sub"  id="vsub-5"></span>
+      </div>
+      <p>Jakob measured this specifically: in PowerPoint's editing view, <strong>around 55% of the screen is wasted</strong> on toolbars, the slide panel, notes and the taskbar. In Google Slides it's even worse — around 60%. This is screen space that should be showing lesson content.</p>
+      <p>The fix is straightforward: always use <strong>Slideshow / Presentation mode</strong> when teaching. The slide expands to fill the entire screen, removing all distracting interface elements.</p>
+      <div class="tip">Before every lesson, hit the Slideshow button (or F5 in PowerPoint). This is the single most impactful thing you can do to maximise what learners see on screen.</div>
+    </div>
+  </div>
+
+  <!-- ══ S6: Alt+Tab with irrelevant windows open ══ -->
+  <div class="card" id="card-6">
+    <div class="card-header">
+      <span class="q-number">Scenario 6</span>
+      <span class="q-label">Spot the <em>Mistake</em></span>
+    </div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">
+          Mr Fortuin is presenting a lesson in slideshow mode. He needs to switch to a Word document to show learners a reading passage. He presses <span class="hl">Alt+Tab in front of the class</span>, and the screen briefly flashes through his open WhatsApp Web, a personal email tab, and a social media page before landing on the document.
+        </p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-6">
+        <button class="opt-btn" onclick="answer(6,'A')"><span class="opt-letter">A</span> He should not have used Alt+Tab at all — teachers should only ever show one window during a lesson.</button>
+        <button class="opt-btn" onclick="answer(6,'B')"><span class="opt-letter">B</span> He used Alt+Tab correctly, but failed to close unrelated personal windows before the lesson started — exposing irrelevant and potentially distracting content to learners.</button>
+        <button class="opt-btn" onclick="answer(6,'C')"><span class="opt-letter">C</span> He should have minimised the slideshow before switching windows, not used Alt+Tab.</button>
+        <button class="opt-btn" onclick="answer(6,'D')"><span class="opt-letter">D</span> Switching between a slideshow and a Word document is not possible — each lesson must use only one type of file.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-6">
+      <div class="verdict-row">
+        <span class="verdict-badge" id="vbadge-6"></span>
+        <span class="verdict-sub"  id="vsub-6"></span>
+      </div>
+      <p>Jakob demonstrated Alt+Tab as a powerful tool for switching between windows during a lesson — and specifically pointed out that <strong>before using it in front of learners, you should close any windows that are unrelated to the lesson</strong>. He even showed himself closing WhatsApp Web for exactly this reason.</p>
+      <p>Alt+Tab is the right tool. The mistake is not preparing the desktop beforehand — leaving personal or irrelevant tabs open creates distraction and can be embarrassing.</p>
+      <div class="tip">Before your lesson starts: close WhatsApp Web, personal emails, social media and any unrelated tabs. Then Alt+Tab becomes a seamless, professional tool for switching between lesson content.</div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div id="results">
+    <div class="results-icon" id="resultsIcon"></div>
+    <div class="results-score" id="resultsScore"></div>
+    <div class="results-label">mistakes correctly identified</div>
+    <p class="results-msg" id="resultsMsg"></p>
+    <button class="btn-reset-final" onclick="resetAll()">↩ Try Again</button>
+  </div>
+
+</main>
+
+<script>
+  const TOTAL   = 6;
+  const CORRECT = { 1:'B', 2:'B', 3:'B', 4:'B', 5:'B', 6:'B' };
+  let answered  = {};
+
+  function answer(qNum, choice) {
+    if (answered[qNum] !== undefined) return;
+
+    const isRight = (choice === CORRECT[qNum]);
+    answered[qNum] = isRight;
+
+    // Lock all buttons
+    const opts  = document.getElementById('opts-' + qNum);
+    const btns  = opts.querySelectorAll('.opt-btn');
+    const alpha = ['A','B','C','D'];
+    btns.forEach((btn, i) => {
+      btn.disabled = true;
+      if (alpha[i] === choice) {
+        btn.classList.add(isRight ? 'sel-correct' : 'sel-wrong');
+      }
+      if (!isRight && alpha[i] === CORRECT[qNum]) {
+        btn.classList.add('show-correct');
+      }
+    });
+
+    // Card border
+    document.getElementById('card-' + qNum).classList.add(isRight ? 'locked-correct' : 'locked-wrong');
+
+    // Verdict text
+    const vbadge = document.getElementById('vbadge-' + qNum);
+    const vsub   = document.getElementById('vsub-'   + qNum);
+    vbadge.textContent = isRight ? '✓ Correct' : '✗ Not quite';
+    vbadge.className   = 'verdict-badge ' + (isRight ? 'correct' : 'wrong');
+    vsub.textContent   = isRight ? 'You spotted the mistake!' : 'The correct answer is highlighted above.';
+
+    document.getElementById('reveal-' + qNum).classList.add('show');
+    updateProgress();
+
+    if (Object.keys(answered).length === TOTAL) setTimeout(showResults, 700);
+  }
+
+  function updateProgress() {
+    const done = Object.keys(answered).length;
+    document.getElementById('progressFill').style.width = (done / TOTAL * 100) + '%';
+    document.getElementById('progressText').textContent = done + ' / ' + TOTAL;
+  }
+
+  function showResults() {
+    const score = Object.values(answered).filter(Boolean).length;
+    const pct   = Math.round(score / TOTAL * 100);
+    let icon, msg;
+    if (pct === 100) {
+      icon = '🏆'; msg = 'Excellent — you identified every mistake! You have a strong grasp of how to use graphics correctly and maximise your screen space effectively.';
+    } else if (pct >= 67) {
+      icon = '👍'; msg = 'Good work — you caught most of the mistakes. Review the explanations above for any you missed before moving on to the next segment.';
+    } else {
+      icon = '🔄'; msg = 'It\'s worth re-reading the explanations carefully. The mistakes covered here are very common in practice — understanding them will noticeably improve your lessons.';
+    }
+    document.getElementById('resultsIcon').textContent = icon;
+    document.getElementById('resultsScore').innerHTML  = score + '<span> / ' + TOTAL + '</span>';
+    document.getElementById('resultsMsg').textContent  = msg;
+    const r = document.getElementById('results');
+    r.classList.add('show');
+    setTimeout(() => r.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+  }
+
+  function resetAll() {
+    answered = {};
+    for (let i = 1; i <= TOTAL; i++) {
+      document.getElementById('card-'   + i).classList.remove('locked-correct','locked-wrong');
+      document.getElementById('reveal-' + i).classList.remove('show');
+      document.getElementById('opts-'   + i).querySelectorAll('.opt-btn').forEach(b => {
+        b.disabled = false;
+        b.className = 'opt-btn';
+      });
+    }
+    document.getElementById('results').classList.remove('show');
+    updateProgress();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>

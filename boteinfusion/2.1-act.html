@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 2 · Self-Assessment: Improved Presentation Skills</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #001489;
+    --blue:   #007DBA;
+    --yellow: #FFC600;
+    --white:  #ffffff;
+    --light:  #f0f4fb;
+    --mid:    #d6e4f0;
+    --text:   #1a1a2e;
+    --muted:  #5a6a8a;
+    --true-bg:   #e8f7ee;
+    --true-bdr:  #2ecc71;
+    --false-bg:  #fdecea;
+    --false-bdr: #e74c3c;
+    --reveal-bg: #eef4fc;
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: 28px 40px 22px;
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%);
+  }
+  .header-badge {
+    background: var(--yellow);
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .header-text h1 {
+    font-size: clamp(17px, 3vw, 22px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .header-text p {
+    font-size: 13px;
+    color: rgba(255,255,255,.65);
+    margin-top: 4px;
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+  }
+
+  /* ── INTRO BANNER ── */
+  .intro {
+    background: var(--blue);
+    color: var(--white);
+    padding: 20px 40px;
+    font-size: 14px;
+    line-height: 1.7;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .intro-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .intro strong { color: var(--yellow); }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 800px;
+    margin: 36px auto 0;
+    padding: 0 24px;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+  .progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .06em;
+    white-space: nowrap;
+  }
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--mid);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--navy), var(--blue));
+    border-radius: 99px;
+    width: 0%;
+    transition: width .5s ease;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,20,137,.08);
+    margin-bottom: 24px;
+    overflow: hidden;
+    border: 1.5px solid transparent;
+    transition: border-color .3s;
+  }
+  .card.answered-true  { border-color: var(--true-bdr); }
+  .card.answered-false { border-color: var(--false-bdr); }
+
+  .card-header {
+    background: var(--navy);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .q-number {
+    background: var(--yellow);
+    color: var(--navy);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .q-label {
+    color: rgba(255,255,255,.7);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  .card-body {
+    padding: 24px 24px 0;
+  }
+  .statement {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.55;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .btn-tf {
+    flex: 1;
+    padding: 13px 10px;
+    border-radius: 8px;
+    border: 2px solid var(--mid);
+    background: var(--white);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: .03em;
+    color: var(--text);
+  }
+  .btn-tf:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0,20,137,.12);
+  }
+  .btn-tf.true-btn:hover:not(:disabled)  { border-color: var(--true-bdr);  background: var(--true-bg); }
+  .btn-tf.false-btn:hover:not(:disabled) { border-color: var(--false-bdr); background: var(--false-bg); }
+
+  .btn-tf.selected-true  { border-color: var(--true-bdr);  background: var(--true-bg);  color: #1a6b3a; }
+  .btn-tf.selected-false { border-color: var(--false-bdr); background: var(--false-bg); color: #9b2a1f; }
+  .btn-tf:disabled { cursor: default; }
+
+  .btn-icon { font-size: 18px; }
+
+  /* ── REVEAL ── */
+  .reveal {
+    display: none;
+    background: var(--reveal-bg);
+    border-left: 4px solid var(--blue);
+    border-radius: 0 0 12px 12px;
+    padding: 18px 22px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    animation: slideDown .35s ease;
+  }
+  .reveal.show { display: block; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal-verdict {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .verdict-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .verdict-badge.correct   { background: var(--true-bdr);  color: #fff; }
+  .verdict-badge.incorrect { background: var(--false-bdr); color: #fff; }
+
+  .reveal-verdict span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .reveal p {
+    font-family: 'Source Serif 4', serif;
+    font-size: 14.5px;
+    color: #2c3e60;
+  }
+  .reveal p strong { color: var(--navy); font-family: 'Sora', sans-serif; }
+
+  .reveal .tip {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(0,125,186,.1);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--blue);
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+  }
+  .reveal .tip::before { content: '💡 '; }
+
+  /* ── RESULTS ── */
+  #results {
+    display: none;
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,20,137,.1);
+    padding: 36px 32px;
+    text-align: center;
+    border-top: 5px solid var(--yellow);
+  }
+  #results.show { display: block; animation: slideDown .4s ease; }
+
+  .results-icon { font-size: 52px; margin-bottom: 12px; }
+  .results-score {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+  }
+  .results-score span { font-size: 22px; color: var(--muted); }
+  .results-label {
+    font-size: 15px;
+    color: var(--muted);
+    margin: 6px 0 18px;
+    font-family: 'Source Serif 4', serif;
+  }
+  .results-msg {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--text);
+    max-width: 480px;
+    margin: 0 auto 24px;
+  }
+  .btn-reset {
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    padding: 13px 28px;
+    border-radius: 8px;
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .04em;
+    transition: background .2s;
+  }
+  .btn-reset:hover { background: var(--blue); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 520px) {
+    header { padding: 20px 20px 18px; }
+    .intro { padding: 16px 20px; }
+    main { padding: 0 16px; }
+    .btn-row { flex-direction: column; }
+    .card-body { padding: 18px 16px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Back on Track</div>
+  <div class="header-text">
+    <h1>Module 2 · Improved Presentation Skills</h1>
+    <p>Self-Assessment — Video Segment 1: Principles &amp; Aesthetics</p>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🎯</span>
+  <div>
+    <strong>How to use this activity:</strong> Read each statement carefully and decide whether it is <strong>True</strong> or <strong>False</strong> based on what you just watched. After selecting, a detailed explanation will appear. There are no scores — this is about <strong>checking your own understanding</strong>.
+  </div>
+</div>
+
+<main>
+
+  <div class="progress-bar-wrap">
+    <span class="progress-label">Progress</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-label" id="progressText">0 / 6</span>
+  </div>
+
+  <!-- ── Q1 ── -->
+  <div class="card" id="card-1">
+    <div class="card-header">
+      <span class="q-number">Statement 1</span>
+      <span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"The slides in your presentation are the main focal point of the lesson — they should contain as much information as possible so learners can follow along."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn"  onclick="answer(1, true)"  id="btn-1-true">
+          <span class="btn-icon">✓</span> True
+        </button>
+        <button class="btn-tf false-btn" onclick="answer(1, false)" id="btn-1-false">
+          <span class="btn-icon">✗</span> False
+        </button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-1">
+      <div class="reveal-verdict">
+        <span class="verdict-badge incorrect">False</span>
+        <span>The teacher is the focal point — not the screen.</span>
+      </div>
+      <p>As Jakob explained in the video, <strong>the teacher is always the focal point</strong> of any lesson. Everything on the screen is meant to <em>support and supplement</em> the teacher — not replace them. Overloading slides with text creates a problem: learners start reading the screen instead of listening to you. A presentation is not the same as learner notes.</p>
+      <div class="tip">Keep slides lean. If your slide makes complete sense without you speaking, it may be doing too much of your job.</div>
+    </div>
+  </div>
+
+  <!-- ── Q2 ── -->
+  <div class="card" id="card-2">
+    <div class="card-header">
+      <span class="q-number">Statement 2</span>
+      <span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"Revealing slide content piece by piece — rather than all at once — helps reduce cognitive overload by keeping learner attention where you need it."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn"  onclick="answer(2, true)"  id="btn-2-true">
+          <span class="btn-icon">✓</span> True
+        </button>
+        <button class="btn-tf false-btn" onclick="answer(2, false)" id="btn-2-false">
+          <span class="btn-icon">✗</span> False
+        </button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-2">
+      <div class="reveal-verdict">
+        <span class="verdict-badge correct">True</span>
+        <span>This is the principle of <em>triggering</em>.</span>
+      </div>
+      <p>This is exactly what Jakob called <strong>triggering information</strong>. When an entire screen appears at once, learners' eyes wander to content you haven't spoken about yet — creating a split in attention. By revealing content progressively, you direct exactly where learners look and align it with what you are saying at that moment.</p>
+      <div class="tip">Use animations like "Appear on click" to build your slide content gradually during your explanation.</div>
+    </div>
+  </div>
+
+  <!-- ── Q3 ── -->
+  <div class="card" id="card-3">
+    <div class="card-header">
+      <span class="q-number">Statement 3</span>
+      <span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"Signaling only refers to using digital annotation tools like arrows on screen — traditional pointers and laser clickers are no longer considered effective."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn"  onclick="answer(3, true)"  id="btn-3-true">
+          <span class="btn-icon">✓</span> True
+        </button>
+        <button class="btn-tf false-btn" onclick="answer(3, false)" id="btn-3-false">
+          <span class="btn-icon">✗</span> False
+        </button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-3">
+      <div class="reveal-verdict">
+        <span class="verdict-badge incorrect">False</span>
+        <span>Signaling includes both digital and traditional techniques.</span>
+      </div>
+      <p>Jakob made it clear that <strong>signaling includes many approaches</strong> — bold text, colour changes, annotation tools, drawn arrows, and even traditional physical tools like a long ruler or a laser-pointer clicker. These all serve the same purpose: guiding learner attention to the most important element on screen at a given moment. No method is outdated if it works.</p>
+      <div class="tip">Combine methods — a bold keyword on your slide plus a drawn circle using an annotation tool is more powerful than either alone.</div>
+    </div>
+  </div>
+
+  <!-- ── Q4 ── -->
+  <div class="card" id="card-4">
+    <div class="card-header">
+      <span class="q-number">Statement 4</span>
+      <span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"Using a consistent template throughout your presentation is mainly a matter of personal taste and has no real effect on how learners process the content."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn"  onclick="answer(4, true)"  id="btn-4-true">
+          <span class="btn-icon">✓</span> True
+        </button>
+        <button class="btn-tf false-btn" onclick="answer(4, false)" id="btn-4-false">
+          <span class="btn-icon">✗</span> False
+        </button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-4">
+      <div class="reveal-verdict">
+        <span class="verdict-badge incorrect">False</span>
+        <span>Consistency reduces cognitive effort — it's not just aesthetic.</span>
+      </div>
+      <p>The video highlighted <strong>consistency</strong> as one of the three core aesthetic principles, alongside legibility and imagery. When fonts, colours, and graphics are consistent, learners don't waste mental effort adjusting to new visual styles — they can focus on the content. Pre-designed templates are specifically recommended because they enforce this consistency automatically.</p>
+      <div class="tip">Pick one template and one icon pack and stick to them across your entire lesson. Visual predictability actually frees up cognitive space for learning.</div>
+    </div>
+  </div>
+
+  <!-- ── Q5 ── -->
+  <div class="card" id="card-5">
+    <div class="card-header">
+      <span class="q-number">Statement 5</span>
+      <span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"A minimum recommended font size for on-screen presentation text is 20pt, because anything smaller makes it difficult for learners to read from a distance."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn"  onclick="answer(5, true)"  id="btn-5-true">
+          <span class="btn-icon">✓</span> True
+        </button>
+        <button class="btn-tf false-btn" onclick="answer(5, false)" id="btn-5-false">
+          <span class="btn-icon">✗</span> False
+        </button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-5">
+      <div class="reveal-verdict">
+        <span class="verdict-badge correct">True</span>
+        <span>20pt is the minimum — 28pt is even better.</span>
+      </div>
+      <p>Jakob specifically mentioned <strong>20pt as the minimum recommended font size</strong>, with 28pt being even more effective for readability. Legibility was described as the starting point of everything — if learners cannot read the screen, nothing else matters. This doesn't mean you can't go smaller when you have a lot of content, but you should always aim as large as possible.</p>
+      <div class="tip">Test your slides by standing at the back of your classroom. If you struggle to read them, your learners in the back row definitely will too.</div>
+    </div>
+  </div>
+
+  <!-- ── Q6 ── -->
+  <div class="card" id="card-6">
+    <div class="card-header">
+      <span class="q-number">Statement 6</span>
+      <span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"Using images and icons in your presentation is a nice-to-have but doesn't significantly affect how well learners remember the content."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn"  onclick="answer(6, true)"  id="btn-6-true">
+          <span class="btn-icon">✓</span> True
+        </button>
+        <button class="btn-tf false-btn" onclick="answer(6, false)" id="btn-6-false">
+          <span class="btn-icon">✗</span> False
+        </button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-6">
+      <div class="reveal-verdict">
+        <span class="verdict-badge incorrect">False</span>
+        <span>Research shows visuals significantly improve recall.</span>
+      </div>
+      <p>Jakob cited research showing that people are becoming <strong>increasingly visual</strong> learners, and that images create powerful memory anchors. When a learner connects an image to a concept during a lesson, they are more likely to recall that concept in an assessment — the image acts as a retrieval cue. This is particularly relevant given the visual-rich environment learners are exposed to (TikTok, Instagram, etc.).</p>
+      <div class="tip">Use consistent icons to represent recurring concepts — a familiar icon can become a mental shortcut that helps learners recall information during assessments.</div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div id="results">
+    <div class="results-icon" id="resultsIcon">🎉</div>
+    <div class="results-score" id="resultsScore">0<span> / 6</span></div>
+    <div class="results-label">statements answered correctly</div>
+    <p class="results-msg" id="resultsMsg"></p>
+    <button class="btn-reset" onclick="resetAll()">↩ Try Again</button>
+  </div>
+
+</main>
+
+<script>
+  const TOTAL = 6;
+  const ANSWERS = { 1: false, 2: true, 3: false, 4: false, 5: true, 6: false };
+  let answered = {};
+
+  function answer(qNum, userChoice) {
+    if (answered[qNum] !== undefined) return;
+
+    const correct = ANSWERS[qNum];
+    const isRight = (userChoice === correct);
+
+    answered[qNum] = isRight;
+
+    const card    = document.getElementById('card-' + qNum);
+    const reveal  = document.getElementById('reveal-' + qNum);
+    const trueBtn = document.getElementById('btn-' + qNum + '-true');
+    const falseBtn= document.getElementById('btn-' + qNum + '-false');
+
+    trueBtn.disabled = falseBtn.disabled = true;
+
+    if (userChoice) {
+      trueBtn.classList.add(isRight ? 'selected-true' : 'selected-false');
+    } else {
+      falseBtn.classList.add(isRight ? 'selected-true' : 'selected-false');
+    }
+
+    card.classList.add(correct ? 'answered-true' : 'answered-false');
+    reveal.classList.add('show');
+
+    updateProgress();
+
+    if (Object.keys(answered).length === TOTAL) {
+      setTimeout(showResults, 600);
+    }
+  }
+
+  function updateProgress() {
+    const done = Object.keys(answered).length;
+    const pct  = (done / TOTAL) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = done + ' / ' + TOTAL;
+  }
+
+  function showResults() {
+    const score = Object.values(answered).filter(Boolean).length;
+    const pct   = Math.round((score / TOTAL) * 100);
+
+    document.getElementById('resultsScore').innerHTML = score + '<span> / ' + TOTAL + '</span>';
+
+    let icon, msg;
+    if (pct === 100) {
+      icon = '🏆';
+      msg  = 'Outstanding! You\'ve clearly understood all the core principles from this video. You\'re ready to move on to the next segment with confidence.';
+    } else if (pct >= 67) {
+      icon = '👍';
+      msg  = 'Good work — you\'ve grasped most of the key ideas. Review the explanations for any statements you found tricky before moving on.';
+    } else {
+      icon = '🔄';
+      msg  = 'It might be worth re-watching parts of the video. Read through the explanations above carefully — they contain the key takeaways you need before continuing.';
+    }
+
+    document.getElementById('resultsIcon').textContent = icon;
+    document.getElementById('resultsMsg').textContent  = msg;
+
+    const r = document.getElementById('results');
+    r.classList.add('show');
+    r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetAll() {
+    answered = {};
+    for (let i = 1; i <= TOTAL; i++) {
+      document.getElementById('card-' + i).classList.remove('answered-true', 'answered-false');
+      document.getElementById('reveal-' + i).classList.remove('show');
+      ['true','false'].forEach(t => {
+        const b = document.getElementById('btn-' + i + '-' + t);
+        b.disabled = false;
+        b.className = 'btn-tf ' + t + '-btn';
+      });
+    }
+    document.getElementById('results').classList.remove('show');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>
