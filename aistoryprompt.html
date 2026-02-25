@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCED eLearning | Story Prompt Generator</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for vanilla JS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'wced-blue': '#001489',
+                        'wced-bright-blue': '#007DBA',
+                        'wced-grey': '#968C83',
+                        'wced-red': '#BA0C2F',
+                        'wced-teal': '#00A1A3',
+                        'wced-steel': '#587F95',
+                        'wced-purple': '#890C58',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        #output-container::-webkit-scrollbar { width: 8px; }
+        #output-container::-webkit-scrollbar-track { background: #f1f1f1; }
+        #output-container::-webkit-scrollbar-thumb { background: #968C83; border-radius: 4px; }
+        .form-input:focus { border-color: #001489; ring: 2px; ring-color: #007DBA; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900 pb-12 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-wced-blue border-b border-wced-steel shadow-md sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-2 rounded-lg text-wced-blue">
+                    <i data-lucide="wand-2" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white leading-none">WCED eLearning</h1>
+                    <p class="text-xs text-blue-100 uppercase tracking-widest mt-1">Story Prompt Generator</p>
+                </div>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="clearForm()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-wced-steel/50 rounded-lg hover:bg-wced-steel transition-colors border border-white/20">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Clear
+                </button>
+                <button onclick="randomizeAll()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-wced-blue bg-white rounded-lg hover:bg-slate-100 transition-colors shadow-sm">
+                    <i data-lucide="dices" class="w-4 h-4"></i> Randomize All
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex flex-col lg:row gap-8 lg:flex-row">
+        
+        <!-- Left Column: Form Setup -->
+        <div class="w-full lg:w-7/12 space-y-6">
+            
+            <!-- General Settings -->
+            <section class="bg-white p-6 rounded-2xl border border-wced-grey/30 shadow-sm">
+                <h2 class="text-lg font-bold flex items-center gap-2 mb-4 text-wced-teal">
+                    <i data-lucide="settings-2" class="w-5 h-5"></i> Core Setup
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-wced-blue mb-1">Target Age</label>
+                        <input type="number" id="age" class="form-input w-full px-3 py-2 border border-wced-grey/50 rounded-lg outline-none focus:ring-2 focus:ring-wced-bright-blue" value="10">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-wced-blue mb-1">Max Words</label>
+                        <input type="number" id="maxWords" class="form-input w-full px-3 py-2 border border-wced-grey/50 rounded-lg outline-none focus:ring-2 focus:ring-wced-bright-blue" value="500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-wced-blue mb-1">Language</label>
+                        <input type="text" id="language" class="form-input w-full px-3 py-2 border border-wced-grey/50 rounded-lg outline-none focus:ring-2 focus:ring-wced-bright-blue" value="English">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Characters -->
+            <section class="bg-white p-6 rounded-2xl border border-wced-grey/30 shadow-sm space-y-6">
+                <h2 class="text-lg font-bold flex items-center gap-2 text-wced-teal">
+                    <i data-lucide="users" class="w-5 h-5"></i> Characters
+                </h2>
+                
+                <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-wced-blue">
+                    <h3 class="text-xs font-bold text-wced-blue mb-3 uppercase tracking-wider">Main Character</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1">Name</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="mainName" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. Darrel">
+                                <button onclick="randomizeField('mainName', 'names')" class="p-2 bg-white text-wced-blue rounded-lg hover:bg-wced-blue hover:text-white transition-all border border-wced-blue/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1">Trait</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="mainTrait" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. brave">
+                                <button onclick="randomizeField('mainTrait', 'traits')" class="p-2 bg-white text-wced-blue rounded-lg hover:bg-wced-blue hover:text-white transition-all border border-wced-blue/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-wced-bright-blue">
+                    <h3 class="text-xs font-bold text-wced-bright-blue mb-3 uppercase tracking-wider">Supporting Character</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1">Name</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="suppName" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. Eddy">
+                                <button onclick="randomizeField('suppName', 'names')" class="p-2 bg-white text-wced-bright-blue rounded-lg hover:bg-wced-bright-blue hover:text-white transition-all border border-wced-bright-blue/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1">Trait</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="suppTrait" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. confident">
+                                <button onclick="randomizeField('suppTrait', 'traits')" class="p-2 bg-white text-wced-bright-blue rounded-lg hover:bg-wced-bright-blue hover:text-white transition-all border border-wced-bright-blue/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-wced-red">
+                    <h3 class="text-xs font-bold text-wced-red mb-3 uppercase tracking-wider">Villain</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1">Name</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="villainName" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. Titus">
+                                <button onclick="randomizeField('villainName', 'names')" class="p-2 bg-white text-wced-red rounded-lg hover:bg-wced-red hover:text-white transition-all border border-wced-red/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-semibold text-slate-600 mb-1">Trait</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="villainTrait" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. creative">
+                                <button onclick="randomizeField('villainTrait', 'traits')" class="p-2 bg-white text-wced-red rounded-lg hover:bg-wced-red hover:text-white transition-all border border-wced-red/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Story Context -->
+            <section class="bg-white p-6 rounded-2xl border border-wced-grey/30 shadow-sm">
+                <h2 class="text-lg font-bold flex items-center gap-2 mb-4 text-wced-teal">
+                    <i data-lucide="map-pin" class="w-5 h-5"></i> World Building
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex flex-col">
+                        <label class="text-sm font-semibold text-wced-blue mb-1">Setting</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="setting" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="Enchanted Castle">
+                            <button onclick="randomizeField('setting', 'settings')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-sm font-semibold text-wced-blue mb-1">Time Period</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="timePeriod" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="the future">
+                            <button onclick="randomizeField('timePeriod', 'timePeriods')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-sm font-semibold text-wced-blue mb-1">Genre</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="genre" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="Drama">
+                            <button onclick="randomizeField('genre', 'genres')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-sm font-semibold text-wced-blue mb-1">Tone</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="tone" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="Melancholic">
+                            <button onclick="randomizeField('tone', 'tones')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-col">
+                    <label class="text-sm font-semibold text-wced-blue mb-1">Moral / Lesson</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="moral" class="form-input w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="Cherish the moments with loved ones.">
+                        <button onclick="randomizeField('moral', 'morals')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Right Column: Final Prompt -->
+        <div class="w-full lg:w-5/12 lg:sticky lg:top-24 self-start space-y-4">
+            <div class="bg-white rounded-3xl border border-wced-grey/30 shadow-2xl overflow-hidden flex flex-col min-h-[500px]">
+                <div class="bg-wced-blue p-5 flex flex-col gap-1 text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold flex items-center gap-2">
+                            <i data-lucide="scroll-text" class="w-5 h-5"></i> Generated Prompt
+                        </h3>
+                    </div>
+                    <p class="text-xs text-blue-200 uppercase tracking-tighter">Ready to be pasted into Generative AI</p>
+                </div>
+                
+                <div id="output-container" class="p-8 bg-slate-50 flex-grow">
+                    <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center space-y-4 text-slate-400">
+                        <i data-lucide="sparkles" class="w-12 h-12 opacity-20"></i>
+                        <p class="italic max-w-[200px]">Adjust settings or click randomise to generate your custom prompt.</p>
+                    </div>
+                    <p id="promptOutput" class="text-lg text-wced-blue leading-relaxed font-medium whitespace-pre-wrap selection:bg-wced-bright-blue/20"></p>
+                </div>
+                
+                <div class="p-6 bg-white border-t border-slate-100">
+                    <button id="copyBtn" onclick="copyPrompt()" class="w-full py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg bg-wced-teal text-white hover:bg-wced-teal/90 active:scale-95 group">
+                        <i data-lucide="copy" id="copyIcon" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+                        <span id="copyText">Copy Prompt</span>
+                    </button>
+                    
+                    <div class="mt-6 flex flex-col gap-3">
+                        <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                            <i data-lucide="help-circle" class="w-4 h-4 text-wced-bright-blue mt-0.5"></i>
+                            <p class="text-[11px] text-blue-800 leading-tight">
+                                Paste into <span class="font-bold">ChatGPT</span> or <span class="font-bold">Claude</span>. Then copy the story into <span class="font-bold">QuestionWell</span> for automated quiz generation.
+                            </p>
+                        </div>
+                        <p class="text-[10px] text-center text-wced-grey font-medium uppercase tracking-widest">By Jaco van Niekerk</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        //Initialise Icons
+        lucide.createIcons();
+
+        // Data from the provided CSV file "AI Story Generation Prompt Generator - Random Data.csv"
+        const RANDOM_DATA = {
+            names: ['Addie', 'Ali', 'Avis', 'Blair', 'Bryan', 'Cecil', 'Clayton', 'Clement', 'Clifford', 'Cornelius', 'Danielle', 'Darrel', 'Donna', 'Eddy', 'Ellsworth', 'Erik', 'Erna', 'Fermin', 'Hugo', 'Ila', 'Janell', 'Jarred', 'Jeanette', 'Jewel', 'Johnie', 'Juana', 'Kristofer', 'Lara', 'Leland', 'Lessie'],
+            traits: ['brave', 'intelligent', 'compassionate', 'witty', 'ambitious', 'loyal', 'creative', 'curious', 'optimistic', 'pessimistic', 'confident', 'shy', 'adventurous', 'stubborn', 'empathetic', 'analytical', 'energetic', 'patient', 'reckless', 'mysterious'],
+            settings: ['Magical Forest', 'Enchanted Castle', 'Friendly Farm', 'Underwater Kingdom', 'Space Adventure', 'Candy Land', 'Dinosaur Island', 'Pirate Cove', 'Rainbow Valley', 'Superhero City', 'Teddy Bear Picnic', 'Fairy Tale Village', 'Circus Circus', 'Wild West Town', 'Robot Planet', 'Arctic Wonderland', 'Jungle Safari', 'Alien Playground', 'Monster Village'],
+            genres: ['Mystery', 'Fantasy', 'Science Fiction', 'Romance', 'Adventure', 'Thriller', 'Horror', 'Comedy', 'Drama'],
+            tones: ['Whimsical', 'Mysterious', 'Joyful', 'Suspenseful', 'Heartwarming', 'Comical', 'Adventurous', 'Melancholic', 'Enchanting', 'Inspirational'],
+            morals: ['Patience is a virtue.', 'Actions speak louder than words.', 'Appreciate the uniqueness in everyone.', 'Always be true to yourself.', 'Forgiveness is liberating.', 'Face your fears to overcome them.', 'Never judge a book by its cover.', 'Respect others\' differences.', 'Be humble in victory and gracious in defeat.', 'Happiness comes from within.', 'Learn from your mistakes.', 'Stay positive in challenging times.', 'Compassion can change the world.', 'Take time to appreciate the little things.', 'Believe in the power of kindness.', 'Cherish the moments with loved ones.', 'Embrace change as a part of growth.', 'Share your knowledge and wisdom.', 'Be mindful of the impact of your actions.', 'Value the journey as much as the destination.'],
+            timePeriods: ['the future', 'the past', 'the present', 'the Victorian era', 'the Middle Ages', 'the 1980s', 'ancient times', 'the distant future', 'the Renaissance', 'the 22nd century']
+        };
+
+        const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
+
+        // Form logic
+        const inputs = {
+            age: document.getElementById('age'),
+            maxWords: document.getElementById('maxWords'),
+            language: document.getElementById('language'),
+            mainName: document.getElementById('mainName'),
+            mainTrait: document.getElementById('mainTrait'),
+            suppName: document.getElementById('suppName'),
+            suppTrait: document.getElementById('suppTrait'),
+            villainName: document.getElementById('villainName'),
+            villainTrait: document.getElementById('villainTrait'),
+            setting: document.getElementById('setting'),
+            timePeriod: document.getElementById('timePeriod'),
+            genre: document.getElementById('genre'),
+            tone: document.getElementById('tone'),
+            moral: document.getElementById('moral')
+        };
+
+        const outputEl = document.getElementById('promptOutput');
+        const emptyStateEl = document.getElementById('emptyState');
+        const copyBtn = document.getElementById('copyBtn');
+        const copyText = document.getElementById('copyText');
+
+        // Event listeners
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', buildPrompt);
+        });
+
+        function buildPrompt() {
+            const ageVal = inputs.age.value || '10';
+            const wordsVal = inputs.maxWords.value || '500';
+            const langVal = inputs.language.value || 'English';
+
+            let parts = [
+                `Write a story with a maximum word count of ${wordsVal} words.`,
+                `The story should be written in ${langVal} for ${ageVal}-year-olds.`
+            ];
+
+            if (inputs.mainName.value) parts.push(`The main character's name is ${inputs.mainName.value}.`);
+            if (inputs.mainTrait.value) parts.push(`The main character can be defined as ${inputs.mainTrait.value}.`);
+            if (inputs.suppName.value) parts.push(`The supporting character's name is ${inputs.suppName.value}.`);
+            if (inputs.suppTrait.value) parts.push(`The supporting character can be defined as ${inputs.suppTrait.value}.`);
+            if (inputs.villainName.value) parts.push(`The villain in the story is called ${inputs.villainName.value}.`);
+            if (inputs.villainTrait.value) parts.push(`The villain can be defined as ${inputs.villainTrait.value}.`);
+            if (inputs.setting.value) parts.push(`The story's setting is ${inputs.setting.value}.`);
+            if (inputs.timePeriod.value) parts.push(`The story is set in ${inputs.timePeriod.value}.`);
+            
+            if (inputs.genre.value) {
+                const first = inputs.genre.value.trim().charAt(0).toLowerCase();
+                const art = 'aeiou'.includes(first) ? 'an' : 'a';
+                parts.push(`The story should be ${art} ${inputs.genre.value} story.`);
+            }
+            if (inputs.tone.value) parts.push(`The story should be ${inputs.tone.value}.`);
+            if (inputs.moral.value) {
+                let m = inputs.moral.value.trim();
+                if(m.endsWith('.')) m = m.slice(0, -1);
+                parts.push(`The moral of the story is to ${m}.`);
+            }
+
+            const final = parts.join(' ');
+            const isDefault = parts.length <= 2 && !inputs.age.value && !inputs.maxWords.value;
+
+            if (isDefault) {
+                outputEl.textContent = '';
+                emptyStateEl.classList.remove('hidden');
+            } else {
+                outputEl.textContent = final;
+                emptyStateEl.classList.add('hidden');
+            }
+        }
+
+        function randomizeField(id, key) {
+            inputs[id].value = getRandomItem(RANDOM_DATA[key]);
+            buildPrompt();
+        }
+
+        function randomizeAll() {
+            inputs.mainName.value = getRandomItem(RANDOM_DATA.names);
+            inputs.mainTrait.value = getRandomItem(RANDOM_DATA.traits);
+            
+            let sN = getRandomItem(RANDOM_DATA.names);
+            while(sN === inputs.mainName.value) sN = getRandomItem(RANDOM_DATA.names);
+            inputs.suppName.value = sN;
+            inputs.suppTrait.value = getRandomItem(RANDOM_DATA.traits);
+            
+            let vN = getRandomItem(RANDOM_DATA.names);
+            while(vN === inputs.mainName.value || vN === sN) vN = getRandomItem(RANDOM_DATA.names);
+            inputs.villainName.value = vN;
+            inputs.villainTrait.value = getRandomItem(RANDOM_DATA.traits);
+            
+            inputs.setting.value = getRandomItem(RANDOM_DATA.settings);
+            inputs.timePeriod.value = getRandomItem(RANDOM_DATA.timePeriods);
+            inputs.genre.value = getRandomItem(RANDOM_DATA.genres);
+            inputs.tone.value = getRandomItem(RANDOM_DATA.tones);
+            inputs.moral.value = getRandomItem(RANDOM_DATA.morals);
+
+            buildPrompt();
+        }
+
+        function clearForm() {
+            Object.keys(inputs).forEach(k => {
+                if (['age', 'maxWords', 'language'].includes(k)) return;
+                inputs[k].value = '';
+            });
+            buildPrompt();
+        }
+
+        function copyPrompt() {
+            const txt = outputEl.textContent;
+            if(!txt) return;
+
+            const ta = document.createElement("textarea");
+            ta.value = txt;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                copyBtn.classList.replace('bg-wced-teal', 'bg-emerald-600');
+                copyText.textContent = 'Copied to Clipboard!';
+                setTimeout(() => {
+                    copyBtn.classList.replace('bg-emerald-600', 'bg-wced-teal');
+                    copyText.textContent = 'Copy Prompt';
+                }, 2000);
+            } catch (err) {
+                console.error(err);
+            }
+            document.body.removeChild(ta);
+        }
+
+        // Init
+        buildPrompt();
+    </script>
+</body>
+</html>
