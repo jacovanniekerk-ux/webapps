@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCED eLearning | Story Prompt Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'wced-blue': '#001489',
+                        'wced-bright-blue': '#007DBA',
+                        'wced-grey': '#968C83',
+                        'wced-red': '#BA0C2F',
+                        'wced-teal': '#00A1A3',
+                        'wced-steel': '#587F95',
+                        'wced-purple': '#890C58',
+                    },
+                    fontFamily: {
+                        'fredoka': ['"Fredoka One"', 'cursive'],
+                        'nunito': ['Nunito', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ===== SHARED ===== */
+        #output-container::-webkit-scrollbar { width: 8px; }
+        #output-container::-webkit-scrollbar-track { background: #f1f1f1; }
+        #output-container::-webkit-scrollbar-thumb { background: #968C83; border-radius: 4px; }
+
+        /* ===== MODE TOGGLE ===== */
+        .mode-btn {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* ===== IN-CLASS MODE ===== */
+        body.inclass-mode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%);
+            min-height: 100vh;
+            font-family: 'Nunito', sans-serif;
+        }
+        body.inclass-mode::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Bubble cards */
+        .bubble-card {
+            background: white;
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15), 0 0 0 3px rgba(255,255,255,0.5);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: none;
+            animation: bubblePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .bubble-card.active { display: block; }
+        .bubble-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        @keyframes bubblePop {
+            from { opacity: 0; transform: scale(0.8) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .bubble-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 2rem;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* Section colour themes */
+        .theme-hero { --accent: #FF6B6B; --accent-light: #FFE0E0; --accent-dark: #CC0000; }
+        .theme-friend { --accent: #4ECDC4; --accent-light: #E0F9F8; --accent-dark: #00897B; }
+        .theme-villain { --accent: #6C5CE7; --accent-light: #EDE7F6; --accent-dark: #4527A0; }
+        .theme-world { --accent: #F7DC6F; --accent-light: #FFF9C4; --accent-dark: #F57F17; }
+        .theme-genre { --accent: #FF9671; --accent-light: #FFF0EB; --accent-dark: #E64A19; }
+        .theme-moral { --accent: #A8E6CF; --accent-light: #E8F5E9; --accent-dark: #2E7D32; }
+
+        .bubble-header {
+            background: var(--accent);
+            border-radius: 1.25rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .bubble-header .emoji { font-size: 2rem; }
+        .bubble-header h2 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; }
+
+        .fun-input {
+            border: 3px solid var(--accent);
+            border-radius: 1rem;
+            padding: 0.75rem 1rem;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #333;
+            width: 100%;
+            outline: none;
+            background: var(--accent-light);
+            transition: all 0.2s ease;
+        }
+        .fun-input:focus {
+            background: white;
+            box-shadow: 0 0 0 4px rgba(var(--accent-rgb, 100,100,100), 0.2);
+            transform: scale(1.02);
+        }
+        .fun-input::placeholder { color: #aaa; font-weight: 600; }
+
+        .fun-label {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1rem;
+            color: var(--accent-dark);
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .dice-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .dice-btn:hover {
+            transform: rotate(20deg) scale(1.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .dice-btn:active { transform: rotate(0deg) scale(0.95); }
+
+        .next-btn {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 1.5rem;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 0 var(--accent-dark);
+            width: 100%;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        .next-btn:hover { transform: translateY(-3px); box-shadow: 0 9px 0 var(--accent-dark); }
+        .next-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--accent-dark); }
+
+        /* Progress dots */
+        .progress-dot {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+        .progress-dot.done { background: white; transform: scale(1.2); }
+        .progress-dot.current {
+            background: white;
+            animation: pulse 1.5s infinite;
+            transform: scale(1.4);
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+            50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+        }
+
+        /* Stars / sparkles decoration */
+        .sparkles-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .sparkle {
+            position: absolute;
+            color: rgba(255,255,255,0.5);
+            font-size: 1.5rem;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Prompt reveal card */
+        #prompt-reveal {
+            display: none;
+            animation: bubblePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        #prompt-reveal.active { display: block; }
+
+        .confetti-btn {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 1.5rem;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 0 #4527A0;
+            width: 100%;
+            justify-content: center;
+            margin-top: 0.75rem;
+        }
+        .confetti-btn:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #4527A0; }
+        .confetti-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #4527A0; }
+
+        .copy-success { background: linear-gradient(135deg, #00b09b, #96c93d) !important; box-shadow: 0 6px 0 #1B5E20 !important; }
+
+        /* Character portrait placeholders */
+        .char-avatar {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            background: var(--accent-light);
+            border: 3px solid var(--accent);
+            flex-shrink: 0;
+        }
+
+        /* Wiggle animation on hover for certain elements */
+        .wiggle:hover { animation: wiggle 0.4s ease; }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-6deg); }
+            75% { transform: rotate(6deg); }
+        }
+
+        /* Selection chips */
+        .chip-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .chip {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 99px;
+            border: 2px solid var(--accent);
+            background: white;
+            color: var(--accent-dark);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .chip:hover, .chip.selected {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* ===== TEACHER MODE ===== */
+        body.teacher-mode {
+            background: #f8fafc;
+            font-family: sans-serif;
+        }
+        body.teacher-mode .teacher-only { display: block !important; }
+        body.teacher-mode .inclass-only { display: none !important; }
+        body.inclass-mode .teacher-only { display: none !important; }
+        body.inclass-mode .inclass-only { display: block !important; }
+    </style>
+</head>
+<body class="teacher-mode min-h-screen pb-12">
+
+    <!-- Floating sparkles (in-class only) -->
+    <div class="sparkles-bg inclass-only">
+        <span class="sparkle" style="top:10%;left:5%;animation-delay:0s">⭐</span>
+        <span class="sparkle" style="top:20%;left:90%;animation-delay:1s">✨</span>
+        <span class="sparkle" style="top:70%;left:8%;animation-delay:2s">🌟</span>
+        <span class="sparkle" style="top:80%;left:85%;animation-delay:0.5s">💫</span>
+        <span class="sparkle" style="top:45%;left:95%;animation-delay:3s">⭐</span>
+        <span class="sparkle" style="top:5%;left:50%;animation-delay:1.5s">✨</span>
+    </div>
+
+    <!-- ===== TEACHER MODE HEADER ===== -->
+    <header class="teacher-only bg-wced-blue border-b border-wced-steel shadow-md sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-2 rounded-lg text-wced-blue">
+                    <i data-lucide="wand-2" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white leading-none">WCED eLearning</h1>
+                    <p class="text-xs text-blue-100 uppercase tracking-widest mt-1">Story Prompt Generator</p>
+                </div>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto items-center">
+                <span class="text-blue-200 text-sm font-medium hidden sm:block">Teacher Mode</span>
+                <button onclick="switchMode('inclass')" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-wced-blue bg-yellow-300 rounded-lg hover:bg-yellow-200 transition-colors shadow-sm">
+                    <i data-lucide="users" class="w-4 h-4"></i> Switch to In-Class Mode
+                </button>
+                <button onclick="clearForm()" class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-wced-steel/50 rounded-lg hover:bg-wced-steel transition-colors border border-white/20">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Clear
+                </button>
+                <button onclick="randomizeAll()" class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-wced-blue bg-white rounded-lg hover:bg-slate-100 transition-colors shadow-sm">
+                    <i data-lucide="dices" class="w-4 h-4"></i> Randomize All
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== IN-CLASS MODE HEADER ===== -->
+    <header class="inclass-only sticky top-0 z-20 px-4 py-3" style="background:rgba(0,0,0,0.15);backdrop-filter:blur(10px);">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:white;">📖 Story Builder</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Progress dots -->
+                <div class="flex gap-2 items-center" id="progress-dots">
+                    <div class="progress-dot current" data-step="0"></div>
+                    <div class="progress-dot" data-step="1"></div>
+                    <div class="progress-dot" data-step="2"></div>
+                    <div class="progress-dot" data-step="3"></div>
+                    <div class="progress-dot" data-step="4"></div>
+                    <div class="progress-dot" data-step="5"></div>
+                </div>
+                <button onclick="switchMode('teacher')" class="text-xs font-bold px-3 py-1 rounded-full" style="background:rgba(255,255,255,0.25);color:white;border:1px solid rgba(255,255,255,0.4);">
+                    ⚙️ Teacher
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== TEACHER MODE BODY ===== -->
+    <div class="teacher-only">
+        <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex flex-col lg:flex-row gap-8">
+            
+            <!-- Left Column: Form Setup -->
+            <div class="w-full lg:w-7/12 space-y-6">
+                
+                <!-- General Settings -->
+                <section class="bg-white p-6 rounded-2xl border border-wced-grey/30 shadow-sm">
+                    <h2 class="text-lg font-bold flex items-center gap-2 mb-4 text-wced-teal">
+                        <i data-lucide="settings-2" class="w-5 h-5"></i> Core Setup
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-wced-blue mb-1">Target Age</label>
+                            <input type="number" id="age" class="w-full px-3 py-2 border border-wced-grey/50 rounded-lg outline-none focus:ring-2 focus:ring-wced-bright-blue" value="10">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-wced-blue mb-1">Max Words</label>
+                            <input type="number" id="maxWords" class="w-full px-3 py-2 border border-wced-grey/50 rounded-lg outline-none focus:ring-2 focus:ring-wced-bright-blue" value="500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-wced-blue mb-1">Language</label>
+                            <input type="text" id="language" class="w-full px-3 py-2 border border-wced-grey/50 rounded-lg outline-none focus:ring-2 focus:ring-wced-bright-blue" value="English">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Characters -->
+                <section class="bg-white p-6 rounded-2xl border border-wced-grey/30 shadow-sm space-y-6">
+                    <h2 class="text-lg font-bold flex items-center gap-2 text-wced-teal">
+                        <i data-lucide="users" class="w-5 h-5"></i> Characters
+                    </h2>
+                    <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-wced-blue">
+                        <h3 class="text-xs font-bold text-wced-blue mb-3 uppercase tracking-wider">Main Character</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex flex-col">
+                                <label class="text-xs font-semibold text-slate-600 mb-1">Name</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="mainName" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. Darrel">
+                                    <button onclick="randomizeField('mainName', 'names')" class="p-2 bg-white text-wced-blue rounded-lg hover:bg-wced-blue hover:text-white transition-all border border-wced-blue/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-xs font-semibold text-slate-600 mb-1">Trait</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="mainTrait" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. brave">
+                                    <button onclick="randomizeField('mainTrait', 'traits')" class="p-2 bg-white text-wced-blue rounded-lg hover:bg-wced-blue hover:text-white transition-all border border-wced-blue/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-wced-bright-blue">
+                        <h3 class="text-xs font-bold text-wced-bright-blue mb-3 uppercase tracking-wider">Supporting Character</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex flex-col">
+                                <label class="text-xs font-semibold text-slate-600 mb-1">Name</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="suppName" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. Eddy">
+                                    <button onclick="randomizeField('suppName', 'names')" class="p-2 bg-white text-wced-bright-blue rounded-lg hover:bg-wced-bright-blue hover:text-white transition-all border border-wced-bright-blue/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-xs font-semibold text-slate-600 mb-1">Trait</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="suppTrait" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. confident">
+                                    <button onclick="randomizeField('suppTrait', 'traits')" class="p-2 bg-white text-wced-bright-blue rounded-lg hover:bg-wced-bright-blue hover:text-white transition-all border border-wced-bright-blue/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-wced-red">
+                        <h3 class="text-xs font-bold text-wced-red mb-3 uppercase tracking-wider">Villain</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex flex-col">
+                                <label class="text-xs font-semibold text-slate-600 mb-1">Name</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="villainName" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. Titus">
+                                    <button onclick="randomizeField('villainName', 'names')" class="p-2 bg-white text-wced-red rounded-lg hover:bg-wced-red hover:text-white transition-all border border-wced-red/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-xs font-semibold text-slate-600 mb-1">Trait</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="villainTrait" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="e.g. cunning">
+                                    <button onclick="randomizeField('villainTrait', 'traits')" class="p-2 bg-white text-wced-red rounded-lg hover:bg-wced-red hover:text-white transition-all border border-wced-red/20 shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- World Building -->
+                <section class="bg-white p-6 rounded-2xl border border-wced-grey/30 shadow-sm">
+                    <h2 class="text-lg font-bold flex items-center gap-2 mb-4 text-wced-teal">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i> World Building
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col">
+                            <label class="text-sm font-semibold text-wced-blue mb-1">Setting</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="setting" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="Enchanted Castle">
+                                <button onclick="randomizeField('setting', 'settings')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-sm font-semibold text-wced-blue mb-1">Time Period</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="timePeriod" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="the future">
+                                <button onclick="randomizeField('timePeriod', 'timePeriods')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-sm font-semibold text-wced-blue mb-1">Genre</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="genre" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="Adventure">
+                                <button onclick="randomizeField('genre', 'genres')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-sm font-semibold text-wced-blue mb-1">Tone</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="tone" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="Whimsical">
+                                <button onclick="randomizeField('tone', 'tones')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-col">
+                        <label class="text-sm font-semibold text-wced-blue mb-1">Moral / Lesson</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="moral" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none" placeholder="Cherish the moments with loved ones.">
+                            <button onclick="randomizeField('moral', 'morals')" class="p-2 bg-slate-100 text-wced-steel rounded-lg hover:bg-wced-steel hover:text-white transition-all border border-slate-300"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Final Prompt -->
+            <div class="w-full lg:w-5/12 lg:sticky lg:top-24 self-start space-y-4">
+                <div class="bg-white rounded-3xl border border-wced-grey/30 shadow-2xl overflow-hidden flex flex-col min-h-[500px]">
+                    <div class="bg-wced-blue p-5 flex flex-col gap-1 text-white">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <i data-lucide="scroll-text" class="w-5 h-5"></i> Generated Prompt
+                            </h3>
+                        </div>
+                        <p class="text-xs text-blue-200 uppercase tracking-tighter">Ready to be pasted into Generative AI</p>
+                    </div>
+                    <div id="output-container" class="p-8 bg-slate-50 flex-grow">
+                        <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center space-y-4 text-slate-400">
+                            <i data-lucide="sparkles" class="w-12 h-12 opacity-20"></i>
+                            <p class="italic max-w-[200px]">Adjust settings or click randomize to generate your custom prompt.</p>
+                        </div>
+                        <p id="promptOutput" class="text-lg text-wced-blue leading-relaxed font-medium whitespace-pre-wrap selection:bg-wced-bright-blue/20"></p>
+                    </div>
+                    <div class="p-6 bg-white border-t border-slate-100 space-y-3">
+                        <button id="copyBtnTeacher" onclick="copyPrompt('teacher')" class="w-full py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg bg-wced-teal text-white hover:bg-wced-teal/90 active:scale-95 group">
+                            <i data-lucide="copy" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+                            <span id="copyTextTeacher">Copy Prompt</span>
+                        </button>
+                        <a id="openChatGPT" href="#" target="_blank" onclick="return openInChatGPT()" class="w-full py-3 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-sm bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95">
+                            <i data-lucide="external-link" class="w-5 h-5"></i>
+                            <span>Open in ChatGPT</span>
+                        </a>
+                        <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                            <i data-lucide="help-circle" class="w-4 h-4 text-wced-bright-blue mt-0.5 flex-shrink-0"></i>
+                            <p class="text-[11px] text-blue-800 leading-tight">
+                                Paste into <a href="https://gemini.google.com/" target="_blank" class="font-bold underline">Gemini</a> or <a href="https://chatgpt.com" target="_blank" class="font-bold underline">ChatGPT</a>. Then copy the story into <span class="font-bold">QuestionWell</span> for automated quiz generation.
+                            </p>
+                        </div>
+                        <p class="text-[10px] text-center text-wced-grey font-medium uppercase tracking-widest">By Jaco van Niekerk</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== IN-CLASS MODE BODY ===== -->
+    <div class="inclass-only relative z-10">
+        <div class="max-w-2xl mx-auto px-4 py-8 space-y-4">
+
+            <!-- Step 0: Main Character -->
+            <div class="bubble-card theme-hero active" data-step="0">
+                <div class="bubble-header">
+                    <span class="emoji wiggle">🦸</span>
+                    <div>
+                        <h2>Main Character</h2>
+                        <p style="font-size:0.85rem;opacity:0.9;font-family:'Nunito',sans-serif;font-weight:700;">Who's our HERO?</p>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:1rem;">
+                    <div class="char-avatar">🦸</div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:1rem;">
+                        <div>
+                            <label class="fun-label">Their name is...</label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="ic-mainName" class="fun-input" placeholder="e.g. Darrel" style="flex:1;">
+                                <button class="dice-btn" onclick="icRandomize('ic-mainName','names')" title="Random name!">🎲</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="fun-label">They are best described as...</label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="ic-mainTrait" class="fun-input" placeholder="e.g. brave" style="flex:1;">
+                                <button class="dice-btn" onclick="icRandomize('ic-mainTrait','traits')" title="Random trait!">🎲</button>
+                            </div>
+                            <div class="chip-grid" style="margin-top:0.6rem;" id="main-trait-chips"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="next-btn" onclick="nextStep(1)">Next: Supporting Character ➡️</button>
+            </div>
+
+            <!-- Step 1: Supporting Character -->
+            <div class="bubble-card theme-friend" data-step="1">
+                <div class="bubble-header">
+                    <span class="emoji wiggle">👫</span>
+                    <div>
+                        <h2>Sidekick</h2>
+                        <p style="font-size:0.85rem;opacity:0.9;font-family:'Nunito',sans-serif;font-weight:700;">Who helps our hero?</p>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:1rem;">
+                    <div class="char-avatar">👫</div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:1rem;">
+                        <div>
+                            <label class="fun-label">Their name is...</label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="ic-suppName" class="fun-input" placeholder="e.g. Eddy" style="flex:1;">
+                                <button class="dice-btn" onclick="icRandomize('ic-suppName','names')" title="Random name!">🎲</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="fun-label">They are best described as...</label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="ic-suppTrait" class="fun-input" placeholder="e.g. confident" style="flex:1;">
+                                <button class="dice-btn" onclick="icRandomize('ic-suppTrait','traits')" title="Random trait!">🎲</button>
+                            </div>
+                            <div class="chip-grid" style="margin-top:0.6rem;" id="supp-trait-chips"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="next-btn" onclick="nextStep(2)">Next: The Villain ➡️</button>
+            </div>
+
+            <!-- Step 2: Villain -->
+            <div class="bubble-card theme-villain" data-step="2">
+                <div class="bubble-header">
+                    <span class="emoji wiggle">😈</span>
+                    <div>
+                        <h2>Villain</h2>
+                        <p style="font-size:0.85rem;opacity:0.9;font-family:'Nunito',sans-serif;font-weight:700;">Every great story needs a BAD GUY!</p>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:1rem;">
+                    <div class="char-avatar">😈</div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:1rem;">
+                        <div>
+                            <label class="fun-label">Their name is...</label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="ic-villainName" class="fun-input" placeholder="e.g. Titus" style="flex:1;">
+                                <button class="dice-btn" onclick="icRandomize('ic-villainName','names')" title="Random name!">🎲</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="fun-label">What makes them scary or sneaky?</label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="ic-villainTrait" class="fun-input" placeholder="e.g. cunning" style="flex:1;">
+                                <button class="dice-btn" onclick="icRandomize('ic-villainTrait','traits')" title="Random trait!">🎲</button>
+                            </div>
+                            <div class="chip-grid" style="margin-top:0.6rem;" id="villain-trait-chips"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="next-btn" onclick="nextStep(3)">Next: The World ➡️</button>
+            </div>
+
+            <!-- Step 3: Setting & Time -->
+            <div class="bubble-card theme-world" data-step="3">
+                <div class="bubble-header" style="background:#F7DC6F;color:#5D4037;">
+                    <span class="emoji wiggle">🗺️</span>
+                    <div>
+                        <h2>The World</h2>
+                        <p style="font-size:0.85rem;opacity:0.9;font-family:'Nunito',sans-serif;font-weight:700;">Where does the story happen?</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:1rem;">
+                    <div>
+                        <label class="fun-label">The story takes place in a...</label>
+                        <div style="display:flex;gap:0.5rem;">
+                            <input type="text" id="ic-setting" class="fun-input" placeholder="e.g. Magical Forest" style="flex:1;">
+                            <button class="dice-btn" onclick="icRandomize('ic-setting','settings')" title="Random setting!">🎲</button>
+                        </div>
+                        <div class="chip-grid" style="margin-top:0.6rem;" id="setting-chips"></div>
+                    </div>
+                    <div>
+                        <label class="fun-label">...and it's set in...</label>
+                        <div style="display:flex;gap:0.5rem;">
+                            <input type="text" id="ic-timePeriod" class="fun-input" placeholder="e.g. the future" style="flex:1;">
+                            <button class="dice-btn" onclick="icRandomize('ic-timePeriod','timePeriods')" title="Random time!">🎲</button>
+                        </div>
+                        <div class="chip-grid" style="margin-top:0.6rem;" id="time-chips"></div>
+                    </div>
+                </div>
+                <button class="next-btn" style="background:#F7DC6F;color:#5D4037;box-shadow: 0 6px 0 #F57F17;" onclick="nextStep(4)">Next: The Genre ➡️</button>
+            </div>
+
+            <!-- Step 4: Genre & Tone -->
+            <div class="bubble-card theme-genre" data-step="4">
+                <div class="bubble-header">
+                    <span class="emoji wiggle">🎭</span>
+                    <div>
+                        <h2>Genre & Tone</h2>
+                        <p style="font-size:0.85rem;opacity:0.9;font-family:'Nunito',sans-serif;font-weight:700;">What kind of story is it?</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:1rem;">
+                    <div>
+                        <label class="fun-label">Genre</label>
+                        <div style="display:flex;gap:0.5rem;">
+                            <input type="text" id="ic-genre" class="fun-input" placeholder="e.g. Adventure" style="flex:1;">
+                            <button class="dice-btn" onclick="icRandomize('ic-genre','genres')" title="Random genre!">🎲</button>
+                        </div>
+                        <div class="chip-grid" style="margin-top:0.6rem;" id="genre-chips"></div>
+                    </div>
+                    <div>
+                        <label class="fun-label">Tone (the feeling of the story)</label>
+                        <div style="display:flex;gap:0.5rem;">
+                            <input type="text" id="ic-tone" class="fun-input" placeholder="e.g. Whimsical" style="flex:1;">
+                            <button class="dice-btn" onclick="icRandomize('ic-tone','tones')" title="Random tone!">🎲</button>
+                        </div>
+                        <div class="chip-grid" style="margin-top:0.6rem;" id="tone-chips"></div>
+                    </div>
+                </div>
+                <button class="next-btn" onclick="nextStep(5)">Next: The Lesson ➡️</button>
+            </div>
+
+            <!-- Step 5: Moral -->
+            <div class="bubble-card theme-moral" data-step="5">
+                <div class="bubble-header" style="background:#A8E6CF;color:#1B5E20;">
+                    <span class="emoji wiggle">💡</span>
+                    <div>
+                        <h2>The Big Lesson</h2>
+                        <p style="font-size:0.85rem;opacity:0.9;font-family:'Nunito',sans-serif;font-weight:700;">What will the reader learn?</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="fun-label">The moral of the story is...</label>
+                    <div style="display:flex;gap:0.5rem;">
+                        <input type="text" id="ic-moral" class="fun-input" placeholder="e.g. Always be kind" style="flex:1;">
+                        <button class="dice-btn" onclick="icRandomize('ic-moral','morals')" title="Random moral!">🎲</button>
+                    </div>
+                    <div class="chip-grid" style="margin-top:0.6rem;" id="moral-chips"></div>
+                </div>
+                <button class="next-btn" style="background:#A8E6CF;color:#1B5E20;box-shadow: 0 6px 0 #2E7D32;" onclick="revealPrompt()">🎉 Build My Story Prompt!</button>
+            </div>
+
+            <!-- Prompt Reveal -->
+            <div id="prompt-reveal">
+                <div class="bubble-card active" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;box-shadow:0 20px 60px rgba(102,126,234,0.5);">
+                    <div style="text-align:center;margin-bottom:1.5rem;">
+                        <div style="font-size:3rem;margin-bottom:0.5rem;">🎉</div>
+                        <h2 style="font-family:'Fredoka One',cursive;font-size:2rem;color:white;">Your Story Prompt!</h2>
+                        <p style="opacity:0.8;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.9rem;">Copy this and paste it into an AI to create your story!</p>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.15);border-radius:1.25rem;padding:1.25rem;backdrop-filter:blur(5px);margin-bottom:1rem;">
+                        <p id="ic-promptOutput" style="font-family:'Nunito',sans-serif;font-weight:700;font-size:1rem;line-height:1.7;color:white;"></p>
+                    </div>
+                    <button id="copyBtnInclass" onclick="copyPrompt('inclass')" class="confetti-btn">
+                        <span>📋</span> <span id="copyTextInclass">Copy My Prompt!</span>
+                    </button>
+                    <a href="#" onclick="return openInChatGPT()" target="_blank" class="confetti-btn" style="background:linear-gradient(135deg,#00b09b,#96c93d);box-shadow:0 6px 0 #1B5E20;margin-top:0.75rem;">
+                        <span>🤖</span> <span>Open in ChatGPT!</span>
+                    </a>
+                    <button onclick="resetInclass()" class="confetti-btn" style="background:rgba(255,255,255,0.2);box-shadow:0 6px 0 rgba(0,0,0,0.2);margin-top:0.75rem;font-size:1rem;">
+                        🔄 Start Again
+                    </button>
+                    <p style="text-align:center;margin-top:1rem;font-size:0.75rem;opacity:0.6;font-family:'Nunito',sans-serif;">By Jaco van Niekerk · WCED eLearning</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const RANDOM_DATA = {
+            names: ['Addie','Ali','Avis','Blair','Bryan','Cecil','Clayton','Clement','Clifford','Cornelius','Danielle','Darrel','Donna','Eddy','Ellsworth','Erik','Erna','Fermin','Hugo','Ila','Janell','Jarred','Jeanette','Jewel','Johnie','Juana','Kristofer','Lara','Leland','Lessie'],
+            traits: ['brave','intelligent','compassionate','witty','ambitious','loyal','creative','curious','optimistic','confident','shy','adventurous','stubborn','empathetic','energetic','patient','reckless','mysterious'],
+            settings: ['Magical Forest','Enchanted Castle','Friendly Farm','Underwater Kingdom','Space Adventure','Candy Land','Dinosaur Island','Pirate Cove','Rainbow Valley','Superhero City','Fairy Tale Village','Wild West Town','Robot Planet','Arctic Wonderland','Jungle Safari'],
+            genres: ['Mystery','Fantasy','Science Fiction','Adventure','Thriller','Comedy','Drama'],
+            tones: ['Whimsical','Mysterious','Joyful','Suspenseful','Heartwarming','Comical','Adventurous','Enchanting','Inspirational'],
+            morals: ['Patience is a virtue.','Actions speak louder than words.','Always be true to yourself.','Forgiveness is liberating.','Face your fears to overcome them.','Never judge a book by its cover.','Respect others\' differences.','Learn from your mistakes.','Compassion can change the world.','Believe in the power of kindness.','Cherish the moments with loved ones.','Embrace change as a part of growth.'],
+            timePeriods: ['the future','the past','the present','the Victorian era','the Middle Ages','the 1980s','ancient times','the distant future','the Renaissance','the 22nd century']
+        };
+
+        const getRandomItem = arr => arr[Math.floor(Math.random() * arr.length)];
+
+        // ===== TEACHER MODE =====
+        const inputs = {
+            age: document.getElementById('age'),
+            maxWords: document.getElementById('maxWords'),
+            language: document.getElementById('language'),
+            mainName: document.getElementById('mainName'),
+            mainTrait: document.getElementById('mainTrait'),
+            suppName: document.getElementById('suppName'),
+            suppTrait: document.getElementById('suppTrait'),
+            villainName: document.getElementById('villainName'),
+            villainTrait: document.getElementById('villainTrait'),
+            setting: document.getElementById('setting'),
+            timePeriod: document.getElementById('timePeriod'),
+            genre: document.getElementById('genre'),
+            tone: document.getElementById('tone'),
+            moral: document.getElementById('moral')
+        };
+
+        Object.values(inputs).forEach(el => { if(el) el.addEventListener('input', buildPrompt); });
+
+        function buildPrompt() {
+            const age = inputs.age.value || '10';
+            const words = inputs.maxWords.value || '500';
+            const lang = inputs.language.value || 'English';
+
+            let parts = [
+                `Write a story with a maximum word count of ${words} words.`,
+                `The story should be written in ${lang} for ${age}-year-olds.`
+            ];
+            if (inputs.mainName.value) parts.push(`The main character's name is ${inputs.mainName.value}.`);
+            if (inputs.mainTrait.value) parts.push(`The main character can be defined as ${inputs.mainTrait.value}.`);
+            if (inputs.suppName.value) parts.push(`The supporting character's name is ${inputs.suppName.value}.`);
+            if (inputs.suppTrait.value) parts.push(`The supporting character can be defined as ${inputs.suppTrait.value}.`);
+            if (inputs.villainName.value) parts.push(`The villain in the story is called ${inputs.villainName.value}.`);
+            if (inputs.villainTrait.value) parts.push(`The villain can be defined as ${inputs.villainTrait.value}.`);
+            if (inputs.setting.value) parts.push(`The story's setting is ${inputs.setting.value}.`);
+            if (inputs.timePeriod.value) parts.push(`The story is set in ${inputs.timePeriod.value}.`);
+            if (inputs.genre.value) {
+                const first = inputs.genre.value.trim().charAt(0).toLowerCase();
+                parts.push(`The story should be ${'aeiou'.includes(first)?'an':'a'} ${inputs.genre.value} story.`);
+            }
+            if (inputs.tone.value) parts.push(`The story should be ${inputs.tone.value}.`);
+            if (inputs.moral.value) {
+                let m = inputs.moral.value.trim();
+                if (m.endsWith('.')) m = m.slice(0,-1);
+                parts.push(`The moral of the story is to ${m}.`);
+            }
+
+            const final = parts.join(' ');
+            const outputEl = document.getElementById('promptOutput');
+            const emptyEl = document.getElementById('emptyState');
+            outputEl.textContent = final;
+            emptyEl.classList.add('hidden');
+        }
+
+        function randomizeField(id, key) {
+            if (inputs[id]) { inputs[id].value = getRandomItem(RANDOM_DATA[key]); buildPrompt(); }
+        }
+
+        function randomizeAll() {
+            inputs.mainName.value = getRandomItem(RANDOM_DATA.names);
+            inputs.mainTrait.value = getRandomItem(RANDOM_DATA.traits);
+            let sN = getRandomItem(RANDOM_DATA.names);
+            while(sN === inputs.mainName.value) sN = getRandomItem(RANDOM_DATA.names);
+            inputs.suppName.value = sN;
+            inputs.suppTrait.value = getRandomItem(RANDOM_DATA.traits);
+            let vN = getRandomItem(RANDOM_DATA.names);
+            while(vN === inputs.mainName.value || vN === sN) vN = getRandomItem(RANDOM_DATA.names);
+            inputs.villainName.value = vN;
+            inputs.villainTrait.value = getRandomItem(RANDOM_DATA.traits);
+            inputs.setting.value = getRandomItem(RANDOM_DATA.settings);
+            inputs.timePeriod.value = getRandomItem(RANDOM_DATA.timePeriods);
+            inputs.genre.value = getRandomItem(RANDOM_DATA.genres);
+            inputs.tone.value = getRandomItem(RANDOM_DATA.tones);
+            inputs.moral.value = getRandomItem(RANDOM_DATA.morals);
+            buildPrompt();
+        }
+
+        function clearForm() {
+            Object.keys(inputs).forEach(k => {
+                if (!['age','maxWords','language'].includes(k) && inputs[k]) inputs[k].value = '';
+            });
+            buildPrompt();
+        }
+
+        // ===== IN-CLASS MODE =====
+        let currentStep = 0;
+
+        // Chip definitions for quick picks
+        const CHIP_DATA = {
+            'main-trait-chips':  { field: 'ic-mainTrait', key: 'traits', picks: ['brave','curious','loyal','witty','shy'] },
+            'supp-trait-chips':  { field: 'ic-suppTrait', key: 'traits', picks: ['kind','funny','smart','bold','calm'] },
+            'villain-trait-chips': { field: 'ic-villainTrait', key: 'traits', picks: ['cunning','cruel','sneaky','reckless','mysterious'] },
+            'setting-chips':     { field: 'ic-setting', key: 'settings', picks: ['Magical Forest','Space Adventure','Underwater Kingdom','Pirate Cove','Candy Land'] },
+            'time-chips':        { field: 'ic-timePeriod', key: 'timePeriods', picks: ['the future','the Middle Ages','the present','the 1980s','ancient times'] },
+            'genre-chips':       { field: 'ic-genre', key: 'genres', picks: ['Fantasy','Adventure','Mystery','Comedy','Science Fiction'] },
+            'tone-chips':        { field: 'ic-tone', key: 'tones', picks: ['Whimsical','Mysterious','Joyful','Heartwarming','Adventurous'] },
+            'moral-chips':       { field: 'ic-moral', key: 'morals', picks: ['Always be kind.','Be yourself.','Never give up.','Respect others.','Face your fears.'] }
+        };
+
+        function buildChips() {
+            Object.entries(CHIP_DATA).forEach(([containerId, data]) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                data.picks.forEach(pick => {
+                    const chip = document.createElement('button');
+                    chip.className = 'chip';
+                    chip.textContent = pick;
+                    chip.onclick = () => {
+                        document.getElementById(data.field).value = pick;
+                        container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+                        chip.classList.add('selected');
+                    };
+                    container.appendChild(chip);
+                });
+            });
+        }
+
+        function icRandomize(fieldId, key) {
+            const el = document.getElementById(fieldId);
+            if (el) {
+                el.value = getRandomItem(RANDOM_DATA[key]);
+                el.style.transform = 'scale(1.05)';
+                setTimeout(() => el.style.transform = '', 200);
+            }
+        }
+
+        function nextStep(step) {
+            // Hide current
+            document.querySelectorAll('.bubble-card').forEach(c => {
+                if (parseInt(c.dataset.step) !== undefined && parseInt(c.dataset.step) < step) {
+                    c.style.display = 'none';
+                }
+            });
+
+            // Show next
+            const nextCard = document.querySelector(`.bubble-card[data-step="${step}"]`);
+            if (nextCard) {
+                nextCard.style.display = 'block';
+                nextCard.style.animation = 'none';
+                void nextCard.offsetWidth;
+                nextCard.style.animation = 'bubblePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+                setTimeout(() => nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+            }
+
+            currentStep = step;
+            updateDots(step);
+        }
+
+        function updateDots(step) {
+            document.querySelectorAll('.progress-dot').forEach(dot => {
+                const s = parseInt(dot.dataset.step);
+                dot.classList.remove('done', 'current');
+                if (s < step) dot.classList.add('done');
+                else if (s === step) dot.classList.add('current');
+            });
+        }
+
+        function buildInclassPrompt() {
+            const age = (inputs.age && inputs.age.value) ? inputs.age.value : '10';
+            const words = (inputs.maxWords && inputs.maxWords.value) ? inputs.maxWords.value : '500';
+            const lang = (inputs.language && inputs.language.value) ? inputs.language.value : 'English';
+
+            const get = id => (document.getElementById(id) || {}).value || '';
+
+            let parts = [
+                `Write a story with a maximum word count of ${words} words.`,
+                `The story should be written in ${lang} for ${age}-year-olds.`
+            ];
+
+            if (get('ic-mainName')) parts.push(`The main character's name is ${get('ic-mainName')}.`);
+            if (get('ic-mainTrait')) parts.push(`The main character can be defined as ${get('ic-mainTrait')}.`);
+            if (get('ic-suppName')) parts.push(`The supporting character's name is ${get('ic-suppName')}.`);
+            if (get('ic-suppTrait')) parts.push(`The supporting character can be defined as ${get('ic-suppTrait')}.`);
+            if (get('ic-villainName')) parts.push(`The villain in the story is called ${get('ic-villainName')}.`);
+            if (get('ic-villainTrait')) parts.push(`The villain can be defined as ${get('ic-villainTrait')}.`);
+            if (get('ic-setting')) parts.push(`The story's setting is ${get('ic-setting')}.`);
+            if (get('ic-timePeriod')) parts.push(`The story is set in ${get('ic-timePeriod')}.`);
+            if (get('ic-genre')) {
+                const first = get('ic-genre').trim().charAt(0).toLowerCase();
+                parts.push(`The story should be ${'aeiou'.includes(first)?'an':'a'} ${get('ic-genre')} story.`);
+            }
+            if (get('ic-tone')) parts.push(`The story should be ${get('ic-tone')}.`);
+            if (get('ic-moral')) {
+                let m = get('ic-moral').trim();
+                if (m.endsWith('.')) m = m.slice(0,-1);
+                parts.push(`The moral of the story is to ${m}.`);
+            }
+
+            return parts.join(' ');
+        }
+
+        function revealPrompt() {
+            // Hide all step cards
+            document.querySelectorAll('.bubble-card[data-step]').forEach(c => c.style.display = 'none');
+
+            const prompt = buildInclassPrompt();
+            document.getElementById('ic-promptOutput').textContent = prompt;
+
+            const revealEl = document.getElementById('prompt-reveal');
+            revealEl.classList.add('active');
+            setTimeout(() => revealEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+
+            // Update all dots to done
+            document.querySelectorAll('.progress-dot').forEach(dot => {
+                dot.classList.remove('current');
+                dot.classList.add('done');
+            });
+
+            launchConfetti();
+        }
+
+        function resetInclass() {
+            // Reset step cards
+            document.querySelectorAll('.bubble-card[data-step]').forEach((c, i) => {
+                c.style.display = i === 0 ? 'block' : 'none';
+            });
+            document.getElementById('prompt-reveal').classList.remove('active');
+
+            // Clear inclass inputs
+            ['ic-mainName','ic-mainTrait','ic-suppName','ic-suppTrait','ic-villainName','ic-villainTrait','ic-setting','ic-timePeriod','ic-genre','ic-tone','ic-moral'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            // Clear chip selections
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+
+            currentStep = 0;
+            updateDots(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== SHARED COPY =====
+        function getActivePrompt() {
+            if (document.body.classList.contains('inclass-mode')) {
+                return document.getElementById('ic-promptOutput').textContent;
+            } else {
+                return document.getElementById('promptOutput').textContent;
+            }
+        }
+
+        function copyPrompt(mode) {
+            const txt = mode === 'inclass'
+                ? document.getElementById('ic-promptOutput').textContent
+                : document.getElementById('promptOutput').textContent;
+            if (!txt) return;
+
+            navigator.clipboard.writeText(txt).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = txt;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+
+            if (mode === 'inclass') {
+                const btn = document.getElementById('copyBtnInclass');
+                const span = document.getElementById('copyTextInclass');
+                btn.classList.add('copy-success');
+                span.textContent = '✅ Copied!';
+                setTimeout(() => { btn.classList.remove('copy-success'); span.textContent = '📋 Copy My Prompt!'; }, 2500);
+            } else {
+                const btn = document.getElementById('copyBtnTeacher');
+                const span = document.getElementById('copyTextTeacher');
+                btn.style.background = '#059669';
+                span.textContent = 'Copied to Clipboard!';
+                setTimeout(() => { btn.style.background = ''; span.textContent = 'Copy Prompt'; }, 2500);
+            }
+        }
+
+        function openInChatGPT() {
+            const prompt = getActivePrompt();
+            if (!prompt) return false;
+            // ChatGPT supports a 'q' URL param to pre-fill the prompt
+            const url = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
+            window.open(url, '_blank');
+            return false;
+        }
+
+        // ===== MODE SWITCH =====
+        function switchMode(mode) {
+            document.body.classList.remove('teacher-mode', 'inclass-mode');
+            document.body.classList.add(mode + '-mode');
+            if (mode === 'inclass') {
+                buildChips();
+                resetInclass();
+            }
+            lucide.createIcons();
+        }
+
+        // ===== CONFETTI =====
+        function launchConfetti() {
+            const colors = ['#FF6B6B','#4ECDC4','#FFD700','#6C5CE7','#A8E6CF','#FF9671'];
+            for (let i = 0; i < 60; i++) {
+                const el = document.createElement('div');
+                el.style.cssText = `
+                    position:fixed;
+                    width:${Math.random()*10+6}px;
+                    height:${Math.random()*10+6}px;
+                    background:${colors[Math.floor(Math.random()*colors.length)]};
+                    border-radius:${Math.random()>0.5?'50%':'2px'};
+                    left:${Math.random()*100}vw;
+                    top:-20px;
+                    z-index:9999;
+                    pointer-events:none;
+                    animation:confettiFall ${Math.random()*2+1.5}s ease-in forwards;
+                    animation-delay:${Math.random()*0.8}s;
+                `;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 4000);
+            }
+        }
+
+        // Add confetti keyframe dynamically
+        const style = document.createElement('style');
+        style.textContent = `@keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity:1; }
+            100% { transform: translateY(100vh) rotate(${Math.random()*720}deg); opacity:0; }
+        }`;
+        document.head.appendChild(style);
+
+        // ===== INIT =====
+        buildPrompt();
+        buildChips();
+    </script>
+</body>
+</html>
