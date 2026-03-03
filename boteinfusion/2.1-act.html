@@ -337,13 +337,20 @@
 </head>
 <body>
 
-<header>
-  <div class="header-badge">Back on Track</div>
+<header onclick="toggleContent()" style="cursor: pointer;">
   <div class="header-text">
     <h1>Module 2 · Improved Presentation Skills</h1>
     <p>Self-Assessment — Video Segment 1: Principles &amp; Aesthetics</p>
   </div>
+ <span id="collapse-arrow" style="
+  margin-left: auto;
+  color: rgba(255,255,255,0.7);
+  font-size: 20px;
+  transition: transform 0.3s
+  transform: rotate(-90deg);
+">▼</span>
 </header>
+<div id="page-content" style="display: none;">
 
 <div class="intro">
   <span class="intro-icon">🎯</span>
@@ -530,7 +537,7 @@
     <p class="results-msg" id="resultsMsg"></p>
     <button class="btn-reset" onclick="resetAll()">↩ Try Again</button>
   </div>
-
+</div>
 </main>
 
 <script>
@@ -602,6 +609,15 @@
     r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
+function toggleContent() {
+  const content = document.getElementById('page-content');
+    const arrow = document.getElementById('collapse-arrow');
+    const isHidden = content.style.display === 'none';
+
+    content.style.display = isHidden ? 'block' : 'none';
+    arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
+}
+ 
   function resetAll() {
     answered = {};
     for (let i = 1; i <= TOTAL; i++) {
@@ -617,6 +633,8 @@
     updateProgress();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+ 
 
   updateProgress();
 </script>
