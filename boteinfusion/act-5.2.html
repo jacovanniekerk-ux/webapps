@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 5 · Spot the Mistake: Setting Up &amp; Using SwiftGrade</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --navy: #001489; --blue: #007DBA; --yellow: #FFC600; --white: #ffffff; --light: #f0f4fb; --mid: #d6e4f0; --text: #1a1a2e; --muted: #5a6a8a; --correct: #27ae60; --correct-bg: #e8f7ee; --wrong: #e74c3c; --wrong-bg: #fdecea; --neutral-bdr: #c8d8ea; --reveal-bg: #eef4fc; }
+  body { font-family: 'Sora', sans-serif; background: var(--light); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
+  header { background: var(--navy); padding: 28px 40px 22px; display: flex; align-items: flex-end; gap: 18px; position: relative; overflow: hidden; }
+  header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%); }
+  .header-badge { background: var(--yellow); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border-radius: 3px; flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
+  .header-text h1 { font-size: clamp(17px, 3vw, 22px); font-weight: 700; color: var(--white); line-height: 1.2; }
+  .header-text p { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 4px; font-family: 'Source Serif 4', serif; font-style: italic; }
+  .intro { background: var(--blue); color: var(--white); padding: 18px 40px; font-size: 14px; line-height: 1.7; display: flex; align-items: center; gap: 16px; }
+  .intro-icon { font-size: 26px; flex-shrink: 0; }
+  .intro strong { color: var(--yellow); }
+  main { max-width: 820px; margin: 36px auto 0; padding: 0 24px; }
+  .card { background: var(--white); border-radius: 14px; box-shadow: 0 4px 24px rgba(0,20,137,.08); margin-bottom: 28px; overflow: hidden; border: 1.5px solid transparent; transition: border-color .3s; }
+  .card.locked-correct { border-color: var(--correct); }
+  .card.locked-wrong { border-color: var(--wrong); }
+  .card-header { background: var(--navy); padding: 14px 22px; display: flex; align-items: center; gap: 12px; }
+  .q-number { background: var(--yellow); color: var(--navy); font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; flex-shrink: 0; }
+  .q-label { color: rgba(255,255,255,.7); font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+  .q-label em { color: var(--yellow); font-style: normal; font-weight: 700; }
+  .card-body { padding: 22px 24px 0; }
+  .scenario-box { background: #f7f9ff; border: 1.5px solid var(--mid); border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; position: relative; }
+  .scenario-box::before { content: '📋 Scenario'; display: block; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+  .scenario-text { font-family: 'Source Serif 4', serif; font-size: 15px; line-height: 1.8; color: var(--text); }
+  .scenario-text .hl { background: rgba(255,198,0,.28); border-radius: 3px; padding: 1px 4px; font-style: normal; font-weight: 600; font-family: 'Sora', sans-serif; font-size: 14px; }
+  .prompt { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .opt-btn { width: 100%; text-align: left; padding: 13px 16px; border-radius: 8px; border: 2px solid var(--neutral-bdr); background: var(--white); font-family: 'Sora', sans-serif; font-size: 13.5px; cursor: pointer; transition: all .2s; display: flex; align-items: flex-start; gap: 12px; color: var(--text); line-height: 1.5; }
+  .opt-btn:hover:not(:disabled) { border-color: var(--blue); background: #f0f6ff; transform: translateX(3px); }
+  .opt-btn:disabled { cursor: default; }
+  .opt-letter { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--mid); color: var(--navy); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: all .2s; margin-top: 1px; }
+  .opt-btn.sel-correct { border-color: var(--correct); background: var(--correct-bg); }
+  .opt-btn.sel-correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt-btn.sel-wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+  .opt-btn.sel-wrong .opt-letter { background: var(--wrong); color: #fff; }
+  .opt-btn.show-correct { border-color: var(--correct); background: var(--correct-bg); opacity: .82; }
+  .opt-btn.show-correct .opt-letter { background: var(--correct); color: #fff; }
+  .reveal-panel { display: none; background: var(--reveal-bg); border-left: 4px solid var(--blue); border-radius: 0 0 12px 12px; padding: 18px 22px; animation: slideDown .35s ease; }
+  .reveal-panel.show { display: block; }
+  .verdict-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .verdict-badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .verdict-badge.correct { background: var(--correct); color: #fff; }
+  .verdict-badge.wrong { background: var(--wrong); color: #fff; }
+  .verdict-sub { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .reveal-panel p { font-family: 'Source Serif 4', serif; font-size: 14.5px; line-height: 1.75; color: #2c3e60; margin-bottom: 8px; }
+  .tip { margin-top: 12px; padding: 10px 14px; background: rgba(0,125,186,.1); border-radius: 6px; font-size: 13px; color: var(--blue); font-family: 'Sora', sans-serif; font-weight: 600; }
+  .tip::before { content: '💡 '; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Module 5</div>
+  <div class="header-text">
+    <h1>Spot the Mistake: Setting Up &amp; Using SwiftGrade</h1>
+    <p>Identify common errors when using SwiftGrade in the classroom</p>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🔎</span>
+  <div>Read the scenarios below and identify the <strong>mistake</strong> being made. Click on the best answer.</div>
+</div>
+
+<main>
+
+  <div class="card" id="card-1">
+    <div class="card-header"><span class="q-number">Scenario 1</span><span class="q-label">Spot the <em>Mistake</em></span></div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">Ms. V opens SwiftGrade for the first time and <span class="hl">goes straight to creating a new assessment</span>. She sets up all her questions, prints the answer sheets, and only then realises the sheets show blank name fields instead of her learners' names.</p>
+      </div>
+      <p class="prompt">What is the main mistake in this scenario?</p>
+      <div class="options" id="opts-1">
+        <button class="opt-btn" onclick="answer(1,'A')"><span class="opt-letter">A</span> She should have used the online mode instead of paper mode, as paper mode doesn't support student names.</button>
+        <button class="opt-btn" onclick="answer(1,'B')"><span class="opt-letter">B</span> She skipped the first step: creating a class and adding her learners before building the assessment. Without a class, SwiftGrade cannot print personalised answer sheets.</button>
+        <button class="opt-btn" onclick="answer(1,'C')"><span class="opt-letter">C</span> She printed too early — she should have scanned blank sheets first and added names afterwards.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-1">
+      <div class="verdict-row"><span class="verdict-badge" id="vbadge-1"></span><span class="verdict-sub" id="vsub-1"></span></div>
+      <p>The correct order in SwiftGrade is: <strong>create a class → add learners → create the assessment → print answer sheets.</strong> When learners are loaded into the class first, SwiftGrade automatically prints each learner's name on their individual answer sheet, making scanning and tracking much more accurate.</p>
+      <div class="tip">You can bulk-add students by pasting a copied list of names directly into SwiftGrade, and use "auto-generate username and password" to save time.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-2">
+    <div class="card-header"><span class="q-number">Scenario 2</span><span class="q-label">Spot the <em>Mistake</em></span></div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">Mr. H hands out SwiftGrade answer sheets for a fill-in-the-blank test. He tells his learners they can <span class="hl">write in their normal cursive handwriting</span> and use whatever size writing feels comfortable — "just as long as it fits in the block."</p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-2">
+        <button class="opt-btn" onclick="answer(2,'A')"><span class="opt-letter">A</span> He should have converted the fill-in-the-blank questions to multiple choice before handing out the sheets.</button>
+        <button class="opt-btn" onclick="answer(2,'B')"><span class="opt-letter">B</span> He failed to give learners the correct writing instructions. SwiftGrade requires learners to write big, write in print (not cursive), and stay inside the designated blocks for the AI to read their answers accurately.</button>
+        <button class="opt-btn" onclick="answer(2,'C')"><span class="opt-letter">C</span> The mistake is using fill-in-the-blank at all — SwiftGrade can only reliably read printed numbers, not words.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-2">
+      <div class="verdict-row"><span class="verdict-badge" id="vbadge-2"></span><span class="verdict-sub" id="vsub-2"></span></div>
+      <p>Cursive writing is much harder for AI to interpret reliably. SwiftGrade is clear about its three writing rules: <strong>write big, write in the blocks, write in print (not cursive).</strong> When learners follow these rules, the AI's accuracy increases significantly and the number of flagged responses drops.</p>
+      <div class="tip">Display these three rules on the board before every SwiftGrade assessment — a quick 30-second reminder can save you several minutes of manual corrections afterwards.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-3">
+    <div class="card-header"><span class="q-number">Scenario 3</span><span class="q-label">Spot the <em>Mistake</em></span></div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">Ms. O is entering her memo into SwiftGrade for a fill-in-the-blank section. She notices the <span class="hl">"auto-correct student spelling errors" toggle but leaves it switched off</span>, thinking her learners will spell the scientific terms perfectly.</p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-3">
+        <button class="opt-btn" onclick="answer(3,'A')"><span class="opt-letter">A</span> The auto-correct setting only applies to multiple choice questions — it has no effect on fill-in-the-blank answers.</button>
+        <button class="opt-btn" onclick="answer(3,'B')"><span class="opt-letter">B</span> Leaving auto-correct off is risky. Learners frequently make minor spelling errors — like using lowercase where uppercase is needed — and without auto-correct, those correct answers will be marked wrong unnecessarily.</button>
+        <button class="opt-btn" onclick="answer(3,'C')"><span class="opt-letter">C</span> There is no mistake — auto-correct should always be switched off to maintain strict marking standards.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-3">
+      <div class="verdict-row"><span class="verdict-badge" id="vbadge-3"></span><span class="verdict-sub" id="vsub-3"></span></div>
+      <p>Auto-correct exists precisely because learner spelling is imperfect — especially with scientific or geographic terms. With auto-correct <strong>on</strong>, SwiftGrade can detect that "cairn" and "Cairn" are the same answer, or that a word written slightly differently is still correct. Turning it off leads to unfair deductions for minor errors.</p>
+      <div class="tip">Keep auto-correct on for fill-in-the-blank questions. You can always manually override a mark if you feel auto-correct was too generous in a specific case.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-4">
+    <div class="card-header"><span class="q-number">Scenario 4</span><span class="q-label">Spot the <em>Mistake</em></span></div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">After scanning his class's scripts, Mr. P sees a class average of 54%. He opens the results, glances at the overall percentage, and tells the class <span class="hl">"you need to study harder"</span> before closing the app and moving on to new content.</p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-4">
+        <button class="opt-btn" onclick="answer(4,'A')"><span class="opt-letter">A</span> He should have re-scanned the papers — a 54% average means the scan was probably done incorrectly.</button>
+        <button class="opt-btn" onclick="answer(4,'B')"><span class="opt-letter">B</span> He broke the feedback loop. Instead of using SwiftGrade's analysis to identify which specific questions the class struggled with and reteaching that content, he skipped the most important step entirely.</button>
+        <button class="opt-btn" onclick="answer(4,'C')"><span class="opt-letter">C</span> He should have shared the assessment with a colleague before viewing any results.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-4">
+      <div class="verdict-row"><span class="verdict-badge" id="vbadge-4"></span><span class="verdict-sub" id="vsub-4"></span></div>
+      <p>The class average tells you <em>how much</em> learners struggled — the analysis tells you <em>exactly where.</em> SwiftGrade flags questions with a bell icon when performance was poor, allowing the teacher to click into each question, see what learners answered, and plan targeted reteaching. Skipping this step breaks the feedback loop completely.</p>
+      <div class="tip">The bell indicators in SwiftGrade's analysis are your reteaching agenda. Any question flagged with a bell is a topic to revisit before your next formal assessment.</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const CORRECT = { 1: 'B', 2: 'B', 3: 'B', 4: 'B' };
+  let answered = {};
+
+  function answer(qNum, choice) {
+    if (answered[qNum]) return;
+    const isRight = (choice === CORRECT[qNum]);
+    answered[qNum] = isRight;
+
+    const opts = document.getElementById('opts-' + qNum).querySelectorAll('.opt-btn');
+    const alpha = ['A','B','C'];
+    opts.forEach((btn, i) => {
+      btn.disabled = true;
+      if (alpha[i] === choice) btn.classList.add(isRight ? 'sel-correct' : 'sel-wrong');
+      else if (alpha[i] === CORRECT[qNum]) btn.classList.add('show-correct');
+    });
+
+    document.getElementById('card-' + qNum).classList.add(isRight ? 'locked-correct' : 'locked-wrong');
+    document.getElementById('vbadge-' + qNum).textContent = isRight ? 'Correct' : 'Incorrect';
+    document.getElementById('vbadge-' + qNum).className = 'verdict-badge ' + (isRight ? 'correct' : 'wrong');
+    document.getElementById('vsub-' + qNum).textContent = isRight ? 'Spot on.' : 'Not quite.';
+    document.getElementById('reveal-' + qNum).classList.add('show');
+  }
+</script>
+</body>
+</html>

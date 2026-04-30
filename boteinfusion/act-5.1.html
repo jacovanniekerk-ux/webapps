@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 5 · Self-Assessment: SwiftGrade & Formative Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #001489; --blue: #007DBA; --yellow: #FFC600; --white: #ffffff;
+    --light: #f0f4fb; --mid: #d6e4f0; --text: #1a1a2e; --muted: #5a6a8a;
+    --true-bg: #e8f7ee; --true-bdr: #2ecc71; --false-bg: #fdecea; --false-bdr: #e74c3c;
+    --reveal-bg: #eef4fc;
+  }
+  body { font-family: 'Sora', sans-serif; background: var(--light); color: var(--text); min-height: 100vh; padding: 0 0 60px; }
+  header { background: var(--navy); padding: 28px 40px 22px; display: flex; align-items: flex-end; gap: 18px; position: relative; overflow: hidden; }
+  header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%); }
+  .header-badge { background: var(--yellow); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border-radius: 3px; flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
+  .header-text h1 { font-size: clamp(17px, 3vw, 22px); font-weight: 700; color: var(--white); line-height: 1.2; }
+  .header-text p { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 4px; font-family: 'Source Serif 4', serif; font-style: italic; }
+  .intro { background: var(--blue); color: var(--white); padding: 20px 40px; font-size: 14px; line-height: 1.7; display: flex; align-items: center; gap: 16px; }
+  .intro-icon { font-size: 28px; flex-shrink: 0; }
+  .intro strong { color: var(--yellow); }
+  main { max-width: 800px; margin: 36px auto 0; padding: 0 24px; }
+  .card { background: var(--white); border-radius: 14px; box-shadow: 0 4px 24px rgba(0,20,137,.08); margin-bottom: 24px; overflow: hidden; border: 1.5px solid transparent; transition: border-color .3s; }
+  .card.answered-true { border-color: var(--true-bdr); }
+  .card.answered-false { border-color: var(--false-bdr); }
+  .card-header { background: var(--navy); padding: 14px 22px; display: flex; align-items: center; gap: 12px; }
+  .q-number { background: var(--yellow); color: var(--navy); font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; flex-shrink: 0; }
+  .q-label { color: rgba(255,255,255,.7); font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+  .card-body { padding: 24px 24px 0; }
+  .statement { font-size: 16px; font-weight: 600; line-height: 1.55; color: var(--text); margin-bottom: 20px; }
+  .btn-row { display: flex; gap: 12px; margin-bottom: 20px; }
+  .btn-tf { flex: 1; padding: 13px 10px; border-radius: 8px; border: 2px solid var(--mid); background: var(--white); font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: .03em; color: var(--text); }
+  .btn-tf:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,20,137,.12); }
+  .btn-tf.true-btn:hover:not(:disabled) { border-color: var(--true-bdr); background: var(--true-bg); }
+  .btn-tf.false-btn:hover:not(:disabled) { border-color: var(--false-bdr); background: var(--false-bg); }
+  .btn-tf.selected-true { border-color: var(--true-bdr); background: var(--true-bg); color: #1a6b3a; }
+  .btn-tf.selected-false { border-color: var(--false-bdr); background: var(--false-bg); color: #c0392b; }
+  .btn-tf:disabled { cursor: default; opacity: 0.6; }
+  .btn-tf.selected-true, .btn-tf.selected-false { opacity: 1; }
+  .reveal { display: none; background: var(--reveal-bg); padding: 20px 24px; border-top: 1px solid var(--mid); animation: fadeIn .4s ease; }
+  .reveal.show { display: block; }
+  .reveal-verdict { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .verdict-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #fff; }
+  .verdict-badge.correct { background: var(--true-bdr); }
+  .verdict-badge.incorrect { background: var(--false-bdr); }
+  .reveal-verdict span:last-child { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .reveal p { font-family: 'Source Serif 4', serif; font-size: 14.5px; line-height: 1.7; color: var(--text); margin-bottom: 12px; }
+  .tip { margin-top: 12px; padding: 10px 14px; background: rgba(0,125,186,.1); border-radius: 6px; font-size: 13px; color: var(--blue); font-family: 'Sora', sans-serif; font-weight: 600; }
+  .tip::before { content: '💡 '; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Module 5</div>
+  <div class="header-text">
+    <h1>Self-Assessment: SwiftGrade &amp; Formative Assessment</h1>
+    <p>Test your understanding of SwiftGrade's core concepts</p>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🎯</span>
+  <div>Are these statements about SwiftGrade and formative assessment true or false? Click to reveal the <strong>key concepts</strong> and explanations.</div>
+</div>
+
+<main>
+
+  <div class="card" id="card-1">
+    <div class="card-header">
+      <span class="q-number">Statement 1</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"SwiftGrade is an online quiz tool — teachers create questions in the app and learners answer them on their own devices."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(1, true)" id="btn-1-true"><span>✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(1, false)" id="btn-1-false"><span>✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-1">
+      <div class="reveal-verdict"><span class="verdict-badge incorrect">False</span><span>SwiftGrade grades hand-written tests.</span></div>
+      <p>SwiftGrade is not an online quiz tool. Learners write their answers by hand on a printed SwiftGrade answer sheet — just like a traditional test. The teacher's job in SwiftGrade is to enter the correct answers (the memo) for the question paper that has already been created separately. The AI then marks the hand-written scripts by scanning them.</p>
+      <div class="tip">Think of SwiftGrade as a smart marking assistant — the question paper is yours; SwiftGrade just takes the red pen out of your hand.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-2">
+    <div class="card-header">
+      <span class="q-number">Statement 2</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"SwiftGrade's paper mode only supports multiple choice questions — learners cannot write words or sentences on the answer sheet."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(2, true)" id="btn-2-true"><span>✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(2, false)" id="btn-2-false"><span>✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-2">
+      <div class="reveal-verdict"><span class="verdict-badge incorrect">False</span><span>SwiftGrade supports four question types.</span></div>
+      <p>SwiftGrade offers four question types: <strong>multiple choice</strong>, <strong>fill-in-the-blank</strong> (where learners write actual words), <strong>process + answer</strong> (for showing maths working), and <strong>free response</strong> (for sentences and paragraphs). The fill-in-the-blank option is especially powerful — the AI can read hand-written words, provided learners write big, write in the blocks, and do not use cursive.</p>
+      <div class="tip">Always remind learners before a SwiftGrade assessment: write big, write in print, and stay inside the blocks.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-3">
+    <div class="card-header">
+      <span class="q-number">Statement 3</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"If a SwiftGrade assessment consists only of multiple choice questions, the results are available instantly as soon as the scanning is complete — with no manual review required."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(3, true)" id="btn-3-true"><span>✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(3, false)" id="btn-3-false"><span>✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-3">
+      <div class="reveal-verdict"><span class="verdict-badge correct">True</span><span>Multiple choice = instant, automatic results.</span></div>
+      <p>Because multiple choice answers are unambiguous — the learner fills in a circle — SwiftGrade can mark them with 100% accuracy and display the results the moment you press submit. This is why many teachers prefer to start with multiple choice only: learners can see their results right away, and the teacher can immediately identify which questions to revisit.</p>
+    </div>
+  </div>
+
+  <div class="card" id="card-4">
+    <div class="card-header">
+      <span class="q-number">Statement 4</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"Because SwiftGrade uses AI to mark learners' work, teachers can trust all results completely and do not need to review any of the AI's decisions."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(4, true)" id="btn-4-true"><span>✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(4, false)" id="btn-4-false"><span>✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-4">
+      <div class="reveal-verdict"><span class="verdict-badge incorrect">False</span><span>Always double-check the AI's work.</span></div>
+      <p>SwiftGrade will sometimes flag answers for teacher review — especially with fill-in-the-blank questions — because learners have different handwriting styles. The AI may misread a word or mark a correct answer as incorrect. SwiftGrade itself reminds you: <em>"Please make sure to double check my work."</em> The teacher remains the professional in charge; SwiftGrade is a powerful tool, not a replacement for your judgement.</p>
+      <div class="tip">After scanning, always check the flagged responses in your results view. A quick manual override takes seconds and ensures every learner gets a fair mark.</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const CORRECT = { 1: false, 2: false, 3: true, 4: false };
+  let answered = {};
+
+  function answer(qNum, choice) {
+    if (answered[qNum] !== undefined) return;
+    answered[qNum] = choice;
+    document.getElementById('btn-' + qNum + '-true').disabled = true;
+    document.getElementById('btn-' + qNum + '-false').disabled = true;
+    document.getElementById('btn-' + qNum + '-' + choice).classList.add('selected-' + choice);
+    document.getElementById('card-' + qNum).classList.add('answered-' + choice);
+    document.getElementById('reveal-' + qNum).classList.add('show');
+  }
+</script>
+</body>
+</html>
