@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 6 · Drag &amp; Drop: Ease of Access Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --navy: #001489; --blue: #007DBA; --yellow: #FFC600; --white: #ffffff; --light: #f0f4fb; --mid: #d6e4f0; --text: #1a1a2e; --muted: #5a6a8a; --correct: #27ae60; --wrong: #e74c3c; }
+  body { font-family: 'Sora', sans-serif; background: var(--light); color: var(--text); min-height: 100vh; padding-bottom: 60px; user-select: none; }
+  header { background: var(--navy); padding: 28px 40px 22px; display: flex; align-items: flex-end; gap: 18px; position: relative; overflow: hidden; }
+  header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%); }
+  .header-badge { background: var(--yellow); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border-radius: 3px; flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
+  .header-text h1 { font-size: clamp(17px, 3vw, 22px); font-weight: 700; color: var(--white); line-height: 1.2; }
+  .intro { background: var(--blue); color: var(--white); padding: 18px 40px; font-size: 14px; line-height: 1.7; display: flex; align-items: center; gap: 16px; }
+  .intro-icon { font-size: 26px; flex-shrink: 0; }
+  main { max-width: 900px; margin: 32px auto 0; padding: 0 24px; }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .tools-pool { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 36px; min-height: 68px; padding: 16px; background: var(--white); border-radius: 12px; border: 2px dashed var(--mid); transition: border-color .2s, background .2s; }
+  .tools-pool.drag-over { border-color: var(--blue); background: #eef4fc; }
+  .tool-chip { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--navy); color: var(--white); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: grab; box-shadow: 0 3px 10px rgba(0,20,137,.2); transition: transform .15s, box-shadow .15s, opacity .2s; touch-action: none; }
+  .tool-chip:active { cursor: grabbing; }
+  .tool-chip.dragging { opacity: .35; transform: scale(.96); }
+  .tool-chip.correct-placed { background: var(--correct); cursor: default; box-shadow: 0 3px 10px rgba(39,174,96,.25); }
+  .tool-chip.wrong-flash { background: var(--wrong); animation: shake .38s ease; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-7px); } 75% { transform: translateX(7px); } }
+  .platforms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .platform-col { background: var(--white); border-radius: 12px; border: 2px solid var(--mid); overflow: hidden; box-shadow: 0 2px 12px rgba(0,20,137,.06); transition: border-color .2s, box-shadow .2s; display: flex; flex-direction: column; }
+  .platform-col.drag-over { border-color: var(--blue); box-shadow: 0 4px 20px rgba(0,125,186,.2); }
+  .platform-header { background: var(--navy); padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+  .platform-icon { font-size: 22px; flex-shrink: 0; }
+  .platform-name { font-size: 13px; font-weight: 700; color: var(--white); line-height: 1.3; }
+  .platform-name span { display: block; font-size: 11px; font-weight: 400; color: rgba(255,255,255,.6); margin-top: 2px; }
+  .drop-zone { min-height: 82px; padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; position: relative; }
+  .drop-zone::after { content: 'Drop here'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--mid); letter-spacing: .08em; text-transform: uppercase; pointer-events: none; opacity: 1; transition: opacity .2s; }
+  .drop-zone.has-chip::after { opacity: 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Module 6</div>
+  <div class="header-text">
+    <h1>Drag &amp; Drop: Ease of Access Tools</h1>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🖱️</span>
+  <div>Drag each item from the pool into the correct category below.</div>
+</div>
+
+<main>
+  <div class="section-label">Item Pool</div>
+  <div class="tools-pool" id="toolPool" ondragover="onPoolOver(event)" ondragleave="onPoolLeave(event)" ondrop="onPoolDrop(event)">
+    <div class="tool-chip" id="chip-1" draggable="true" ondragstart="onDragStart(event,'chip-1')" ondragend="onDragEnd()">Type into a browser</div>
+    <div class="tool-chip" id="chip-2" draggable="true" ondragstart="onDragStart(event,'chip-2')" ondragend="onDragEnd()">Share via WhatsApp</div>
+    <div class="tool-chip" id="chip-3" draggable="true" ondragstart="onDragStart(event,'chip-3')" ondragend="onDragEnd()">Print on a worksheet</div>
+    <div class="tool-chip" id="chip-4" draggable="true" ondragstart="onDragStart(event,'chip-4')" ondragend="onDragEnd()">Scan with phone camera</div>
+    <div class="tool-chip" id="chip-5" draggable="true" ondragstart="onDragStart(event,'chip-5')" ondragend="onDragEnd()">Stored on Google Drive</div>
+    <div class="tool-chip" id="chip-6" draggable="true" ondragstart="onDragStart(event,'chip-6')" ondragend="onDragEnd()">Updates for everyone instantly</div>
+    <div class="tool-chip" id="chip-7" draggable="true" ondragstart="onDragStart(event,'chip-7')" ondragend="onDragEnd()">One link for all resources</div>
+    <div class="tool-chip" id="chip-8" draggable="true" ondragstart="onDragStart(event,'chip-8')" ondragend="onDragEnd()">Add links to a shared hub</div>
+  </div>
+
+  <div class="section-label">Categories</div>
+  <div class="platforms-grid">
+
+    <div class="platform-col">
+      <div class="platform-header">
+        <span class="platform-icon">🔗</span>
+        <div class="platform-name">Shortened Links<span>How they are used</span></div>
+      </div>
+      <div class="drop-zone" id="zone-links" ondragover="onZoneOver(event,'zone-links')" ondragleave="onZoneLeave('zone-links')" ondrop="onZoneDrop(event,'zone-links')"></div>
+    </div>
+
+    <div class="platform-col">
+      <div class="platform-header">
+        <span class="platform-icon">📷</span>
+        <div class="platform-name">QR Codes<span>How they are used</span></div>
+      </div>
+      <div class="drop-zone" id="zone-qr" ondragover="onZoneOver(event,'zone-qr')" ondragleave="onZoneLeave('zone-qr')" ondrop="onZoneDrop(event,'zone-qr')"></div>
+    </div>
+
+    <div class="platform-col">
+      <div class="platform-header">
+        <span class="platform-icon">☁️</span>
+        <div class="platform-name">Dynamic Content<span>What makes it dynamic</span></div>
+      </div>
+      <div class="drop-zone" id="zone-dynamic" ondragover="onZoneOver(event,'zone-dynamic')" ondragleave="onZoneLeave('zone-dynamic')" ondrop="onZoneDrop(event,'zone-dynamic')"></div>
+    </div>
+
+    <div class="platform-col">
+      <div class="platform-header">
+        <span class="platform-icon">🌳</span>
+        <div class="platform-name">Bitly Pages<span>The landing page feature</span></div>
+      </div>
+      <div class="drop-zone" id="zone-pages" ondragover="onZoneOver(event,'zone-pages')" ondragleave="onZoneLeave('zone-pages')" ondrop="onZoneDrop(event,'zone-pages')"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const correctZone = {
+    'chip-1': 'zone-links',   'chip-2': 'zone-links',
+    'chip-3': 'zone-qr',      'chip-4': 'zone-qr',
+    'chip-5': 'zone-dynamic', 'chip-6': 'zone-dynamic',
+    'chip-7': 'zone-pages',   'chip-8': 'zone-pages'
+  };
+
+  let dragging = null;
+
+  function onDragStart(e, id) { dragging = id; setTimeout(() => document.getElementById(id).classList.add('dragging'), 0); e.dataTransfer.effectAllowed = 'move'; }
+  function onDragEnd() { if (dragging) document.getElementById(dragging).classList.remove('dragging'); dragging = null; document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); }
+  function onPoolOver(e) { e.preventDefault(); document.getElementById('toolPool').classList.add('drag-over'); }
+  function onPoolLeave(e) { document.getElementById('toolPool').classList.remove('drag-over'); }
+  function onPoolDrop(e) { e.preventDefault(); document.getElementById('toolPool').classList.remove('drag-over'); if (dragging) document.getElementById('toolPool').appendChild(document.getElementById(dragging)); }
+  function onZoneOver(e, zid) { e.preventDefault(); document.getElementById(zid).classList.add('drag-over'); }
+  function onZoneLeave(zid) { document.getElementById(zid).classList.remove('drag-over'); }
+  function onZoneDrop(e, zid) {
+    e.preventDefault();
+    const zone = document.getElementById(zid);
+    zone.classList.remove('drag-over');
+    if (!dragging) return;
+    const chip = document.getElementById(dragging);
+
+    if (correctZone[dragging] === zid) {
+      zone.appendChild(chip);
+      chip.draggable = false;
+      chip.classList.add('correct-placed');
+      zone.classList.add('has-chip');
+    } else {
+      chip.classList.add('wrong-flash');
+      setTimeout(() => chip.classList.remove('wrong-flash'), 400);
+    }
+  }
+</script>
+</body>
+</html>

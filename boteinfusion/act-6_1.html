@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 6 · Self-Assessment: Ease of Access — QR Codes &amp; Shortened Links</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #001489; --blue: #007DBA; --yellow: #FFC600; --white: #ffffff;
+    --light: #f0f4fb; --mid: #d6e4f0; --text: #1a1a2e; --muted: #5a6a8a;
+    --true-bg: #e8f7ee; --true-bdr: #2ecc71; --false-bg: #fdecea; --false-bdr: #e74c3c;
+    --reveal-bg: #eef4fc;
+  }
+  body { font-family: 'Sora', sans-serif; background: var(--light); color: var(--text); min-height: 100vh; padding: 0 0 60px; }
+  header { background: var(--navy); padding: 28px 40px 22px; display: flex; align-items: flex-end; gap: 18px; position: relative; overflow: hidden; }
+  header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%); }
+  .header-badge { background: var(--yellow); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border-radius: 3px; flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
+  .header-text h1 { font-size: clamp(17px, 3vw, 22px); font-weight: 700; color: var(--white); line-height: 1.2; }
+  .header-text p { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 4px; font-family: 'Source Serif 4', serif; font-style: italic; }
+  .intro { background: var(--blue); color: var(--white); padding: 20px 40px; font-size: 14px; line-height: 1.7; display: flex; align-items: center; gap: 16px; }
+  .intro-icon { font-size: 28px; flex-shrink: 0; }
+  .intro strong { color: var(--yellow); }
+  main { max-width: 800px; margin: 36px auto 0; padding: 0 24px; }
+  .card { background: var(--white); border-radius: 14px; box-shadow: 0 4px 24px rgba(0,20,137,.08); margin-bottom: 24px; overflow: hidden; border: 1.5px solid transparent; transition: border-color .3s; }
+  .card.answered-true { border-color: var(--true-bdr); }
+  .card.answered-false { border-color: var(--false-bdr); }
+  .card-header { background: var(--navy); padding: 14px 22px; display: flex; align-items: center; gap: 12px; }
+  .q-number { background: var(--yellow); color: var(--navy); font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; flex-shrink: 0; }
+  .q-label { color: rgba(255,255,255,.7); font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+  .card-body { padding: 24px 24px 0; }
+  .statement { font-size: 16px; font-weight: 600; line-height: 1.55; color: var(--text); margin-bottom: 20px; }
+  .btn-row { display: flex; gap: 12px; margin-bottom: 20px; }
+  .btn-tf { flex: 1; padding: 13px 10px; border-radius: 8px; border: 2px solid var(--mid); background: var(--white); font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: .03em; color: var(--text); }
+  .btn-tf:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,20,137,.12); }
+  .btn-tf.true-btn:hover:not(:disabled) { border-color: var(--true-bdr); background: var(--true-bg); }
+  .btn-tf.false-btn:hover:not(:disabled) { border-color: var(--false-bdr); background: var(--false-bg); }
+  .btn-tf.selected-true { border-color: var(--true-bdr); background: var(--true-bg); color: #1a6b3a; }
+  .btn-tf.selected-false { border-color: var(--false-bdr); background: var(--false-bg); color: #c0392b; }
+  .btn-tf:disabled { cursor: default; opacity: 0.6; }
+  .btn-tf.selected-true, .btn-tf.selected-false { opacity: 1; }
+  .reveal { display: none; background: var(--reveal-bg); padding: 20px 24px; border-top: 1px solid var(--mid); animation: fadeIn .4s ease; }
+  .reveal.show { display: block; }
+  .reveal-verdict { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .verdict-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #fff; }
+  .verdict-badge.correct { background: var(--true-bdr); }
+  .verdict-badge.incorrect { background: var(--false-bdr); }
+  .reveal-verdict span:last-child { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .reveal p { font-family: 'Source Serif 4', serif; font-size: 14.5px; line-height: 1.7; color: var(--text); margin-bottom: 12px; }
+  .tip { margin-top: 12px; padding: 10px 14px; background: rgba(0,125,186,.1); border-radius: 6px; font-size: 13px; color: var(--blue); font-family: 'Sora', sans-serif; font-weight: 600; }
+  .tip::before { content: '💡 '; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Module 6</div>
+  <div class="header-text">
+    <h1>Self-Assessment: Ease of Access — QR Codes &amp; Shortened Links</h1>
+    <p>Test your understanding of Bitly, dynamic content, and ease of access tools</p>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🎯</span>
+  <div>Are these statements about QR codes, shortened links, and Bitly true or false? Click to reveal the <strong>key concepts</strong> and explanations.</div>
+</div>
+
+<main>
+
+  <div class="card" id="card-1">
+    <div class="card-header">
+      <span class="q-number">Statement 1</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"A PowerPoint saved on your laptop that you email to a learner is an example of dynamic content, because the learner can open and interact with it on their device."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(1, true)" id="btn-1-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(1, false)" id="btn-1-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-1">
+      <div class="reveal-verdict"><span class="verdict-badge incorrect">False</span><span>Emailed files remain static content.</span></div>
+      <p>A PowerPoint saved on a local device — whether shared by email or on a USB — is <strong>static content</strong>. Once that file leaves your hands, it is frozen. If you update the original on your laptop, the learner still has the old version. Static content includes PowerPoints, PDFs, Word documents, printed worksheets, and any file that does not change once distributed.</p>
+      <div class="tip">To go dynamic, move your files to Google Drive or OneDrive. When you update the file on your drive, anyone with the link automatically gets the latest version — no need to resend anything.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-2">
+    <div class="card-header">
+      <span class="q-number">Statement 2</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"A shortened Bitly link can be typed into a browser by a learner to access a resource, and can also be shared via WhatsApp or email."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(2, true)" id="btn-2-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(2, false)" id="btn-2-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-2">
+      <div class="reveal-verdict"><span class="verdict-badge correct">True</span><span>Links are flexible — they work in multiple ways.</span></div>
+      <p>Unlike a QR code, a shortened link is extremely versatile. Learners can type it directly into any browser, and teachers can distribute it in multiple ways — by displaying it on a board, sending it via WhatsApp, or including it in an email. This flexibility makes shortened links the right tool whenever you need learners to access a resource without a printed document in hand.</p>
+      <div class="tip">Display a shortened link on your projector and learners can type it in on their phones in seconds — far quicker and less error-prone than typing a long, complex URL.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-3">
+    <div class="card-header">
+      <span class="q-number">Statement 3</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"A QR code should ideally be sent from one learner's phone to another via WhatsApp so that all learners can scan it and access the resource."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(3, true)" id="btn-3-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(3, false)" id="btn-3-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-3">
+      <div class="reveal-verdict"><span class="verdict-badge incorrect">False</span><span>QR codes must be printed, not forwarded digitally.</span></div>
+      <p>A QR code is designed to be <strong>scanned from a physical, printed surface</strong> using a phone camera — it is not meant to be sent from phone to phone. Sending a QR code image via WhatsApp defeats its purpose, because a learner cannot scan an image on their own screen with the same device. QR codes belong on printed worksheets, notes, newsletters, or posters.</p>
+      <div class="tip">Rule of thumb: if learners need to type or click, use a shortened link. If you have a printed document in their hands, use a QR code printed on that document.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-4">
+    <div class="card-header">
+      <span class="q-number">Statement 4</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"The custom back half on a Bitly link is case sensitive — if a learner types it in the wrong case, they will not reach the destination."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(4, true)" id="btn-4-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(4, false)" id="btn-4-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-4">
+      <div class="reveal-verdict"><span class="verdict-badge correct">True</span><span>Capitalisation matters in custom back halves.</span></div>
+      <p>Bitly's custom back half is <strong>case sensitive</strong>. If you create a link with capital letters and a learner types it in lowercase (or vice versa), the link will not work and they will not reach the destination. This is an important consideration when choosing your custom back half — keeping it entirely lowercase reduces the chance of errors.</p>
+      <div class="tip">When displaying a custom back half to learners, make the capitalisation unmistakably clear. Better yet, keep custom back halves simple, short, and all lowercase to minimise typing errors.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-5">
+    <div class="card-header">
+      <span class="q-number">Statement 5</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"A Bitly Page (landing page) allows a teacher to share one single link that gives learners access to a collection of multiple resources all in one place."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(5, true)" id="btn-5-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(5, false)" id="btn-5-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-5">
+      <div class="reveal-verdict"><span class="verdict-badge correct">True</span><span>One link, all your resources.</span></div>
+      <p>A Bitly Page acts as a <strong>hub for all your links and QR codes</strong>. Instead of sending learners or parents multiple separate links, you share one single page link. When they open it, they find all of your resources listed in one place. You can organise it by grade or subject, and any new resource you add to the page becomes immediately available to anyone who has that single link.</p>
+      <div class="tip">Think of your Bitly Page as a digital resource tree. Share one link at the start of a term and simply keep adding new resources as the year progresses — your learners always have access to everything in one click.</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const CORRECT = { 1: false, 2: true, 3: false, 4: true, 5: true };
+  let answered = {};
+
+  function answer(qNum, choice) {
+    if (answered[qNum] !== undefined) return;
+    answered[qNum] = choice;
+
+    document.getElementById('btn-' + qNum + '-true').disabled = true;
+    document.getElementById('btn-' + qNum + '-false').disabled = true;
+
+    const selBtn = document.getElementById('btn-' + qNum + '-' + choice);
+    selBtn.classList.add('selected-' + choice);
+
+    document.getElementById('card-' + qNum).classList.add('answered-' + choice);
+    document.getElementById('reveal-' + qNum).classList.add('show');
+  }
+</script>
+</body>
+</html>
