@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 7 · Self-Assessment: Add-In vs. Add-On &amp; Learning Events</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #001489; --blue: #007DBA; --yellow: #FFC600; --white: #ffffff;
+    --light: #f0f4fb; --mid: #d6e4f0; --text: #1a1a2e; --muted: #5a6a8a;
+    --true-bg: #e8f7ee; --true-bdr: #2ecc71; --false-bg: #fdecea; --false-bdr: #e74c3c;
+    --reveal-bg: #eef4fc;
+  }
+  body { font-family: 'Sora', sans-serif; background: var(--light); color: var(--text); min-height: 100vh; padding: 0 0 60px; }
+  header { background: var(--navy); padding: 28px 40px 22px; display: flex; align-items: flex-end; gap: 18px; position: relative; overflow: hidden; }
+  header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%); }
+  .header-badge { background: var(--yellow); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border-radius: 3px; flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
+  .header-text h1 { font-size: clamp(17px, 3vw, 22px); font-weight: 700; color: var(--white); line-height: 1.2; }
+  .header-text p { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 4px; font-family: 'Source Serif 4', serif; font-style: italic; }
+  .intro { background: var(--blue); color: var(--white); padding: 20px 40px; font-size: 14px; line-height: 1.7; display: flex; align-items: center; gap: 16px; }
+  .intro-icon { font-size: 28px; flex-shrink: 0; }
+  .intro strong { color: var(--yellow); }
+  main { max-width: 800px; margin: 36px auto 0; padding: 0 24px; }
+  .card { background: var(--white); border-radius: 14px; box-shadow: 0 4px 24px rgba(0,20,137,.08); margin-bottom: 24px; overflow: hidden; border: 1.5px solid transparent; transition: border-color .3s; }
+  .card.answered-true { border-color: var(--true-bdr); }
+  .card.answered-false { border-color: var(--false-bdr); }
+  .card-header { background: var(--navy); padding: 14px 22px; display: flex; align-items: center; gap: 12px; }
+  .q-number { background: var(--yellow); color: var(--navy); font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; flex-shrink: 0; }
+  .q-label { color: rgba(255,255,255,.7); font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+  .card-body { padding: 24px 24px 0; }
+  .statement { font-size: 16px; font-weight: 600; line-height: 1.55; color: var(--text); margin-bottom: 20px; }
+  .btn-row { display: flex; gap: 12px; margin-bottom: 20px; }
+  .btn-tf { flex: 1; padding: 13px 10px; border-radius: 8px; border: 2px solid var(--mid); background: var(--white); font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: .03em; color: var(--text); }
+  .btn-tf:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,20,137,.12); }
+  .btn-tf.true-btn:hover:not(:disabled) { border-color: var(--true-bdr); background: var(--true-bg); }
+  .btn-tf.false-btn:hover:not(:disabled) { border-color: var(--false-bdr); background: var(--false-bg); }
+  .btn-tf.selected-true { border-color: var(--true-bdr); background: var(--true-bg); color: #1a6b3a; }
+  .btn-tf.selected-false { border-color: var(--false-bdr); background: var(--false-bg); color: #c0392b; }
+  .btn-tf:disabled { cursor: default; opacity: 0.6; }
+  .btn-tf.selected-true, .btn-tf.selected-false { opacity: 1; }
+  .reveal { display: none; background: var(--reveal-bg); padding: 20px 24px; border-top: 1px solid var(--mid); animation: fadeIn .4s ease; }
+  .reveal.show { display: block; }
+  .reveal-verdict { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .verdict-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #fff; }
+  .verdict-badge.correct { background: var(--true-bdr); }
+  .verdict-badge.incorrect { background: var(--false-bdr); }
+  .reveal-verdict span:last-child { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .reveal p { font-family: 'Source Serif 4', serif; font-size: 14.5px; line-height: 1.7; color: var(--text); margin-bottom: 12px; }
+  .tip { margin-top: 12px; padding: 10px 14px; background: rgba(0,125,186,.1); border-radius: 6px; font-size: 13px; color: var(--blue); font-family: 'Sora', sans-serif; font-weight: 600; }
+  .tip::before { content: '💡 '; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Module 7</div>
+  <div class="header-text">
+    <h1>Self-Assessment: Add-In vs. Add-On &amp; Learning Events</h1>
+    <p>Test your understanding of e-pedagogy and building a digital lesson</p>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🎯</span>
+  <div>Are these statements about integrating technology into your lessons true or false? Click to reveal the <strong>key concepts</strong> and explanations.</div>
+</div>
+
+<main>
+
+  <div class="card" id="card-1">
+    <div class="card-header">
+      <span class="q-number">Statement 1</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"Technology is genuinely integrated into a lesson when it is used as an add-on — something extra you play if there happens to be time left over at the end of the lesson."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(1, true)" id="btn-1-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(1, false)" id="btn-1-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-1">
+      <div class="reveal-verdict"><span class="verdict-badge incorrect">False</span><span>Technology should be an add-in, not an add-on.</span></div>
+      <p>When technology is treated as an extra thing bolted onto the end of a lesson, it never becomes truly integrated into the way we teach. Once technology is added <strong>into</strong> the learning experience instead, you can no longer argue "there's no time for technology" — because that would be the same as arguing there's no time for teaching.</p>
+      <div class="tip">Ask yourself: is this technology part of how I'm teaching, or is it just something extra I'm hoping to squeeze in?</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-2">
+    <div class="card-header">
+      <span class="q-number">Statement 2</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"ICT integration should be guided first by the learning outcomes, then by the learning events that support them, and only then by the technology chosen."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(2, true)" id="btn-2-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(2, false)" id="btn-2-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-2">
+      <div class="reveal-verdict"><span class="verdict-badge correct">True</span><span>Outcomes first, then events, then technology.</span></div>
+      <p>The guiding question should always be: <em>what is the learner supposed to learn?</em> Once the outcome is clear, you consider which learning event could lead to it — and only then do you decide which technology could enhance that event.</p>
+      <div class="tip">Reversing this order — technology first — is exactly how technology ends up as an add-on instead of an add-in.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-3">
+    <div class="card-header">
+      <span class="q-number">Statement 3</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"The Learning Events framework covered in this module includes five types of activities: acquisition, discovery, dialogue, practice, and creation."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(3, true)" id="btn-3-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(3, false)" id="btn-3-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-3">
+      <div class="reveal-verdict"><span class="verdict-badge correct">True</span><span>Five events, moving from teacher-led to learner-driven.</span></div>
+      <p>Acquisition is narrative, listening, and apprehending — the classic "sage on the stage." Discovery hands learners curated resources to explore on their own. Dialogue involves discussion and collaboration. Practice is applying what's been learned. Creation is producing something new.</p>
+      <div class="tip">A web quest built from the QR codes and Bitly links covered in the previous module is a perfect example of a discovery event.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-4">
+    <div class="card-header">
+      <span class="q-number">Statement 4</span><span class="q-label">True or False?</span>
+    </div>
+    <div class="card-body">
+      <p class="statement">"Acquisition — where the teacher stands at the front of the class presenting information — is a learner-centred event, similar to discovery."</p>
+      <div class="btn-row">
+        <button class="btn-tf true-btn" onclick="answer(4, true)" id="btn-4-true"><span class="btn-icon">✓</span> True</button>
+        <button class="btn-tf false-btn" onclick="answer(4, false)" id="btn-4-false"><span class="btn-icon">✗</span> False</button>
+      </div>
+    </div>
+    <div class="reveal" id="reveal-4">
+      <div class="reveal-verdict"><span class="verdict-badge incorrect">False</span><span>Acquisition is teacher-led; discovery is learner-centred.</span></div>
+      <p>Acquisition is very much a teacher-driven process — the teacher has the information and disseminates it to the class. Discovery flips this: learners are given resources and allowed to explore and find things on their own, making it a far more learner-centric event.</p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const CORRECT = { 1: false, 2: true, 3: true, 4: false };
+  let answered = {};
+
+  function answer(qNum, choice) {
+    if (answered[qNum] !== undefined) return;
+    answered[qNum] = choice;
+    const isRight = (choice === CORRECT[qNum]);
+
+    document.getElementById('btn-' + qNum + '-true').disabled = true;
+    document.getElementById('btn-' + qNum + '-false').disabled = true;
+
+    const selBtn = document.getElementById('btn-' + qNum + '-' + choice);
+    selBtn.classList.add('selected-' + choice);
+
+    document.getElementById('card-' + qNum).classList.add('answered-' + choice);
+    document.getElementById('reveal-' + qNum).classList.add('show');
+  }
+</script>
+</body>
+</html>
