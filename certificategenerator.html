@@ -15,8 +15,10 @@
         body {
             font-family: 'Century Gothic', 'Poppins', sans-serif;
             background-color: #f3f4f6;
-            margin: 0;
-            padding: 40px 20px;
+               margin: 0;
+            padding: 0; 
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -37,22 +39,28 @@
 
         /* Main Workspace Styling */
         #workspace {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
+            display: none; /*[cite: 1] */
+    width: 100%; /*[cite: 1] */
+    
+    /* 2. Make the workspace fill the screen and allow absolute positioning inside */
+    height: 100%;
+    position: relative;
         }
 
         /* The actual A4 Certificate Container */
         #certificate {
-            position: relative;
-            /* A4 Portrait proportions, matches the 1061x1500 background image ratio */
-            width: 794px;
-            height: 1123px;
-            background-color: white;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-bottom: 30px;
+            position: absolute;
+    top: 20px;
+    width: 794px; /*[cite: 1] */
+    height: 1123px; /*[cite: 1] */
+    background-color: white; /*[cite: 1] */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); /*[cite: 1] */
+    overflow: hidden; /*[cite: 1] */
+    
+    /* 4. Magic Formula: Scale down based on whichever is smaller (available height or width) */
+    /* This ensures it perfectly fits any screen, leaving room for the button */
+    transform: scale(min(calc((100vh - 120px) / 1123), calc((100vw - 40px) / 794)));
+    transform-origin: top center;
         }
 
         /* Background Image - Fixed to fill container perfectly */
@@ -135,22 +143,28 @@
         }
 
         /* Button Styling */
-        button {
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+       button {
+    background-color: #2563eb; /*[cite: 1] */
+    color: white; /*[cite: 1] */
+    border: none; /*[cite: 1] */
+    padding: 15px 30px; /*[cite: 1] */
+    font-size: 18px; /*[cite: 1] */
+    font-weight: bold; /*[cite: 1] */
+    border-radius: 8px; /*[cite: 1] */
+    cursor: pointer; /*[cite: 1] */
+    transition: background-color 0.2s; /*[cite: 1] */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /*[cite: 1] */
+    
+    /* 5. Anchor the button to the absolute bottom center of the screen */
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+}
 
-        button:hover {
-            background-color: #1d4ed8;
-        }
+button:hover {
+    background-color: #1d4ed8; /*[cite: 1] */
+}
     </style>
 </head>
 <body>
