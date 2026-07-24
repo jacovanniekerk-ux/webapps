@@ -203,21 +203,22 @@
         }
 
         // 3. Function to trigger the PDF download
-        function downloadPDF() {
-            const element = document.getElementById('certificate');
+function downloadPDF() {
+    const element = document.getElementById('certificate'); //
 
-            // Options for html2pdf
-            const opt = {
-                margin:       0,
-                filename:     `${participantName.replace(/ /g, '_')}_Certificate.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true }, // Scale 2 ensures high resolution
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+    // Options for html2pdf
+    const opt = {
+        margin:       0, //[cite: 1]
+        filename:     `${participantName.replace(/ /g, '_')}_Certificate.pdf`, //[cite: 1]
+        image:        { type: 'jpeg', quality: 0.98 }, //[cite: 1]
+        // ADD scrollY: 0 TO THE LINE BELOW
+        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } //[cite: 1]
+    };
 
-            // Generate and save the PDF
-            html2pdf().set(opt).from(element).save();
-        }
+    // Generate and save the PDF
+    html2pdf().set(opt).from(element).save(); //[cite: 1]
+}
     </script>
 </body>
 </html>
