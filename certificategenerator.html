@@ -50,14 +50,14 @@
             margin-bottom: 30px;
         }
 
-        /* Background Image */
+        /* Background Image - Fixed to fill container perfectly */
         #cert-background {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: fill; 
             z-index: 1;
         }
 
@@ -68,23 +68,25 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 2; /* Sits above the image */
-            display: flex;
-            flex-direction: column;
+            z-index: 2;
+            /* Removed flex properties to avoid layout conflicts */
         }
 
-       * 
+        /* 
            POSITIONING THE TEXT 
-           Calculated for "Copy of Digital Skills Certificate.jpg"
+           Now using strict percentages to map exactly to the background
         */
         .text-overlay {
             position: absolute;
-            color: #1a237e; /* Matches the dark blue of the original text */
+            color: #1a237e; /* Navy blue */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         #cert-name {
-            top: 465px; /* Sits exactly on the first blue line */
+            top: 41.5%; /* Sits exactly on the first blue line */
+            left: 0;
             width: 100%;
             text-align: center;
             font-size: 38px;
@@ -93,7 +95,8 @@
         }
 
         #cert-session {
-            top: 655px; /* Sits exactly on the second blue line */
+            top: 58.5%; /* Sits exactly on the second blue line */
+            left: 0;
             width: 100%;
             text-align: center;
             font-size: 26px;
@@ -101,19 +104,17 @@
         }
 
         #cert-unit {
-            top: 752px; /* Aligned horizontally with "HOSTING UNIT:" */
-            left: 310px; /* Positioned to the right of the label */
+            top: 67%; /* Aligned horizontally with HOSTING UNIT */
+            left: 39%; /* Spaced nicely to the right of the label */
             font-size: 22px;
             font-weight: 600;
-            text-align: left;
         }
 
         #cert-date {
-            top: 813px; /* Aligned horizontally with "DATE:" */
-            left: 170px; /* Positioned to the right of the label */
+            top: 72.5%; /* Aligned horizontally with DATE */
+            left: 21.5%; /* Spaced nicely to the right of the label */
             font-size: 22px;
             font-weight: 600;
-            text-align: left;
         }
 
         /* Button Styling */
