@@ -41,8 +41,8 @@
         /* The actual A4 Certificate Container */
         #certificate {
             position: relative;
-            /* A4 Portrait proportions */
-            width: 794px; 
+            /* A4 Portrait proportions, matches the 1061x1500 background image ratio */
+            width: 794px;
             height: 1123px;
             background-color: white;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -57,7 +57,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: fill; 
+            object-fit: fill;
             z-index: 1;
         }
 
@@ -69,51 +69,59 @@
             width: 100%;
             height: 100%;
             z-index: 2;
-            /* Removed flex properties to avoid layout conflicts */
         }
 
-        /* 
-           POSITIONING THE TEXT 
-           Now using strict percentages to map exactly to the background
+        /*
+           POSITIONING THE TEXT
+           Coordinates below were measured directly against the supplied
+           background.jpg (the two teal horizontal rules and the
+           "HOSTING UNIT:" / "DATE:" labels) so the overlays land exactly
+           where they belong.
         */
         .text-overlay {
             position: absolute;
-            color: #1a237e; /* Navy blue */
+            color: #1a237e; /* Navy blue, matches the certificate's heading colour */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
+            white-space: nowrap;
         }
 
+        /* Sits just above the first teal rule ("...presented to:") */
         #cert-name {
-            top: 41.5%; /* Sits exactly on the first blue line */
+            top: 39.5%;
             left: 0;
             width: 100%;
             text-align: center;
-            font-size: 38px;
+            font-size: 34px;
             font-weight: bold;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
+        /* Sits just above the second teal rule ("for successfully completing") */
         #cert-session {
-            top: 58.5%; /* Sits exactly on the second blue line */
+            top: 56.5%;
             left: 0;
             width: 100%;
             text-align: center;
-            font-size: 26px;
+            font-size: 24px;
             font-weight: normal;
         }
 
+        /* Immediately after the "HOSTING UNIT:" label */
         #cert-unit {
-            top: 67%; /* Aligned horizontally with HOSTING UNIT */
-            left: 39%; /* Spaced nicely to the right of the label */
-            font-size: 22px;
+            top: 66.8%;
+            left: 34%;
+            font-size: 20px;
             font-weight: 600;
         }
 
+        /* Immediately after the "DATE:" label */
         #cert-date {
-            top: 72.5%; /* Aligned horizontally with DATE */
-            left: 21.5%; /* Spaced nicely to the right of the label */
-            font-size: 22px;
+            top: 72.2%;
+            left: 20.5%;
+            font-size: 20px;
             font-weight: 600;
         }
 
@@ -147,9 +155,8 @@
     <!-- Workspace Container (hidden if there's an error) -->
     <div id="workspace">
         <div id="certificate">
-            <!-- IMPORTANT: Replace 'background.jpg' with your actual image file name -->
             <img id="cert-background" src="background.jpg" alt="Certificate Background">
-            
+
             <div class="cert-content">
                 <div id="cert-name" class="text-overlay"></div>
                 <div id="cert-session" class="text-overlay"></div>
@@ -164,7 +171,7 @@
     <script>
         // 1. Read the URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        
+
         const participantName = urlParams.get('name');
         const hostingUnit = urlParams.get('unit');
         const sessionName = urlParams.get('session');
@@ -178,7 +185,7 @@
         } else {
             // Show workspace, populate data
             document.getElementById('workspace').style.display = 'flex';
-            
+
             // Insert the data into the HTML
             document.getElementById('cert-name').innerText = participantName;
             document.getElementById('cert-session').innerText = sessionName;
@@ -189,7 +196,7 @@
         // 3. Function to trigger the PDF download
         function downloadPDF() {
             const element = document.getElementById('certificate');
-            
+
             // Options for html2pdf
             const opt = {
                 margin:       0,
