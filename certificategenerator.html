@@ -22,15 +22,6 @@
             align-items: center;
         }
 
-        html, body {
-    height: 100%;
-    overflow: hidden;
-}
-
-#cert-wrapper {
-    overflow: hidden;
-}
-
         /* Error Message Styling */
         #error-message {
             display: none;
@@ -54,7 +45,6 @@
 
         /* The actual A4 Certificate Container */
         #certificate {
-            transform-origin: top center;
             position: relative;
             /* A4 Portrait proportions, matches the 1061x1500 background image ratio */
             width: 794px;
@@ -173,7 +163,6 @@
 
     <!-- Workspace Container (hidden if there's an error) -->
     <div id="workspace">
-        <div id="cert-wrapper">
         <div id="certificate">
             <img id="cert-background" src="certificate.jpg" alt="Certificate Background">
 
@@ -183,7 +172,6 @@
                 <div id="cert-unit" class="text-overlay"></div>
                 <div id="cert-date" class="text-overlay"></div>
             </div>
-        </div>
         </div>
 
         <button onclick="downloadPDF()">Download Certificate as PDF</button>
@@ -230,24 +218,6 @@
             // Generate and save the PDF
             html2pdf().set(opt).from(element).save();
         }
-        function scaleToFit() {
-    const cert = document.getElementById('certificate');
-    const wrapper = document.getElementById('cert-wrapper');
-    const button = document.querySelector('button');
-
-    const certW = 794, certH = 1123;
-    const availableHeight = window.innerHeight - button.offsetHeight - 80; // room for button + padding
-    const availableWidth = window.innerWidth - 40;
-
-    const scale = Math.min(availableHeight / certH, availableWidth / certW, 1);
-
-    cert.style.transform = `scale(${scale})`;
-    wrapper.style.width = `${certW * scale}px`;
-    wrapper.style.height = `${certH * scale}px`;
-}
-
-window.addEventListener('load', scaleToFit);
-window.addEventListener('resize', scaleToFit);
     </script>
 </body>
 </html>
