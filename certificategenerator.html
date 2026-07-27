@@ -6,8 +6,6 @@
     <title>Certificate Generator</title>
     <!-- Import html2pdf library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Century Gothic isn't a web font; Poppins is loaded as a close geometric-sans
-         fallback for visitors who don't have Century Gothic installed locally -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -16,13 +14,12 @@
             font-family: 'Century Gothic', 'Poppins', sans-serif;
             background-color: #f3f4f6;
             margin: 0;
-            padding: 40px 20px;
+            padding: 30px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Error Message Styling */
         #error-message {
             display: none;
             background-color: #fee2e2;
@@ -35,7 +32,6 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Main Workspace Styling */
         #workspace {
             display: none;
             flex-direction: column;
@@ -43,20 +39,50 @@
             width: 100%;
         }
 
-        /* The actual A4 Certificate Container */
-        #certificate {
+        /* ============================================================
+           PREVIEW (what the user actually sees)
+           Genuinely responsive: width caps at 400px or 90% of viewport,
+           whichever is smaller, and height follows via aspect-ratio.
+           No scale()/zoom hacks, so it behaves the same on any phone
+           or desktop. container-type lets the text overlays size
+           themselves relative to THIS element's width (cqw units)
+           instead of a fixed px value, so text scales perfectly with
+           the box at any size.
+           ============================================================ */
+        #certificate-preview {
             position: relative;
-            /* A4 Portrait proportions, matches the 1061x1500 background image ratio */
-            width: 794px;
-            height: 1123px;
+            width: min(90vw, 400px);
+            aspect-ratio: 794 / 1123;
             background-color: white;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            container-type: inline-size;
         }
 
-        /* Background Image - Fixed to fill container perfectly */
-        #cert-background {
+        /* ============================================================
+           EXPORT CLONE (never shown, used only by html2pdf)
+           Fixed at true 794x1123 A4 pixel size so the PDF capture is
+           always full-resolution and never affected by however the
+           preview happens to be sized on a given device.
+           ============================================================ */
+        #certificate-export {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 794px;
+            height: 1123px;
+            background-color: white;
+            overflow: hidden;
+            /* deliberately no box-shadow: a shadow is painted outside
+               the element's own box and isn't clipped by overflow, so
+               html2canvas would capture a canvas a few px taller/wider
+               than one A4 page -- that's the #1 cause of the blank
+               second page. Simplest fix is to just never put a shadow
+               on the element that gets captured. */
+        }
+
+        .cert-bg {
             position: absolute;
             top: 0;
             left: 0;
@@ -66,7 +92,6 @@
             z-index: 1;
         }
 
-        /* Overlay Text Container */
         .cert-content {
             position: absolute;
             top: 0;
@@ -76,65 +101,39 @@
             z-index: 2;
         }
 
-        /*
-           POSITIONING THE TEXT
-           Coordinates below were measured directly against the current
-           background.jpg (the two lime-green rules, and the "HOSTING UNIT:"
-           / "DATE:" labels, which in this version both right-align to the
-           same edge) so the overlays land exactly where they belong.
-        */
         .text-overlay {
             position: absolute;
-            color: #1a237e; /* Navy blue, matches the certificate's heading colour */
+            color: #1a237e;
             font-family: 'Century Gothic', 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
             white-space: nowrap;
         }
 
-        /* Sits just above the first (lime) rule ("...presented to:") */
-        #cert-name {
-            top: 41.5%;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 34px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+        /* Coordinates as % (unchanged) so both the 794px export clone
+           and the responsive preview line up with the background art
+           at any size. */
+        .cert-name  { top: 41.5%; left: 0; width: 100%; text-align: center; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+        .cert-session { top: 59.5%; left: 0; width: 100%; text-align: center; font-weight: bold; }
+        .cert-unit  { top: 65.5%; left: 32.5%; font-weight: 600; }
+        .cert-date  { top: 70.7%; left: 32.5%; font-weight: 600; }
 
-        /* Sits just above the second (lime) rule ("for attending...") */
-        #cert-session {
-            top: 59.5%;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-        }
+        /* Export clone: original fixed px sizes, tuned against the
+           actual 794x1123 artwork. */
+        #certificate-export .cert-name  { font-size: 34px; }
+        #certificate-export .cert-session { font-size: 24px; }
+        #certificate-export .cert-unit  { font-size: 26px; }
+        #certificate-export .cert-date  { font-size: 26px; }
 
-        /* Immediately after the "HOSTING UNIT:" label. "HOSTING UNIT:" and
-           "DATE:" both end at the same x position in this design, so both
-           values share the same left offset. Font size increased per
-           feedback (was 20px, too small). */
-        #cert-unit {
-            top: 65.5%;
-            left: 32.5%;
-            font-size: 26px;
-            font-weight: 600;
-        }
+        /* Preview clone: same sizes expressed as cqw (% of the preview
+           container's own width, since 794px is 100cqw at export
+           size) -- e.g. 34/794*100 = 4.28cqw -- so they scale exactly
+           in proportion as the preview grows/shrinks. */
+        #certificate-preview .cert-name  { font-size: 4.28cqw; }
+        #certificate-preview .cert-session { font-size: 3.02cqw; }
+        #certificate-preview .cert-unit  { font-size: 3.27cqw; }
+        #certificate-preview .cert-date  { font-size: 3.27cqw; }
 
-        /* Immediately after the "DATE:" label (which is indented so its
-           right edge lines up with "HOSTING UNIT:" above it) */
-        #cert-date {
-            top: 70.7%;
-            left: 32.5%;
-            font-size: 26px;
-            font-weight: 600;
-        }
-
-        /* Button Styling */
         button {
             background-color: #2563eb;
             color: white;
@@ -148,77 +147,99 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        button:hover {
-            background-color: #1d4ed8;
-        }
+        button:hover { background-color: #1d4ed8; }
+        button:disabled { background-color: #93c5fd; cursor: default; }
     </style>
 </head>
 <body>
 
-    <!-- Error Message Container -->
     <div id="error-message">
         <h2>Invalid Link</h2>
         <p>We couldn't generate your certificate. It looks like the link you clicked is missing important information (name, unit, session, or date). Please contact the session organizer for a valid link.</p>
     </div>
 
-    <!-- Workspace Container (hidden if there's an error) -->
     <div id="workspace">
-        <div id="certificate">
-            <img id="cert-background" src="certificate.jpg" alt="Certificate Background">
 
+        <!-- Visible, responsive thumbnail -->
+        <div id="certificate-preview">
+            <img class="cert-bg" src="certificate.jpg" alt="Certificate Background">
             <div class="cert-content">
-                <div id="cert-name" class="text-overlay"></div>
-                <div id="cert-session" class="text-overlay"></div>
-                <div id="cert-unit" class="text-overlay"></div>
-                <div id="cert-date" class="text-overlay"></div>
+                <div class="text-overlay cert-name" data-field="name"></div>
+                <div class="text-overlay cert-session" data-field="session"></div>
+                <div class="text-overlay cert-unit" data-field="unit"></div>
+                <div class="text-overlay cert-date" data-field="date"></div>
             </div>
         </div>
 
-        <button onclick="downloadPDF()">Download Certificate as PDF</button>
+        <!-- Hidden, full-resolution clone used only for PDF export -->
+        <div id="certificate-export">
+            <img class="cert-bg" src="certificate.jpg" alt="Certificate Background">
+            <div class="cert-content">
+                <div class="text-overlay cert-name" data-field="name"></div>
+                <div class="text-overlay cert-session" data-field="session"></div>
+                <div class="text-overlay cert-unit" data-field="unit"></div>
+                <div class="text-overlay cert-date" data-field="date"></div>
+            </div>
+        </div>
+
+        <button id="download-btn" onclick="downloadPDF()">Download Certificate as PDF</button>
     </div>
 
     <script>
-        // 1. Read the URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-
         const participantName = urlParams.get('name');
         const hostingUnit = urlParams.get('unit');
         const sessionName = urlParams.get('session');
         const sessionDate = urlParams.get('date');
 
-        // 2. Check if all required parameters are present
         if (!participantName || !hostingUnit || !sessionName || !sessionDate) {
-            // Show error, hide workspace
             document.getElementById('error-message').style.display = 'block';
             document.getElementById('workspace').style.display = 'none';
         } else {
-            // Show workspace, populate data
             document.getElementById('workspace').style.display = 'flex';
 
-            // Insert the data into the HTML
-            document.getElementById('cert-name').innerText = participantName;
-            document.getElementById('cert-session').innerText = sessionName;
-            document.getElementById('cert-unit').innerText = hostingUnit;
-            document.getElementById('cert-date').innerText = sessionDate;
+            // Populate both the preview and the hidden export clone at once
+            const data = { name: participantName, session: sessionName, unit: hostingUnit, date: sessionDate };
+            for (const [field, value] of Object.entries(data)) {
+                document.querySelectorAll(`[data-field="${field}"]`).forEach(el => el.innerText = value);
+            }
         }
 
-        // 3. Function to trigger the PDF download
-function downloadPDF() {
-    const element = document.getElementById('certificate'); //
+        function downloadPDF() {
+            const element = document.getElementById('certificate-export');
+            const btn = document.getElementById('download-btn');
 
-    // Options for html2pdf
-    const opt = {
-        margin:       0, //[cite: 1]
-        filename:     `${participantName.replace(/ /g, '_')}_Certificate.pdf`, //[cite: 1]
-        image:        { type: 'jpeg', quality: 0.98 }, //[cite: 1]
-        // ADD scrollY: 0 TO THE LINE BELOW
-        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } //[cite: 1]
-    };
+            btn.disabled = true;
+            btn.innerText = 'Generating PDF...';
 
-    // Generate and save the PDF
-    html2pdf().set(opt).from(element).save(); //[cite: 1]
-}
+            const opt = {
+                margin: 0,
+                filename: `${participantName.replace(/ /g, '_')}_Certificate.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: 0,
+                    // Lock capture to the exact true A4 pixel size so
+                    // nothing rounds up into a second, blank page.
+                    width: 794,
+                    height: 1123,
+                    windowWidth: 794,
+                    windowHeight: 1123
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all'] }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.disabled = false;
+                btn.innerText = 'Download Certificate as PDF';
+            }).catch((err) => {
+                btn.disabled = false;
+                btn.innerText = 'Download Certificate as PDF';
+                console.error('PDF generation failed:', err);
+            });
+        }
     </script>
 </body>
 </html>
