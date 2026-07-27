@@ -41,23 +41,21 @@
 
         /* ============================================================
            PREVIEW (what the user actually sees)
-           Genuinely responsive: width caps at 400px or 90% of viewport,
-           whichever is smaller, and height follows via aspect-ratio.
-           No scale()/zoom hacks, so it behaves the same on any phone
-           or desktop. container-type lets the text overlays size
-           themselves relative to THIS element's width (cqw units)
-           instead of a fixed px value, so text scales perfectly with
-           the box at any size.
+           Width/height are set explicitly in JS (see sizePreview()) as
+           plain pixels rather than via aspect-ratio + container query
+           units. That combination turned out to be unreliable across
+           mobile browsers -- the box's height wasn't always resolving
+           before the cqw-based font sizes were computed, which is why
+           the certificate was rendering wider than its visible box and
+           getting clipped. Plain JS-computed pixels sidestep that
+           entirely and behave identically everywhere.
            ============================================================ */
         #certificate-preview {
             position: relative;
-            width: min(90vw, 400px);
-            aspect-ratio: 794 / 1123;
             background-color: white;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             margin-bottom: 25px;
-            container-type: inline-size;
         }
 
         /* ============================================================
@@ -65,23 +63,38 @@
            Fixed at true 794x1123 A4 pixel size so the PDF capture is
            always full-resolution and never affected by however the
            preview happens to be sized on a given device.
-           ============================================================ */
-       #export-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    overflow: hidden;   /* clips the full-size certificate to nothing visible */
-}
 
-#certificate-export {
-    position: relative;  /* was: position: absolute; left: -9999px; top: 0; */
-    width: 794px;
-    height: 1123px;
-    background-color: white;
-    overflow: hidden;
-}
+           IMPORTANT: this is wrapped in #export-wrapper below, which is
+           collapsed to 0x0 with overflow:hidden. Positioning this
+           element itself with left:-9999px (the previous approach) put
+           it outside the small offscreen window html2canvas clones for
+           capture, which is why the PDF came out blank -- html2canvas
+           was rendering real pixels, just of an area where the
+           certificate wasn't. Collapsing the WRAPPER instead keeps the
+           certificate at a normal, capturable position while still
+           being invisible on screen.
+           ============================================================ */
+        #export-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        #certificate-export {
+            position: relative;
+            width: 794px;
+            height: 1123px;
+            background-color: white;
+            overflow: hidden;
+            /* deliberately no box-shadow: a shadow is painted outside
+               the element's own box and isn't clipped by overflow, so
+               html2canvas would capture a canvas a few px taller/wider
+               than one A4 page -- that's the #1 cause of the blank
+               second page. Simplest fix is to just never put a shadow
+               on the element that gets captured. */
         }
 
         .cert-bg {
@@ -127,14 +140,16 @@
         #certificate-export .cert-unit  { font-size: 26px; }
         #certificate-export .cert-date  { font-size: 26px; }
 
-        /* Preview clone: same sizes expressed as cqw (% of the preview
-           container's own width, since 794px is 100cqw at export
-           size) -- e.g. 34/794*100 = 4.28cqw -- so they scale exactly
-           in proportion as the preview grows/shrinks. */
-        #certificate-preview .cert-name  { font-size: 4.28cqw; }
-        #certificate-preview .cert-session { font-size: 3.02cqw; }
-        #certificate-preview .cert-unit  { font-size: 3.27cqw; }
-        #certificate-preview .cert-date  { font-size: 3.27cqw; }
+        /* Preview clone: these px values are placeholders only. The
+           real sizes are set inline by sizePreview() in JS, scaled
+           proportionally to whatever pixel width the preview ends up
+           at (width / 794 = scale factor, same ratio used for the box
+           itself). Kept here just so there's no flash of unstyled/
+           oversized text before JS runs. */
+        #certificate-preview .cert-name  { font-size: 17px; }
+        #certificate-preview .cert-session { font-size: 12px; }
+        #certificate-preview .cert-unit  { font-size: 13px; }
+        #certificate-preview .cert-date  { font-size: 13px; }
 
         button {
             background-color: #2563eb;
@@ -173,18 +188,22 @@
             </div>
         </div>
 
-        <!-- Hidden, full-resolution clone used only for PDF export -->
+        <!-- Hidden, full-resolution clone used only for PDF export.
+             Wrapped so it collapses to 0x0 on screen without pushing
+             the certificate itself off to a coordinate that falls
+             outside html2canvas's capture window. -->
         <div id="export-wrapper">
-        <div id="certificate-export">
-            <img class="cert-bg" src="certificate.jpg" alt="Certificate Background">
-            <div class="cert-content">
-                <div class="text-overlay cert-name" data-field="name"></div>
-                <div class="text-overlay cert-session" data-field="session"></div>
-                <div class="text-overlay cert-unit" data-field="unit"></div>
-                <div class="text-overlay cert-date" data-field="date"></div>
+            <div id="certificate-export">
+                <img class="cert-bg" src="certificate.jpg" alt="Certificate Background">
+                <div class="cert-content">
+                    <div class="text-overlay cert-name" data-field="name"></div>
+                    <div class="text-overlay cert-session" data-field="session"></div>
+                    <div class="text-overlay cert-unit" data-field="unit"></div>
+                    <div class="text-overlay cert-date" data-field="date"></div>
+                </div>
             </div>
         </div>
-        </div>
+
         <button id="download-btn" onclick="downloadPDF()">Download Certificate as PDF</button>
     </div>
 
@@ -194,6 +213,29 @@
         const hostingUnit = urlParams.get('unit');
         const sessionName = urlParams.get('session');
         const sessionDate = urlParams.get('date');
+
+        // The certificate art is a true 794x1123 A4 canvas. Every
+        // preview dimension is this ratio times a scale factor, so the
+        // preview always matches the export clone's proportions exactly,
+        // on any screen.
+        const BASE_WIDTH = 794;
+        const BASE_HEIGHT = 1123;
+        const FONT_SIZES = { name: 34, session: 24, unit: 26, date: 26 };
+
+        function sizePreview() {
+            const preview = document.getElementById('certificate-preview');
+            const maxWidth = Math.min(window.innerWidth * 0.9, 400);
+            const scale = maxWidth / BASE_WIDTH;
+
+            preview.style.width = `${maxWidth}px`;
+            preview.style.height = `${BASE_HEIGHT * scale}px`;
+
+            for (const [field, basePx] of Object.entries(FONT_SIZES)) {
+                preview.querySelectorAll(`[data-field="${field}"]`).forEach(el => {
+                    el.style.fontSize = `${basePx * scale}px`;
+                });
+            }
+        }
 
         if (!participantName || !hostingUnit || !sessionName || !sessionDate) {
             document.getElementById('error-message').style.display = 'block';
@@ -206,6 +248,9 @@
             for (const [field, value] of Object.entries(data)) {
                 document.querySelectorAll(`[data-field="${field}"]`).forEach(el => el.innerText = value);
             }
+
+            sizePreview();
+            window.addEventListener('resize', sizePreview);
         }
 
         function downloadPDF() {
@@ -220,14 +265,18 @@
                 filename: `${participantName.replace(/ /g, '_')}_Certificate.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
-    scale: 2,
-    useCORS: true,
-    scrollY: 0,
-    width: 794,
-    height: 1123
-    // windowWidth / windowHeight removed — they were forcing a tiny
-    // cloned viewport that the -9999px-positioned element fell outside of
-},
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: 0,
+                    // Lock capture to the exact true A4 pixel size so
+                    // nothing rounds up into a second, blank page.
+                    // (windowWidth/windowHeight deliberately omitted --
+                    // forcing those forces html2canvas to clone the page
+                    // into a tiny offscreen window, and anything
+                    // positioned outside that window renders blank.)
+                    width: 794,
+                    height: 1123
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['avoid-all'] }
             };
