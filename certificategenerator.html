@@ -12,16 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Century Gothic', 'Poppins', sans-serif;
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* no scrolling, ever */
             background-color: #f3f4f6;
-               margin: 0;
-            padding: 0; 
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: 'Century Gothic', 'Poppins', sans-serif;
         }
 
         /* Error Message Styling */
@@ -35,33 +32,51 @@
             max-width: 500px;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
-        /* Main Workspace Styling */
+        /*
+           Main Workspace Styling
+           --------------------------------------------------------------
+           IMPORTANT: this stays position:absolute / not part of a flex
+           flow. The certificate is scaled down with a CSS transform,
+           and transform does NOT change the space an element takes up
+           in normal document flow — a flex/grid container would still
+           reserve the certificate's full untransformed 1123px height,
+           which is what pushed the button out of view before. Pinning
+           both the certificate and the button independently to the
+           viewport sidesteps that problem entirely.
+        */
         #workspace {
-            display: none; /*[cite: 1] */
-    width: 100%; /*[cite: 1] */
-    
-    /* 2. Make the workspace fill the screen and allow absolute positioning inside */
-    height: 100%;
-    position: relative;
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
 
         /* The actual A4 Certificate Container */
         #certificate {
-    position: absolute;
-    top: 20px;
-    left: 50%;  /* NEW: start the left edge at the center of the screen */
-    width: 794px;
-    height: 1123px;
-    background-color: white;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    
-    /* FIXED: translateX(-50%) centers the unscaled box, then scale shrinks it */
-    transform: scale(min(calc((100vh - 120px) / 1123), calc((100vw - 40px) / 794))) translateX(-50%);
-    transform-origin: top center;
-}
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 794px;
+            height: 1123px;
+            background-color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+
+            /* Scale down to fit the available space (viewport minus room
+               for the button), then re-center horizontally with
+               translateX since left:50% alone would only center the
+               untransformed box. transform-origin stays top center so
+               the scaling shrinks toward the top-middle, matching where
+               we anchor it. */
+            transform: translateX(-50%) scale(min(calc((100vh - 120px) / 1123), calc((100vw - 40px) / 794)));
+            transform-origin: top center;
+        }
 
         /* Background Image - Fixed to fill container perfectly */
         #cert-background {
@@ -124,8 +139,7 @@
 
         /* Immediately after the "HOSTING UNIT:" label. "HOSTING UNIT:" and
            "DATE:" both end at the same x position in this design, so both
-           values share the same left offset. Font size increased per
-           feedback (was 20px, too small). */
+           values share the same left offset. */
         #cert-unit {
             top: 65.5%;
             left: 32.5%;
@@ -142,29 +156,39 @@
             font-weight: 600;
         }
 
-        /* Button Styling */
-       button {
-    background-color: #2563eb; /*[cite: 1] */
-    color: white; /*[cite: 1] */
-    border: none; /*[cite: 1] */
-    padding: 15px 30px; /*[cite: 1] */
-    font-size: 18px; /*[cite: 1] */
-    font-weight: bold; /*[cite: 1] */
-    border-radius: 8px; /*[cite: 1] */
-    cursor: pointer; /*[cite: 1] */
-    transition: background-color 0.2s; /*[cite: 1] */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /*[cite: 1] */
-    
-    /* 5. Anchor the button to the absolute bottom center of the screen */
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-}
+        /*
+           Button Styling
+           --------------------------------------------------------------
+           position:fixed anchors this to the viewport, independent of
+           #workspace's layout mode. It will always sit at the same spot
+           on screen no matter how the certificate above it is scaled.
+        */
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-button:hover {
-    background-color: #1d4ed8; /*[cite: 1] */
-}
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        button:disabled {
+            background-color: #93c5fd;
+            cursor: default;
+        }
     </style>
 </head>
 <body>
@@ -188,7 +212,7 @@ button:hover {
             </div>
         </div>
 
-        <button onclick="downloadPDF()">Download Certificate as PDF</button>
+        <button id="download-btn" onclick="downloadPDF()">Download Certificate as PDF</button>
     </div>
 
     <script>
@@ -207,7 +231,7 @@ button:hover {
             document.getElementById('workspace').style.display = 'none';
         } else {
             // Show workspace, populate data
-            document.getElementById('workspace').style.display = 'flex';
+            document.getElementById('workspace').style.display = 'block';
 
             // Insert the data into the HTML
             document.getElementById('cert-name').innerText = participantName;
@@ -217,22 +241,64 @@ button:hover {
         }
 
         // 3. Function to trigger the PDF download
-function downloadPDF() {
-    const element = document.getElementById('certificate'); //
+        function downloadPDF() {
+            const element = document.getElementById('certificate');
+            const btn = document.getElementById('download-btn');
 
-    // Options for html2pdf
-    const opt = {
-        margin:       0, //[cite: 1]
-        filename:     `${participantName.replace(/ /g, '_')}_Certificate.pdf`, //[cite: 1]
-        image:        { type: 'jpeg', quality: 0.98 }, //[cite: 1]
-        // ADD scrollY: 0 TO THE LINE BELOW
-        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } //[cite: 1]
-    };
+            // --- Fix for blurry PDFs AND the blank second page ---
+            // #certificate is normally drawn with `transform: scale(...)`
+            // so it fits the screen. html2canvas/html2pdf can trip over
+            // that transform: depending on the browser/library version it
+            // may capture the *visually shrunk* box, or it may miscompute
+            // the element's height by a fraction of a pixel once the
+            // transform and box-shadow are factored in. That rounding
+            // error is enough to spill one extra sliver of canvas onto a
+            // second, otherwise-blank A4 page.
+            //
+            // The fix: temporarily remove the transform so html2canvas
+            // captures the certificate at its true, untransformed
+            // 794x1123 size, then restore the transform afterwards. This
+            // also produces a sharper capture than screenshotting the
+            // scaled-down version would.
+            const originalTransform = element.style.transform;
+            element.style.transform = 'none';
+            btn.disabled = true;
+            btn.innerText = 'Generating PDF...';
 
-    // Generate and save the PDF
-    html2pdf().set(opt).from(element).save(); //[cite: 1]
-}
+            const opt = {
+                margin: 0,
+                filename: `${participantName.replace(/ /g, '_')}_Certificate.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: 0,
+                    // Lock the capture to the certificate's exact
+                    // unscaled pixel size so nothing rounds up into an
+                    // extra page.
+                    width: 794,
+                    height: 1123,
+                    windowWidth: 794,
+                    windowHeight: 1123
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                // Belt-and-braces: explicitly tell html2pdf's paginator
+                // not to try to split content across pages.
+                pagebreak: { mode: ['avoid-all'] }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore the on-screen scaled view once export is done
+                element.style.transform = originalTransform;
+                btn.disabled = false;
+                btn.innerText = 'Download Certificate as PDF';
+            }).catch((err) => {
+                element.style.transform = originalTransform;
+                btn.disabled = false;
+                btn.innerText = 'Download Certificate as PDF';
+                console.error('PDF generation failed:', err);
+            });
+        }
     </script>
 </body>
 </html>
