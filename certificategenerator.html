@@ -49,19 +49,19 @@
 
         /* The actual A4 Certificate Container */
         #certificate {
-            position: absolute;
+    position: absolute;
     top: 20px;
-    width: 794px; /*[cite: 1] */
-    height: 1123px; /*[cite: 1] */
-    background-color: white; /*[cite: 1] */
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); /*[cite: 1] */
-    overflow: hidden; /*[cite: 1] */
+    left: 50%;  /* NEW: start the left edge at the center of the screen */
+    width: 794px;
+    height: 1123px;
+    background-color: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
     
-    /* 4. Magic Formula: Scale down based on whichever is smaller (available height or width) */
-    /* This ensures it perfectly fits any screen, leaving room for the button */
-    transform: scale(min(calc((100vh - 120px) / 1123), calc((100vw - 40px) / 794)));
+    /* FIXED: translateX(-50%) centers the unscaled box, then scale shrinks it */
+    transform: scale(min(calc((100vh - 120px) / 1123), calc((100vw - 40px) / 794))) translateX(-50%);
     transform-origin: top center;
-        }
+}
 
         /* Background Image - Fixed to fill container perfectly */
         #cert-background {
