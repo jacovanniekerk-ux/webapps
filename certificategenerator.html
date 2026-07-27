@@ -253,43 +253,40 @@
             window.addEventListener('resize', sizePreview);
         }
 
-        function downloadPDF() {
-            const element = document.getElementById('certificate-export');
-            const btn = document.getElementById('download-btn');
+        async function downloadPDF() {
+    const element = document.getElementById('certificate-export');
+    const btn = document.getElementById('download-btn');
 
-            btn.disabled = true;
-            btn.innerText = 'Generating PDF...';
+    btn.disabled = true;
+    btn.innerText = 'Generating PDF...';
 
-            const opt = {
-                margin: 0,
-                filename: `${participantName.replace(/ /g, '_')}_Certificate.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    scrollY: 0,
-                    // Lock capture to the exact true A4 pixel size so
-                    // nothing rounds up into a second, blank page.
-                    // (windowWidth/windowHeight deliberately omitted --
-                    // forcing those forces html2canvas to clone the page
-                    // into a tiny offscreen window, and anything
-                    // positioned outside that window renders blank.)
-                    width: 794,
-                    height: 1123
-                },
-                jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all'] }
-            };
+    try {
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            scrollY: 0,
+            width: 794,
+            height: 1123
+        });
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                btn.disabled = false;
-                btn.innerText = 'Download Certificate as PDF';
-            }).catch((err) => {
-                btn.disabled = false;
-                btn.innerText = 'Download Certificate as PDF';
-                console.error('PDF generation failed:', err);
-            });
-        }
+        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+        const JsPDFCtor = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+        const pdf = new JsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+        // Force exact A4 dimensions (210x297mm) instead of computing them
+        // from the canvas's pixel size -- this guarantees the image fills
+        // the page exactly, with zero rounding drift, which is what
+        // caused the blank second page in the first place.
+        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+        pdf.save(`${participantName.replace(/ /g, '_')}_Certificate.pdf`);
+    } catch (err) {
+        console.error('PDF generation failed:', err);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Download Certificate as PDF';
+    }
+}
     </script>
 </body>
 </html>
