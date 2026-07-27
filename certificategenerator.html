@@ -66,20 +66,22 @@
            always full-resolution and never affected by however the
            preview happens to be sized on a given device.
            ============================================================ */
-        #certificate-export {
-            position: absolute;
-            left: -9999px;
-            top: 0;
-            width: 794px;
-            height: 1123px;
-            background-color: white;
-            overflow: hidden;
-            /* deliberately no box-shadow: a shadow is painted outside
-               the element's own box and isn't clipped by overflow, so
-               html2canvas would capture a canvas a few px taller/wider
-               than one A4 page -- that's the #1 cause of the blank
-               second page. Simplest fix is to just never put a shadow
-               on the element that gets captured. */
+       #export-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;   /* clips the full-size certificate to nothing visible */
+}
+
+#certificate-export {
+    position: relative;  /* was: position: absolute; left: -9999px; top: 0; */
+    width: 794px;
+    height: 1123px;
+    background-color: white;
+    overflow: hidden;
+}
         }
 
         .cert-bg {
@@ -172,6 +174,7 @@
         </div>
 
         <!-- Hidden, full-resolution clone used only for PDF export -->
+        <div id="export-wrapper">
         <div id="certificate-export">
             <img class="cert-bg" src="certificate.jpg" alt="Certificate Background">
             <div class="cert-content">
@@ -181,7 +184,7 @@
                 <div class="text-overlay cert-date" data-field="date"></div>
             </div>
         </div>
-
+        </div>
         <button id="download-btn" onclick="downloadPDF()">Download Certificate as PDF</button>
     </div>
 
@@ -217,16 +220,14 @@
                 filename: `${participantName.replace(/ /g, '_')}_Certificate.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    scrollY: 0,
-                    // Lock capture to the exact true A4 pixel size so
-                    // nothing rounds up into a second, blank page.
-                    width: 794,
-                    height: 1123,
-                    windowWidth: 794,
-                    windowHeight: 1123
-                },
+    scale: 2,
+    useCORS: true,
+    scrollY: 0,
+    width: 794,
+    height: 1123
+    // windowWidth / windowHeight removed — they were forcing a tiny
+    // cloned viewport that the -9999px-positioned element fell outside of
+},
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['avoid-all'] }
             };
