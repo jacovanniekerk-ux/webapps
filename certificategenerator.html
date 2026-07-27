@@ -6,7 +6,15 @@
     <title>Certificate Generator</title>
     <!-- Import html2pdf library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- html2pdf's bundle keeps html2canvas internal to itself, so it's
+         not available as a global. Since downloadPDF() calls
+         html2canvas() directly (to avoid html2pdf's own unit-handling
+         bug), we need to load the standalone version too. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- html2pdf's bundle keeps jsPDF internal to itself too, same
+         reason as html2canvas above -- load the standalone version so
+         downloadPDF() can call it directly. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -283,6 +291,7 @@
                 pdf.save(`${participantName.replace(/ /g, '_')}_Certificate.pdf`);
             } catch (err) {
                 console.error('PDF generation failed:', err);
+                alert('PDF generation failed: ' + err.message);
             } finally {
                 btn.disabled = false;
                 btn.innerText = 'Download Certificate as PDF';
