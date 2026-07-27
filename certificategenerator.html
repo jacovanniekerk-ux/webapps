@@ -254,39 +254,39 @@
         }
 
         async function downloadPDF() {
-    const element = document.getElementById('certificate-export');
-    const btn = document.getElementById('download-btn');
+            const element = document.getElementById('certificate-export');
+            const btn = document.getElementById('download-btn');
 
-    btn.disabled = true;
-    btn.innerText = 'Generating PDF...';
+            btn.disabled = true;
+            btn.innerText = 'Generating PDF...';
 
-    try {
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            scrollY: 0,
-            width: 794,
-            height: 1123
-        });
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: 0,
+                    width: 794,
+                    height: 1123
+                });
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
 
-        const JsPDFCtor = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
-        const pdf = new JsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                const JsPDFCtor = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+                const pdf = new JsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
-        // Force exact A4 dimensions (210x297mm) instead of computing them
-        // from the canvas's pixel size -- this guarantees the image fills
-        // the page exactly, with zero rounding drift, which is what
-        // caused the blank second page in the first place.
-        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-        pdf.save(`${participantName.replace(/ /g, '_')}_Certificate.pdf`);
-    } catch (err) {
-        console.error('PDF generation failed:', err);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = 'Download Certificate as PDF';
-    }
-}
+                // Force exact A4 dimensions (210x297mm) instead of
+                // computing them from the canvas's pixel size -- this
+                // guarantees the image fills the page exactly, with zero
+                // rounding drift, which is what caused the blank page.
+                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+                pdf.save(`${participantName.replace(/ /g, '_')}_Certificate.pdf`);
+            } catch (err) {
+                console.error('PDF generation failed:', err);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Download Certificate as PDF';
+            }
+        }
     </script>
 </body>
 </html>
