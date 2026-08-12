@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 8 · Spot the Mistake: Using AI in the Classroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --navy: #001489; --blue: #007DBA; --yellow: #FFC600; --white: #ffffff; --light: #f0f4fb; --mid: #d6e4f0; --text: #1a1a2e; --muted: #5a6a8a; --correct: #27ae60; --correct-bg: #e8f7ee; --wrong: #e74c3c; --wrong-bg: #fdecea; --neutral-bdr: #c8d8ea; --reveal-bg: #eef4fc; }
+  body { font-family: 'Sora', sans-serif; background: var(--light); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
+  header { background: var(--navy); padding: 28px 40px 22px; display: flex; align-items: flex-end; gap: 18px; position: relative; overflow: hidden; }
+  header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 100%); }
+  .header-badge { background: var(--yellow); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border-radius: 3px; flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
+  .header-text h1 { font-size: clamp(17px, 3vw, 22px); font-weight: 700; color: var(--white); line-height: 1.2; }
+  .header-text p { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 4px; font-family: 'Source Serif 4', serif; font-style: italic; }
+  .intro { background: var(--blue); color: var(--white); padding: 18px 40px; font-size: 14px; line-height: 1.7; display: flex; align-items: center; gap: 16px; }
+  .intro-icon { font-size: 26px; flex-shrink: 0; }
+  .intro strong { color: var(--yellow); }
+  main { max-width: 820px; margin: 36px auto 0; padding: 0 24px; }
+  .card { background: var(--white); border-radius: 14px; box-shadow: 0 4px 24px rgba(0,20,137,.08); margin-bottom: 28px; overflow: hidden; border: 1.5px solid transparent; transition: border-color .3s; }
+  .card.locked-correct { border-color: var(--correct); }
+  .card.locked-wrong { border-color: var(--wrong); }
+  .card-header { background: var(--navy); padding: 14px 22px; display: flex; align-items: center; gap: 12px; }
+  .q-number { background: var(--yellow); color: var(--navy); font-size: 11px; font-weight: 700; letter-spacing: .08em; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; flex-shrink: 0; }
+  .q-label { color: rgba(255,255,255,.7); font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+  .q-label em { color: var(--yellow); font-style: normal; font-weight: 700; }
+  .card-body { padding: 22px 24px 0; }
+  .scenario-box { background: #f7f9ff; border: 1.5px solid var(--mid); border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; position: relative; }
+  .scenario-box::before { content: '📋 Scenario'; display: block; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+  .scenario-text { font-family: 'Source Serif 4', serif; font-size: 15px; line-height: 1.8; color: var(--text); }
+  .scenario-text .hl { background: rgba(255,198,0,.28); border-radius: 3px; padding: 1px 4px; font-style: normal; font-weight: 600; font-family: 'Sora', sans-serif; font-size: 14px; }
+  .prompt { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .opt-btn { width: 100%; text-align: left; padding: 13px 16px; border-radius: 8px; border: 2px solid var(--neutral-bdr); background: var(--white); font-family: 'Sora', sans-serif; font-size: 13.5px; cursor: pointer; transition: all .2s; display: flex; align-items: flex-start; gap: 12px; color: var(--text); line-height: 1.5; }
+  .opt-btn:hover:not(:disabled) { border-color: var(--blue); background: #f0f6ff; transform: translateX(3px); }
+  .opt-btn:disabled { cursor: default; }
+  .opt-letter { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--mid); color: var(--navy); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: all .2s; margin-top: 1px; }
+  .opt-btn.sel-correct { border-color: var(--correct); background: var(--correct-bg); }
+  .opt-btn.sel-correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt-btn.sel-wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+  .opt-btn.sel-wrong .opt-letter { background: var(--wrong); color: #fff; }
+  .opt-btn.show-correct { border-color: var(--correct); background: var(--correct-bg); opacity: .82; }
+  .opt-btn.show-correct .opt-letter { background: var(--correct); color: #fff; }
+  .reveal-panel { display: none; background: var(--reveal-bg); border-left: 4px solid var(--blue); border-radius: 0 0 12px 12px; padding: 18px 22px; animation: slideDown .35s ease; }
+  .reveal-panel.show { display: block; }
+  .verdict-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .verdict-badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .verdict-badge.correct { background: var(--correct); color: #fff; }
+  .verdict-badge.wrong { background: var(--wrong); color: #fff; }
+  .verdict-sub { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .reveal-panel p { font-family: 'Source Serif 4', serif; font-size: 14.5px; line-height: 1.75; color: #2c3e60; margin-bottom: 8px; }
+  .tip { margin-top: 12px; padding: 10px 14px; background: rgba(0,125,186,.1); border-radius: 6px; font-size: 13px; color: var(--blue); font-family: 'Sora', sans-serif; font-weight: 600; }
+  .tip::before { content: '💡 '; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Module 8</div>
+  <div class="header-text">
+    <h1>Spot the Mistake: Using AI in the Classroom</h1>
+    <p>Identify common errors when teachers use tools like ChatGPT</p>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="intro-icon">🔎</span>
+  <div>Read the scenarios below and identify the <strong>mistake</strong> being made. Click on the best answer.</div>
+</div>
+
+<main>
+
+  <div class="card" id="card-1">
+    <div class="card-header"><span class="q-number">Scenario 1</span><span class="q-label">Spot the <em>Mistake</em></span></div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">Mrs. K asks ChatGPT to design three lesson plans on figures of speech for her Grade 9 class. The response looks polished and detailed, so she <span class="hl">prints it out and teaches straight from it</span>, without adjusting anything for her own learners.</p>
+      </div>
+      <p class="prompt">What is the main mistake in this scenario?</p>
+      <div class="options" id="opts-1">
+        <button class="opt-btn" onclick="answer(1,'A')"><span class="opt-letter">A</span> She should not have used AI for lesson planning at all — every lesson must be written entirely from scratch.</button>
+        <button class="opt-btn" onclick="answer(1,'B')"><span class="opt-letter">B</span> She used the AI output as a final product instead of a starting point — she needed to apply her own professional judgement and adapt it to her specific learners and context.</button>
+        <button class="opt-btn" onclick="answer(1,'C')"><span class="opt-letter">C</span> She should have asked for lessons longer than 45 minutes each.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-1">
+      <div class="verdict-row"><span class="verdict-badge" id="vbadge-1"></span><span class="verdict-sub" id="vsub-1"></span></div>
+      <p>AI-generated lesson plans are meant to be inspiration and a foundation to build from, not a finished product. The AI doesn't know Mrs. K's specific school, resources, or learners — only she can judge what's usable and what needs adjusting.</p>
+      <div class="tip">Use AI output the way you'd use a colleague's old lesson notes: a helpful starting point that still needs your own stamp on it.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-2">
+    <div class="card-header"><span class="q-number">Scenario 2</span><span class="q-label">Spot the <em>Mistake</em></span></div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">Mr. P asks ChatGPT to generate 12 multiple choice questions and a memo on a lesser-known South African novel his class is studying. The response looks confident and complete, so he <span class="hl">hands it straight out as a class test</span> without reading it over first.</p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-2">
+        <button class="opt-btn" onclick="answer(2,'A')"><span class="opt-letter">A</span> He should have generated 20 questions instead of 12, since more questions always mean a more reliable test.</button>
+        <button class="opt-btn" onclick="answer(2,'B')"><span class="opt-letter">B</span> AI has much less data on lesser-documented local texts than on famous international ones, so it's more likely to hallucinate details — he needed to check the content carefully before using it.</button>
+        <button class="opt-btn" onclick="answer(2,'C')"><span class="opt-letter">C</span> He should have asked the AI to translate the questions into another language first.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-2">
+      <div class="verdict-row"><span class="verdict-badge" id="vbadge-2"></span><span class="verdict-sub" id="vsub-2"></span></div>
+      <p>AI is trained on huge amounts of internet data, but that data isn't evenly spread — internationally famous texts are far more represented than many local South African setworks. For under-documented material, the risk of hallucinated or inaccurate content is higher, so checking it as the subject expert is essential.</p>
+      <div class="tip">The more niche or local the content, the more critically you need to read the AI's response before it reaches your learners.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-3">
+    <div class="card-header"><span class="q-number">Scenario 3</span><span class="q-label">Spot the <em>Mistake</em></span></div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">Ms. L types <span class="hl">"help me with a lesson"</span> into ChatGPT and is frustrated when the response is vague and generic, not useful for her actual class at all.</p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-3">
+        <button class="opt-btn" onclick="answer(3,'A')"><span class="opt-letter">A</span> ChatGPT simply isn't capable of generating lesson content, regardless of what she types.</button>
+        <button class="opt-btn" onclick="answer(3,'B')"><span class="opt-letter">B</span> Her prompt was far too vague — the quality of an AI's response depends heavily on how clear and specific the instructions are, including subject, grade, and context.</button>
+        <button class="opt-btn" onclick="answer(3,'C')"><span class="opt-letter">C</span> She should have asked the question out loud using a voice assistant instead of typing it.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-3">
+      <div class="verdict-row"><span class="verdict-badge" id="vbadge-3"></span><span class="verdict-sub" id="vsub-3"></span></div>
+      <p>Prompting is king — the same underlying tool can produce a generic, useless answer or a detailed, tailored one depending purely on the instructions given. Adding subject, grade level, time available, and available resources changes the output dramatically.</p>
+      <div class="tip">Before typing a prompt, ask yourself: would a substitute teacher know what to do with this little detail? If not, add more context.</div>
+    </div>
+  </div>
+
+  <div class="card" id="card-4">
+    <div class="card-header"><span class="q-number">Scenario 4</span><span class="q-label">Spot the <em>Mistake</em></span></div>
+    <div class="card-body">
+      <div class="scenario-box">
+        <p class="scenario-text">Mr. J asks ChatGPT to write a formal email to parents. He likes the polished vocabulary, so he <span class="hl">copies and pastes it straight into an email and sends it</span>, even though some of the wording doesn't sound anything like how he normally speaks.</p>
+      </div>
+      <p class="prompt">What is the mistake in this scenario?</p>
+      <div class="options" id="opts-4">
+        <button class="opt-btn" onclick="answer(4,'A')"><span class="opt-letter">A</span> He should have asked the AI to make the email even more formal before sending it.</button>
+        <button class="opt-btn" onclick="answer(4,'B')"><span class="opt-letter">B</span> He sent the message without rereading or personalising it — AI can use vocabulary and phrasing that isn't natural to the writer, so it's important to review and keep the human touch before sending.</button>
+        <button class="opt-btn" onclick="answer(4,'C')"><span class="opt-letter">C</span> He should have sent the message via WhatsApp instead of email.</button>
+      </div>
+    </div>
+    <div class="reveal-panel" id="reveal-4">
+      <div class="verdict-row"><span class="verdict-badge" id="vbadge-4"></span><span class="verdict-sub" id="vsub-4"></span></div>
+      <p>AI can make writing sound more polished, but the reader will often notice if the words don't sound like the sender at all. Staying in control means rereading and adjusting AI-generated text so it still carries your own voice — AI should support your communication, not replace it.</p>
+      <div class="tip">Read any AI-drafted message out loud before sending — if it doesn't sound like you, edit it until it does.</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const CORRECT = { 1: 'B', 2: 'B', 3: 'B', 4: 'B' };
+  let answered = {};
+
+  function answer(qNum, choice) {
+    if (answered[qNum]) return;
+    const isRight = (choice === CORRECT[qNum]);
+    answered[qNum] = isRight;
+
+    const opts = document.getElementById('opts-' + qNum).querySelectorAll('.opt-btn');
+    const alpha = ['A','B','C'];
+    opts.forEach((btn, i) => {
+      btn.disabled = true;
+      if (alpha[i] === choice) {
+        btn.classList.add(isRight ? 'sel-correct' : 'sel-wrong');
+      } else if (alpha[i] === CORRECT[qNum]) {
+        btn.classList.add('show-correct');
+      }
+    });
+
+    const card = document.getElementById('card-' + qNum);
+    card.classList.add(isRight ? 'locked-correct' : 'locked-wrong');
+
+    const rev = document.getElementById('reveal-' + qNum);
+    document.getElementById('vbadge-' + qNum).textContent = isRight ? 'Correct' : 'Incorrect';
+    document.getElementById('vbadge-' + qNum).className = 'verdict-badge ' + (isRight ? 'correct' : 'wrong');
+    document.getElementById('vsub-' + qNum).textContent = isRight ? "Spot on." : "Not quite.";
+    rev.classList.add('show');
+  }
+</script>
+</body>
+</html>
