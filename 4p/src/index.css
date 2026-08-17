@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Space+Grotesk:wght@500;600;700&family=Fira+Code:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Century Gothic", "CenturyGothic", AppleGothic, sans-serif;
+  --font-mono: "Fira Code", ui-monospace, monospace;
+}
+
+/* Custom non-standard shadows and print settings */
+@media print {
+  @page {
+    size: auto;
+    margin: 8mm 10mm 8mm 10mm;
+  }
+  
+  html, body, #root, #root > div, main, .min-h-screen, .md\:h-screen, .md\:overflow-hidden, .overflow-y-auto {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    display: block !important;
+    position: static !important;
+    float: none !important;
+    background: transparent !important;
+    background-color: white !important;
+  }
+
+  body {
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+  .print-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  #printable-report {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  /* When printing the Rubric Guide, completely suppress background workspace */
+  body.printing-rubric #app-workspace,
+  body.printing-rubric aside,
+  body.printing-rubric main,
+  body.printing-rubric header,
+  body.printing-rubric footer,
+  body.printing-rubric #printable-report,
+  body.printing-rubric .no-print {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* When NOT in rubric-printing mode, hide the rubric print doc */
+  body:not(.printing-rubric) .rubric-print-doc {
+    display: none !important;
+  }
+
+  /* Printable Rubric Guide document styling */
+  .rubric-print-doc {
+    display: block !important;
+    width: 100% !important;
+    background: white !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .rubric-card-print {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    padding: 8px 10px !important;
+  }
+}
+

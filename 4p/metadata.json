@@ -1,0 +1,6 @@
+{
+  "name": "WCED 4P Culture Diagnostic & Observation Tool",
+  "description": "A diagnostic and classroom observation tool for the Western Cape Education Department 4P Affective Transformation Model.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
