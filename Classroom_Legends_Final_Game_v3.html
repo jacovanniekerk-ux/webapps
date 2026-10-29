@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Classroom Legends · Digital Skills Final Challenge</title>
+<style>
+:root{--navy:#001489;--blue:#007DBA;--teal:#00A1A3;--green:#8FAD15;--mag:#C8126E;--ink:#0b1440;--cw:clamp(100px,min(11.6vw,25vh),172px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Century Gothic','Futura','Avenir Next','Trebuchet MS',Arial,sans-serif;color:#fff;-webkit-user-select:none;user-select:none}
+body{background:radial-gradient(ellipse at 15% 0%,#0a2bd6 0%,#001489 38%,#000a3d 85%)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,161,163,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(0,161,163,.07) 1px,transparent 1px);background-size:44px 44px;animation:grid 30s linear infinite;pointer-events:none}
+@keyframes grid{to{background-position:44px 44px}}
+button{font-family:inherit;cursor:pointer;border:0}
+#top{position:fixed;top:0;left:0;right:0;height:58px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(0,10,61,.82);z-index:10}
+#top::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#001489,#007DBA,#00A1A3,#8FAD15,#C8126E)}
+.logo{font-weight:900;letter-spacing:.06em;font-size:17px;white-space:nowrap}
+.logo span{color:#7fe3e4}
+.pill{background:rgba(255,255,255,.12);padding:6px 12px;border-radius:12px;font-weight:700;font-size:15px;white-space:nowrap}
+.hb{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.14);color:#fff;font-size:18px}
+.hb:hover{background:rgba(255,255,255,.28)}
+#screen{position:fixed;top:58px;left:0;right:0;bottom:0;overflow:auto}
+.panel{background:#fff;color:var(--ink);border-radius:24px;padding:24px 30px;max-width:1040px;margin:22px auto;box-shadow:0 24px 70px rgba(0,0,0,.45);animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.9) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.panel h1{color:var(--navy);font-size:clamp(27px,4.4vw,44px);line-height:1.05}
+.panel h2{color:var(--navy);font-size:clamp(19px,2.4vw,25px);margin:6px 0 12px;line-height:1.3}
+.panel p{line-height:1.5;margin:8px 0;font-size:16px}
+.tag{display:inline-block;background:var(--navy);color:#fff;font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:6px 13px;border-radius:999px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.btn{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;font-weight:800;font-size:17px;padding:13px 23px;border-radius:14px;box-shadow:0 6px 18px rgba(0,20,137,.35);transition:.15s}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.g{background:linear-gradient(135deg,var(--green),var(--teal))}
+.btn.m{background:linear-gradient(135deg,var(--mag),var(--navy))}
+.btn.big{font-size:20px;padding:15px 28px}
+.ghost{background:transparent;color:var(--navy);font-weight:700;font-size:15px;padding:10px 15px;border-radius:12px;border:2px solid #dbe4f3}
+.dark .ghost{color:#fff;border-color:rgba(255,255,255,.4)}
+.title{background:radial-gradient(circle at 25% 0%,#0b2bd0,#001489 45%,#000a3d);color:#fff;text-align:center}
+.title h1{color:#fff;font-size:clamp(34px,6.4vw,64px);text-shadow:0 0 30px rgba(0,161,163,.8);letter-spacing:.03em}
+.title .sub{font-weight:800;letter-spacing:.18em;font-size:13px;color:#7fe3e4;text-transform:uppercase}
+.title p{color:#dfe7ff}
+.title input{font-family:inherit;font-size:18px;padding:12px 16px;border-radius:14px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);color:#fff;width:min(360px,100%);text-align:center;outline:none}
+.title input::placeholder{color:#b8c4f0}
+.fan{display:flex;justify-content:center;margin:18px 0 12px;--cw:116px;height:176px}
+.fan .card{margin:0 -14px;cursor:default}
+.fan .card:nth-child(1){transform:rotate(-14deg) translateY(16px)}.fan .card:nth-child(2){transform:rotate(-7deg) translateY(4px)}
+.fan .card:nth-child(4){transform:rotate(7deg) translateY(4px)}.fan .card:nth-child(5){transform:rotate(14deg) translateY(16px)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0;text-align:left}
+.rules div{background:rgba(255,255,255,.08);border-radius:14px;padding:11px 13px;font-size:14px;line-height:1.45;border-left:4px solid var(--c)}
+.rules b{display:block;font-size:16px;margin-bottom:2px}
+.map{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 0;margin:18px 0}
+.node{width:74px;height:74px;border-radius:50%;background:var(--mg);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#fff;position:relative;box-shadow:0 6px 16px rgba(0,0,0,.25);flex:none}
+.node small{font-size:10px;letter-spacing:.06em}
+.node.done{opacity:.55}.node.done::after{content:'✓';position:absolute;bottom:-4px;right:-4px;background:var(--green);border-radius:50%;width:24px;height:24px;font-size:14px;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.node.cur{animation:pulse 1.2s infinite;outline:4px solid #fff;outline-offset:3px}
+.node.lock{filter:grayscale(1);opacity:.35}
+@keyframes pulse{50%{transform:scale(1.1)}}
+.link{width:20px;height:4px;background:#dbe4f3;flex:none}
+/* cards */
+.card{position:relative;flex:none;width:var(--cw);height:calc(var(--cw)*1.42);border-radius:15px;background:#fff;color:var(--ink);overflow:hidden;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.35);transition:transform .15s,box-shadow .15s,opacity .2s;display:flex;flex-direction:column;border:3px solid #fff}
+.card .band{height:40%;background:var(--mg);display:flex;align-items:center;justify-content:center;font-size:calc(var(--cw)*.32);position:relative;flex:none}
+.card .cost{position:absolute;top:5px;left:5px;width:calc(var(--cw)*.22);height:calc(var(--cw)*.22);border-radius:50%;background:#fff;color:var(--navy);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:calc(var(--cw)*.13);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.card .cost::after{content:'⏱';position:absolute;bottom:-5px;right:-6px;font-size:calc(var(--cw)*.08)}
+.card .mt{position:absolute;top:6px;right:6px;font-size:calc(var(--cw)*.08);font-weight:800;background:rgba(255,255,255,.28);padding:1px 5px;border-radius:6px;color:#fff}
+.card .key{position:absolute;bottom:4px;right:7px;font-size:calc(var(--cw)*.085);font-weight:800;color:#fff;opacity:.85}
+.card .nm{font-weight:900;font-size:calc(var(--cw)*.104);line-height:1.12;padding:6px 6px 2px;text-align:center}
+.card .st{font-weight:900;font-size:calc(var(--cw)*.096);text-align:center;color:var(--navy);margin:1px 0}
+.card .fl{font-size:calc(var(--cw)*.079);line-height:1.26;padding:3px 7px;text-align:center;color:#3a4670}
+.hand .card:hover,.pick .card:hover{transform:translateY(-12px) scale(1.04);box-shadow:0 16px 30px rgba(0,0,0,.45)}
+.card.dim{filter:grayscale(.75);opacity:.55}
+.card.legend{border-color:transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,#C8126E,#00A1A3,#8FAD15) border-box}
+.card.legend .band::before{content:'LEGENDARY';position:absolute;bottom:3px;font-size:calc(var(--cw)*.068);letter-spacing:.15em;font-weight:900;color:#fff}
+.card.junk .band{background:repeating-linear-gradient(45deg,#C8126E,#C8126E 8px,#9d0d56 8px,#9d0d56 16px)}
+.card.sel{border-color:var(--green);box-shadow:0 0 0 4px rgba(143,173,21,.65),0 12px 26px rgba(0,0,0,.4);transform:translateY(-8px)}
+.card.hint{animation:glow .9s infinite}
+@keyframes glow{50%{box-shadow:0 0 0 5px #8FAD15,0 0 30px #8FAD15}}
+.card.played{animation:playfx .32s forwards;pointer-events:none}
+@keyframes playfx{to{transform:translateY(-220px) scale(.5) rotate(-8deg);opacity:0}}
+.pick{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:16px 0;--cw:clamp(118px,12.5vw,168px)}
+.grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;--cw:clamp(112px,10vw,136px);margin:12px 0}
+.grid .card{cursor:pointer}.grid.nopick .card{cursor:default}
+/* battle: crisis + coach side by side */
+#battle{display:flex;flex-direction:column;height:100%;padding:10px 14px 6px;gap:8px}
+.cw{flex:none;display:flex;gap:12px;align-items:stretch}
+.crisis{flex:1.55;min-width:0;background:linear-gradient(135deg,rgba(200,18,110,.28),rgba(0,20,137,.55));border:2px solid rgba(255,255,255,.2);border-radius:20px;padding:12px 18px;display:flex;gap:16px;align-items:center;position:relative;overflow:hidden}
+.crisis.boss{background:linear-gradient(135deg,rgba(200,18,110,.55),rgba(30,5,70,.8));border-color:#C8126E;box-shadow:0 0 40px rgba(200,18,110,.5)}
+.cface{font-size:clamp(50px,6.5vw,88px);animation:flt 2.4s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(200,18,110,.8));flex:none}
+@keyframes flt{50%{transform:translateY(-8px) rotate(-4deg)}}
+.crisis.hit .cface{animation:hitfx .45s}
+@keyframes hitfx{0%{filter:brightness(4)}30%{transform:translate(-12px,4px) rotate(-12deg)}60%{transform:translate(10px,-3px) rotate(9deg)}}
+.cinfo{flex:1;min-width:0}
+.mtag2{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:999px;margin:0 6px 4px 0}
+.cname{font-size:clamp(20px,2.4vw,29px);font-weight:900;line-height:1.15}
+.ctext{font-size:clamp(14px,1.25vw,17px);line-height:1.4;opacity:.95;margin:5px 0 9px}
+.hp{position:relative;height:22px;border-radius:12px;background:rgba(255,255,255,.16);overflow:hidden;border:2px solid rgba(255,255,255,.35)}
+.hp i{display:block;height:100%;background:linear-gradient(90deg,#C8126E,#ff5fae);transition:width .45s}
+.hp span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.intent{display:inline-flex;gap:6px;align-items:center;background:#fff;color:var(--mag);font-weight:800;border-radius:12px;padding:6px 12px;font-size:14.5px}
+.ask{background:rgba(255,255,255,.16);color:#fff;font-weight:700;border-radius:12px;padding:7px 12px;font-size:14.5px}
+.ask:disabled{opacity:.35;cursor:default}
+.coach{flex:1;min-width:0;position:relative;background:#fff;color:var(--ink);border-radius:20px;border-left:8px solid var(--blue);font-size:clamp(14px,1.2vw,16.5px);line-height:1.45}
+.coach .in{position:absolute;inset:12px 16px;overflow:auto;animation:pop .3s}
+.coach b.h{display:block;font-size:1.1em;margin-bottom:4px}
+.coach.s{border-left-color:var(--green)}.coach.b{border-left-color:var(--mag)}.coach.n{border-left-color:#9aa6c4}
+.coach .sm{font-size:.88em;color:#4a5680;margin-top:6px}
+.pbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mor{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);padding:6px 12px;border-radius:12px;font-weight:700;font-size:15.5px}
+.mbar{width:clamp(80px,14vw,180px);height:14px;border-radius:8px;background:rgba(255,255,255,.18);overflow:hidden}
+.mbar i{display:block;height:100%;background:linear-gradient(90deg,#8FAD15,#00A1A3);transition:width .4s}
+.orbs{display:flex;gap:5px;align-items:center;background:rgba(255,255,255,.12);padding:6px 11px;border-radius:12px;font-weight:700;font-size:15.5px}
+.orb{width:23px;height:23px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#00A1A3 60%);box-shadow:0 0 10px #00A1A3}
+.orb.off{opacity:.18;box-shadow:none}
+.endt{background:linear-gradient(135deg,var(--mag),#8d0b4d);color:#fff;font-weight:900;font-size:17px;padding:12px 24px;border-radius:14px;box-shadow:0 0 18px rgba(200,18,110,.6)}
+.endt:disabled{opacity:.4}
+.hand{display:flex;justify-content:safe center;align-items:flex-start;gap:9px;min-height:calc(var(--cw)*1.42 + 20px);padding:16px 4px 4px;overflow-x:auto;overflow-y:hidden;flex:1}
+.flt{position:fixed;font-weight:900;font-size:clamp(20px,3vw,34px);pointer-events:none;z-index:50;text-shadow:0 3px 0 rgba(0,10,61,.8),0 0 20px rgba(0,0,0,.5);animation:up 1.3s forwards;white-space:nowrap;transform:translateX(-50%)}
+@keyframes up{0%{opacity:0;margin-top:10px}15%{opacity:1}100%{opacity:0;margin-top:-90px}}
+.flash{position:fixed;inset:0;pointer-events:none;z-index:40;animation:fl .45s forwards}
+@keyframes fl{0%{opacity:.45}100%{opacity:0}}
+#ov{position:fixed;inset:0;background:rgba(0,10,61,.75);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:30;display:none;align-items:center;justify-content:center;padding:14px}
+#ov.show{display:flex}
+#ov .panel{margin:0;max-height:94vh;overflow:auto;width:100%}
+.debrief{list-style:none;display:grid;gap:8px;margin:10px 0}
+.debrief li{background:#f1f5fc;border-radius:12px;padding:9px 13px;font-size:15px;line-height:1.4;border-left:5px solid var(--green)}
+.debrief li.bk{border-left-color:var(--mag);background:#fdeef5}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:#f1f5fc;color:var(--ink);font-size:16.5px;padding:13px 15px;border-radius:14px;border:2px solid #dbe4f3;font-weight:600;line-height:1.35;transition:.15s}
+.opt:hover:not(:disabled){border-color:var(--blue);transform:translateX(4px);background:#fff}
+.opt .k{flex:none;width:30px;height:30px;border-radius:9px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.opt.ok{background:#eef6d6;border-color:var(--green)}.opt.ok .k{background:var(--green)}
+.opt.bad{background:#fbe3ef;border-color:var(--mag)}.opt.bad .k{background:var(--mag)}
+.fb{margin-top:12px;padding:13px 15px;border-radius:14px;line-height:1.45;font-size:16px}
+.fb.ok{background:#f2f8e2;border-left:6px solid var(--green)}.fb.bad{background:#fdeef5;border-left:6px solid var(--mag)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.choice{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border-radius:18px;padding:16px;font-weight:800;font-size:18px;text-align:center}
+.choice div{font-size:36px}.choice span{display:block;font-size:14px;font-weight:600;opacity:.9;margin-top:4px}
+.choice:hover{transform:translateY(-3px)}
+.preview{display:flex;gap:16px;align-items:center;background:linear-gradient(135deg,#C8126E,#001489);color:#fff;border-radius:18px;padding:14px 18px;margin:10px 0}
+.preview .e{font-size:58px}
+.preview b{font-size:21px}
+.preview p{font-size:15px!important;margin:4px 0!important;color:#fff}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px;margin:14px 0}
+.sgrid div{background:#f1f5fc;border-radius:14px;padding:12px;text-align:center;font-size:13px;font-weight:700;color:#4a5680}
+.sgrid b{display:block;font-size:26px;color:var(--navy)}
+.badge{width:194px;height:194px;margin:6px auto;border-radius:50%;background:conic-gradient(#001489,#007DBA,#00A1A3,#8FAD15,#C8126E,#001489);display:flex;align-items:center;justify-content:center;animation:spin 8s linear infinite;box-shadow:0 0 40px rgba(0,161,163,.6)}
+.badge>div{width:160px;height:160px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:spin 8s linear infinite reverse;color:var(--navy);text-align:center;padding:10px}
+.badge .e{font-size:50px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(30px);z-index:60;background:#fff;color:var(--ink);padding:12px 18px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center;border-left:6px solid var(--teal)}
+#toast.show{opacity:1;transform:translateX(-50%);pointer-events:auto}
+#toast button{margin-left:10px;background:var(--navy);color:#fff;padding:6px 12px;border-radius:10px;font-weight:700}
+.kbd{display:inline-block;background:#eef2fa;color:var(--navy);border:1px solid #c9d3ea;border-radius:6px;padding:0 6px;font-weight:800;font-size:.9em}
+@media (max-width:860px){
+ .cw{flex-direction:column}.crisis{padding:10px 12px}.coach{flex:none;height:150px}
+ .cface{font-size:46px}.logo{display:none}#top .pill.hide-s{display:none}
+ :root{--cw:118px}.panel{padding:18px;margin:12px}.choices{grid-template-columns:1fr}
+ #battle{height:auto;min-height:100%}
+}
+@media (max-height:680px) and (min-width:861px){:root{--cw:clamp(96px,24vh,140px)}.ctext{font-size:13.5px}.cface{font-size:48px}.cname{font-size:20px}}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="logo">🃏 CLASSROOM <span>LEGENDS</span></div>
+  <div class="pill" id="tChap">Final Challenge</div>
+  <div style="flex:1"></div>
+  <div class="pill" id="tMor" style="display:none"></div>
+  <div class="pill hide-s" id="tScore">⭐ 0</div>
+  <button class="hb" id="bDeck" title="View deck">🗂️</button>
+  <button class="hb" id="bMute" title="Sound (M)">🔊</button>
+  <button class="hb" id="bFS" title="Full screen (F)">⛶</button>
+</div>
+<div id="screen"></div>
+<div id="ov"></div>
+<div id="toast"></div>
+
+<script>
+(()=>{
+'use strict';
+const MODS=['Starter','Introduction & Background','Digital Teaching & Learning Environment','Digital Content','Managing Learning','Cloud-based Collaboration','Digital Assessment','Learner-centred Approaches'];
+const MC={0:['#5d6fa3','linear-gradient(135deg,#4b5b8f,#8d9cc7)'],1:['#001489','linear-gradient(135deg,#001489,#2a46d8)'],2:['#007DBA','linear-gradient(135deg,#007DBA,#29a8e0)'],3:['#C8126E','linear-gradient(135deg,#C8126E,#e8559c)'],4:['#8FAD15','linear-gradient(135deg,#6f8a0c,#a9c72b)'],5:['#00A1A3','linear-gradient(135deg,#00A1A3,#2fd0d2)'],6:['#001489','linear-gradient(135deg,#001489,#C8126E)'],7:['#00A1A3','linear-gradient(135deg,#8FAD15,#00A1A3)']};
+
+const CARDS={
+ chalk:{m:0,n:'Chalk & Talk',e:'📢',c:1,p:4,t:'Classic teacher-centred delivery.'},
+ plan:{m:0,n:'Lesson Plan',e:'📝',c:1,b:5,t:'Prepare for what’s coming.'},
+ worksheet:{m:0,n:'Printed Worksheet',e:'📄',c:1,p:3,t:'Reliable… but paper-bound.'},
+ coffee:{m:0,n:'Staffroom Coffee',e:'☕',c:0,d:1,h:2,t:'A moment to regroup.'},
+ tpack:{m:1,n:'TPACK Alignment',e:'🧩',c:2,p:6,b:3,t:'Technology + Pedagogy + Content, together.'},
+ objectives:{m:1,n:'Clear Learning Objectives',e:'🎯',c:1,p:5,t:'Let the outcome drive the tool.'},
+ mobilefirst:{m:1,n:'Mobile-First Design',e:'📱',c:1,p:5,t:'Built for the device learners actually have.'},
+ datalite:{m:1,n:'Data-Conscious Content',e:'📉',c:1,p:4,b:2,t:'Low-bandwidth, offline-friendly resources.'},
+ scaffold:{m:1,n:'Structured Scaffolding',e:'🪜',c:1,p:4,b:3,t:'Teach autonomy step by step.'},
+ samr:{m:1,n:'SAMR: Redefinition',e:'🚀',c:3,p:11,r:'l',t:'Create tasks that were previously inconceivable.'},
+ qr:{m:2,n:'QR Code',e:'🔳',c:0,p:3,t:'Scan. Open. Done.'},
+ playlist:{m:2,n:'Curated Playlist',e:'📺',c:1,p:5,t:'Embed the exact videos, not the algorithm.'},
+ station:{m:2,n:'Charging Station',e:'🔌',c:1,b:6,t:'Powered devices, every lesson.'},
+ cleanup:{m:2,n:'30-Second Clean-up',e:'🧹',c:0,b:3,d:1,t:'Close tabs, clear downloads, back on the charger.'},
+ groups:{m:2,n:'Group Device Stations',e:'👥',c:2,p:7,t:'3 devices can engage 20 learners.'},
+ wowapp:{m:2,n:'Shiny New App',e:'✨',c:1,p:7,trap:1,t:'So exciting! So new! So… necessary?'},
+ canva:{m:3,n:'Canva for Education',e:'🎨',c:2,p:7,t:'Simple, versatile, collaborative design.'},
+ freeimg:{m:3,n:'Free Image Hubs',e:'🖼️',c:1,p:5,t:'Unsplash · Pixabay · Freepik · Flaticon'},
+ imagegrab:{m:3,n:'Quick Image Grab',e:'🔍',c:0,p:4,trap:1,t:'First image in the search results. What could go wrong?'},
+ loom:{m:3,n:'Loom Recording',e:'🎥',c:1,p:5,t:'Record your screen: short and personal.'},
+ activevid:{m:3,n:'Video + Active Task',e:'🎬',c:2,p:7,t:'Pause, process, apply.'},
+ captions:{m:3,n:'Captions & Low-Data Video',e:'💬',c:1,p:4,b:2,t:'Video every learner can access.'},
+ gclass:{m:4,n:'Google Classroom',e:'🎓',c:2,p:8,t:'Assignments, submissions and grading in one place.'},
+ gsites:{m:4,n:'Google Sites Hub',e:'🌐',c:1,p:5,t:'A simple portal for resources and showcases.'},
+ whatsapp:{m:4,n:'WhatsApp Group',e:'📲',c:1,p:5,t:'Great for quick updates.'},
+ centralise:{m:4,n:'Centralise Your Links',e:'🧲',c:1,p:4,d:1,t:'One clear home for everything.'},
+ gemini:{m:4,n:'Gemini in Classroom',e:'💡',c:2,p:6,b:2,t:'AI-supported grading and personalised feedback.'},
+ cloudshare:{m:5,n:'Cloud-Based Sharing',e:'☁️',c:1,p:6,t:'Share once. Everyone has the latest version.'},
+ viewer:{m:5,n:'Viewer-Only Access',e:'👁️',c:1,p:2,b:5,t:'The safest way to share.'},
+ anyonelink:{m:5,n:'Anyone With the Link',e:'🌍',c:0,p:5,trap:1,t:'Quick and easy… and always riskier.'},
+ incognito:{m:5,n:'Incognito Link Test',e:'🕵️',c:0,b:3,d:1,t:'Test every link before you send it.'},
+ shareddrive:{m:5,n:'Shared Drive',e:'🗂️',c:2,p:8,t:'Everyone can add, nobody can delete.'},
+ offline:{m:5,n:'Offline Sync',e:'📴',c:1,p:4,b:3,t:'Cloud files, available without data.'},
+ usb:{m:5,n:'USB Flash Drive',e:'💾',c:1,p:4,b:2,trap:1,t:'Portable… and very losable.'},
+ marksheet:{m:6,n:'Cloud Marksheet',e:'📊',c:1,p:6,t:'Google Sheets or Excel: marks anywhere, never lost.'},
+ autoquiz:{m:6,n:'Self-Marking Quiz',e:'⚡',c:1,p:6,t:'Instant marking, instant feedback.'},
+ fastloop:{m:6,n:'Fast Feedback Loop',e:'🔁',c:2,p:9,t:'Build → Assess → Feedback → Identify.'},
+ jitt:{m:6,n:'Just-In-Time Teaching',e:'⏱️',c:1,p:5,t:'Adapt to what the results reveal.'},
+ gamify:{m:6,n:'Gamified Quiz',e:'🎮',c:1,p:5,t:'Kahoot, Gimkit & friends.'},
+ lowtech:{m:6,n:'Low-Tech Formative Check',e:'✋',c:0,p:3,t:'Exit tickets, thumbs, mini-whiteboards.'},
+ flipped:{m:7,n:'Flipped Classroom',e:'🔄',c:2,p:8,t:'Content at home, consolidation in class.'},
+ blended:{m:7,n:'Blended Learning',e:'🔀',c:2,p:8,t:'Face-to-face + digitally enhanced.'},
+ handson:{m:7,n:'Hands-On Creation',e:'🛠️',c:2,p:8,t:'Constructionism: learn by making.'},
+ facilitate:{m:7,n:'Facilitate, Don’t Dictate',e:'🧭',c:1,p:5,t:'Create the conditions; learners drive.'},
+ reflect:{m:7,n:'Reflect on Experience',e:'🪞',c:1,p:4,d:1,t:'Constructivism: build understanding from experience.'},
+ coding:{m:7,n:'Coding & Robotics',e:'🤖',c:2,p:8,t:'A truly hands-on approach.'},
+ notif:{m:-1,n:'Notification',e:'🔔',c:1,junk:1,t:'Dismiss it. Left in hand at end of turn: −2 morale.'}
+};
+
+const CRISES=[
+ {id:'shinyppt',m:1,n:'The Shiny PowerPoint',e:'🎞️',t:'A colleague proudly shows a heavily animated PowerPoint: “My teaching is transformed!” Learners are still just copying notes.',h:'Where does this sit on SAMR, and what would move it up the staircase?',
+  s:{samr:'Redefinition: technology enables tasks that were previously inconceivable. That’s real transformation.',tpack:'TPACK aligns Technology, Pedagogy AND Content, not technology alone.',objectives:'Clear learning objectives must drive the tool, not the animations.',handson:'Learners creating instead of copying moves the task up the SAMR staircase.'},
+  b:{wowapp:'More shine is still Substitution. Even the most sophisticated PowerPoint is Substitution.',chalk:'Reading slides aloud is still teacher-centred Substitution.'}},
+ {id:'twelve',m:1,n:'The 12% Problem',e:'💻',t:'Your new digital homework assumes every learner has a computer at home. Only around 12% of SA homes do, yet mobile subscriptions exceed the population.',h:'Design for the device learners actually have, and the data they can afford.',
+  s:{mobilefirst:'Mobile-first design is non-negotiable in our context.',datalite:'Data-conscious content (low-bandwidth, offline-friendly) respects learners’ realities.',offline:'Offline access means no data needed at home.',qr:'A QR code opens the resource instantly on a phone.',captions:'Low-data versions keep content accessible.',blended:'Blended learning keeps face-to-face support while extending online, and needs less home tech.'},
+  b:{flipped:'A flipped classroom needs reliable home access to technology. Learners can’t do the pre-learning.',wowapp:'A heavy new app on low-end phones with limited data? Disaster.'}},
+ {id:'lostonline',m:1,n:'Lost in the Virtual Class',e:'🌫️',t:'Your online task was open-ended and unguided. Half the class didn’t finish; they struggled to self-regulate.',h:'Autonomy and digital literacy must be explicitly taught over time.',
+  s:{scaffold:'Learners who struggle with self-regulation perform significantly worse without structured scaffolding.',objectives:'Clear objectives give learners a target to steer towards.',blended:'Combining face-to-face support with online learning bridges the gap.',reflect:'Guided reflection builds the self-regulation learners need.'},
+  b:{wowapp:'Another unfamiliar tool only adds to the confusion.',anyonelink:'Another loose link doesn’t give learners any structure.'}},
+ {id:'rabbithole',m:2,n:'The Autoplay Rabbit Hole',e:'🐇',t:'You told learners to “search YouTube for photosynthesis”. Twenty minutes later they’re watching prank videos.',h:'Take control of the experience: curate the media.',
+  s:{playlist:'Embed specific videos or curated playlists. Don’t hand control to the algorithm.',qr:'A QR code takes learners straight to the right video.',activevid:'An active task gives the viewing a clear purpose.',centralise:'One central place with direct links stops the wandering.'},
+  b:{imagegrab:'Grabbing whatever the search returns is exactly how this happened.',wowapp:'A new app won’t fix an unguided search.'}},
+ {id:'threedevices',m:2,n:'3 Devices, 20 Learners',e:'🔋',t:'Only 3 working tablets for a class of 20, and two of them are flat.',h:'A smart layout and good routines can make 3 devices engage 20 learners.',
+  s:{groups:'Group stations: 3 devices can engage 20 learners and build collaboration.',station:'A dedicated charging station keeps devices ready.',cleanup:'A 30-second clean-up keeps shared devices ready for the next group.',lowtech:'Low-tech formative tools work even without devices.'},
+  b:{wowapp:'Installing a new app on 3 flat tablets helps nobody.',flipped:'Flipping assumes devices at home, which is an even bigger gap.'}},
+ {id:'overload',m:2,n:'Tool Overload',e:'🤯',t:'This term learners have used 9 different apps. They spend more time learning the tools than learning the content.',h:'Familiarity builds comfort. Introduce one tool at a time.',
+  s:{objectives:'Let the learning outcomes drive the choice of tool.',centralise:'A core set of tools and one hub keeps the focus on learning.',gclass:'One familiar platform beats nine unfamiliar ones.',tpack:'Pedagogy and content first, then the technology.'},
+  b:{wowapp:'ANOTHER new app?! Don’t mistake excitement for engagement.',gamify:'Yet another platform to learn. Introduce tools one at a time.'}},
+ {id:'watermark',m:3,n:'The Watermark Shortcut',e:'©️',t:'A colleague crops the watermark off an image for the grade worksheet. “Nobody will notice.”',h:'Always make sure you have permission to use an image.',
+  s:{freeimg:'Unsplash, Pixabay, Freepik and Flaticon offer free, permitted images.',canva:'Design with Canva for Education’s built-in elements instead of stolen images.'},
+  b:{imagegrab:'Grabbing search images is how watermarked, unpermitted images end up in worksheets.',worksheet:'Printing it doesn’t make it legal.'}},
+ {id:'passive',m:3,n:'The 40-Minute Video',e:'😴',t:'Learners watched a 40-minute video in silence. Ask one question afterwards: blank stares.',h:'Video’s big risk is passive consumption.',
+  s:{activevid:'Pair video with an active processing task.',loom:'A short, personal recording keeps it focused.',lowtech:'A quick formative check shows what was actually absorbed.',gamify:'A quick game turns watching into recalling.',reflect:'Reflection turns viewing into understanding.'},
+  b:{playlist:'More videos without a task means more passive consumption.',chalk:'A lecture on top of a lecture.'}},
+ {id:'deathbyslide',m:3,n:'Death by Slide',e:'🎆',t:'Every slide has 3 animations, background music, 200 words and 4 fonts. Learners are overwhelmed.',h:'Too much stimulation overloads limited working memory.',
+  s:{canva:'Canva’s simple, clean design fights clutter.',objectives:'Cut everything that doesn’t serve the objective.',tpack:'Design choices should serve pedagogy and content.'},
+  b:{wowapp:'More flashy effects means more cognitive overload.',samr:'Redefining the task doesn’t fix a cluttered slide. Fix the design first.'}},
+ {id:'hydra',m:4,n:'The Link Hydra',e:'🐉',t:'Resources live in 2 WhatsApp groups, email, a blog and 3 different Drives. Learners can’t find anything.',h:'Centralise to prevent friction.',
+  s:{centralise:'Avoid cluttering learners with too many separate links.',gclass:'One digital classroom as the central home.',gsites:'A simple site makes a great central subject hub.',shareddrive:'One shared space instead of many scattered ones.'},
+  b:{whatsapp:'Another group just adds another space to search.',anyonelink:'Yet another loose link floating around.'}},
+ {id:'marking',m:4,n:'Marking Mountain',e:'🏔️',t:'140 assignments arrived as blurry WhatsApp photos. Marking and feedback will take weeks.',h:'An LMS solves organising, grading and content-delivery headaches.',
+  s:{gclass:'Structured assignments, submission and grading belong in the LMS.',gemini:'AI support for grading and personalised feedback.',autoquiz:'A self-marking quiz marks and gives feedback instantly.',marksheet:'Marks recorded straight into a cloud sheet.'},
+  b:{whatsapp:'That’s how the mountain was built in the first place.',worksheet:'More paper means more marking.'}},
+ {id:'showcase',m:4,n:'The Parent Showcase',e:'🖼️',t:'The principal wants the best learner projects showcased for parents.',h:'Apply the decision rule: LMS or website?',
+  s:{gsites:'Use a website or portal for parent showcases and static resources.',canva:'Design eye-catching showcase pages.'},
+  b:{gclass:'The LMS is for structured assignments, submission and grading. Parents need a showcase site.',whatsapp:'Fifty photos in the parents’ group isn’t a showcase.'}},
+ {id:'usb',m:5,n:'The Lost USB',e:'💾',t:'The night before reports, the USB holding every marksheet has vanished.',h:'Automatic backup protects against lost USB drives and crashes.',
+  s:{cloudshare:'Cloud storage protects your work against lost USBs and hardware crashes.',marksheet:'A cloud marksheet can be opened anywhere, on any device, and is never lost.',shareddrive:'Files in a Shared Drive are safely backed up.',offline:'Synced files live in the cloud AND on your device.'},
+  b:{usb:'Another USB? The same single point of failure.',worksheet:'Paper copies get lost too.'}},
+ {id:'reprint',m:5,n:'Print, Pass, Reprint',e:'🖨️',t:'The grade worksheet was printed, passed around for feedback, edited… and printed again. Version 4 is still wrong.',h:'With cloud-based sharing, everyone always has the latest version.',
+  s:{cloudshare:'Share once. Colleagues comment directly and everyone has the latest version.',shareddrive:'One shared home for the grade’s resources.',canva:'Real-time collaboration on the design.'},
+  b:{worksheet:'Printing again restarts the whole cycle.',usb:'Passing a USB around creates even more versions.'}},
+ {id:'leaky',m:5,n:'The Leaky Link',e:'🕳️',t:'You shared the class marksheet as “Anyone with the link: Editor”. A row of marks has been deleted.',h:'Control the access.',
+  s:{viewer:'Viewer is the safest way to share; nobody can edit your file.',incognito:'Always test links in a Guest/InPrivate/Incognito window before sending.',marksheet:'A properly shared cloud marksheet keeps its version history.'},
+  b:{anyonelink:'That’s exactly how this happened. It’s always riskier.',whatsapp:'Forwarding the link even further!'}},
+ {id:'fiveday',m:6,n:'The Five-Day Feedback Loop',e:'🐌',t:'Tests take 5 days to mark. By the time feedback arrives, the class has moved on.',h:'Digital tools speed up Step 2: Assess.',
+  s:{autoquiz:'The online tool marks and gives feedback, shrinking the loop to about 1 day.',fastloop:'Build → Assess → Feedback → Identify, without the delay.',gemini:'AI-supported feedback speeds things up.',gamify:'Instant results while learning is still fresh.'},
+  b:{worksheet:'More paper means slower marking.',chalk:'Pushing on without feedback breaks the loop.'}},
+ {id:'dark',m:6,n:'Teaching in the Dark',e:'🔦',t:'You only discover which topics learners didn’t understand when the exam results arrive.',h:'Assessment FOR learning: the chef tastes the soup while cooking.',
+  s:{lowtech:'Quick formative checks show who needs help now.',autoquiz:'Instant data on what learners still struggle with.',jitt:'Adapt your teaching to what formative results reveal.',gamify:'A gamified check-in shows the gaps in minutes.',fastloop:'Close the loop before the exam, not after.'},
+  b:{chalk:'Pressing on without checking for understanding.',worksheet:'Another task that won’t be marked in time.'}},
+ {id:'reportpanic',m:6,n:'Report-Card Panic',e:'📚',t:'Marks are spread across 4 paper markbooks, and one has coffee all over it.',h:'Go paperless with digital record keeping.',
+  s:{marksheet:'Paperless record keeping in Google Sheets or Excel: enter and review anywhere.',cloudshare:'Cloud files can’t be ruined by coffee.',shareddrive:'Colleagues can work from the same records.'},
+  b:{usb:'A USB can be lost too.',worksheet:'More paper, more risk.'}},
+ {id:'passiveclass',m:7,n:'The Passive Classroom',e:'🪑',t:'Learners wait to be told everything. Given a choice, they freeze.',h:'Shift from instruction to facilitation, but keep the balance.',
+  s:{facilitate:'The teacher creates the conditions; learners become active.',handson:'Learning by doing makes learners active participants.',flipped:'Learners take on content independently, and class time becomes active.',reflect:'Reflection puts learners in charge of their understanding.',scaffold:'Balance: build independence with structure.'},
+  b:{chalk:'More teacher-directed delivery deepens passivity.',worksheet:'Silent worksheets keep learners passive.'}},
+ {id:'nodata',m:7,n:'Flip Without Wi-Fi',e:'📶',t:'You want to flip your classroom, but most learners have no reliable internet at home.',h:'Weigh up the pros and cons of flipped vs blended.',
+  s:{blended:'Blended learning still benefits from technology, but needs far less home access.',offline:'Offline-available content removes the data barrier.',datalite:'Low-bandwidth materials respect learners’ data.',groups:'Use in-class device stations instead.',lowtech:'Low-tech approaches keep everyone included.'},
+  b:{flipped:'Flipped classrooms require reliable access to technology at home.',anyonelink:'A link they can’t open at home doesn’t help.'}},
+ {id:'tyre',m:7,n:'The Tyre Manual',e:'🛞',t:'Learners read 5 pages on how a circuit works. Not one of them can build one.',h:'Constructionism means learning by doing.',
+  s:{handson:'Changing the tyre yourself teaches the most.',coding:'Coding & Robotics: a truly hands-on approach.',activevid:'A demonstration with a task is more constructivist than reading.'},
+  b:{worksheet:'Another manual. Theory alone has no constructivist element.',chalk:'Telling isn’t doing.'}}
+];
+
+const KQ={
+ 1:[{q:'In TPACK, which THREE knowledge areas must intersect?',a:'Technical, Pedagogical and Content knowledge',w:['Technical, Administrative and Assessment','Pedagogical, Social and Curriculum','Content, Communication and Classroom'],e:'Disregard one area and ICT integration won’t be as effective as it could be.'},
+  {q:'Which two SAMR levels form the TRANSFORMATION zone?',a:'Modification and Redefinition',w:['Substitution and Augmentation','Augmentation and Modification','Substitution and Redefinition'],e:'Substitution and Augmentation are Enhancement; Modification and Redefinition are Transformation.'},
+  {q:'What drives the Fourth Industrial Revolution?',a:'Artificial Intelligence and the Internet of Things',w:['Steam and factories','Electricity and mass production','The arrival of television'],e:'4IR (2010–): AI and the IoT connect systems in real time.'}],
+ 2:[{q:'With a smart classroom layout, how many learners can 3 devices engage?',a:'20 learners',w:['3 learners','6 learners','9 learners'],e:'Group stations and routines stretch limited devices.'},
+  {q:'Which is NOT one of the hyperlink solutions from Module 2?',a:'Read the full URL aloud for learners to type',w:['Create a text link','Use a shortened URL','Generate a QR code'],e:'Nobody should have to type a long URL.'},
+  {q:'When choosing ANY tool, what should you always ask?',a:'What will learners gain from this tool?',w:['Will this impress learners?','Is this the newest tool?','Does it have the most features?'],e:'Avoid the WOW factor; it isn’t sustainable.'}],
+ 3:[{q:'You find the perfect image, but it’s watermarked. What should you do?',a:'Don’t use it. Find a free, permitted alternative.',w:['Crop the watermark out','Use it; the watermark is small','Remove it with an editing tool'],e:'Always make sure you have permission.'},
+  {q:'Which site is recommended for free ICONS?',a:'Flaticon',w:['Unsplash','Loom','Clipchamp'],e:'Flaticon for icons, Unsplash for photos, Freepik for clipart, Pixabay for all-in-one.'},
+  {q:'Which is a RISK of using video for learning?',a:'Cognitive overload',w:['Self-paced learning','Multimodal learning','Pause and rewind'],e:'Too much audio-visual stimulation overwhelms working memory.'}],
+ 4:[{q:'Using the decision rule, the LMS (Google Classroom) is best for…',a:'Structured assignments, submission and grading',w:['Parent showcases','Static resource libraries','Broader subject hubs'],e:'Showcases and static resources belong on a website or portal.'},
+  {q:'When exploring a digital classroom tool, check it from…',a:'Both the teacher AND the learner perspective',w:['Only the teacher perspective','Only the principal’s perspective','Only the parent’s perspective'],e:'You’ll probably need two accounts to do it properly.'},
+  {q:'What’s the risk of spreading resources across too many digital spaces?',a:'More work for you and confusion for learners',w:['Learners learn faster','Data costs drop','None: more is better'],e:'Centralise to prevent friction.'}],
+ 5:[{q:'How much cloud storage does your @wcgschools.gov.za (Microsoft A1) account provide?',a:'1 TB per user',w:['5 GB','15 GB','500 TB per user'],e:'A free Google account has 15 GB, a free Microsoft account 5 GB, and Google Workspace for Education 500 TB per organisation.'},
+  {q:'Which sharing setting is the SAFEST?',a:'Viewer',w:['Anyone with the link','Editor','Commenter for everyone'],e:'Viewers can’t edit your files, though they can always copy content somehow, even with a screenshot.'},
+  {q:'Before sending a shared link, you should always…',a:'Test it in a Guest / InPrivate / Incognito window',w:['Shorten it twice','Make everyone an editor','Post it in WhatsApp first'],e:'Testing shows exactly what recipients will see.'},
+  {q:'Which files can be STORED in the cloud but must be downloaded or synced to EDIT?',a:'Complex project files like .psd or .dwg',w:['Google Docs','Word Online documents','Google Sheets'],e:'Video editing, CAD and 3D files are best edited locally.'},
+  {q:'Email vs WhatsApp: what is email’s main strength?',a:'Greatest functionality for the content you send',w:['Certainty that messages are read','It is used more regularly','It is quicker to type'],e:'WhatsApp is read more reliably, but email does far more.'}],
+ 6:[{q:'Assessment OF learning is also known as…',a:'Summative or formal assessment',w:['Formative or informal assessment','Just-In-Time teaching','Gamification'],e:'Assessment FOR learning is formative or informal.'},
+  {q:'In the chef analogy, tasting the soup while cooking represents…',a:'Formative assessment',w:['Summative assessment','The National Senior Certificate','Digital record keeping'],e:'Learners should be allowed to adjust and correct before formal assessment.'},
+  {q:'Which step of the feedback loop do digital tools speed up most?',a:'Step 2: Assess content knowledge',w:['Step 1: Build content knowledge','Step 4: Identify missing knowledge','None of them'],e:'A faster Step 2 lets feedback (Step 3) happen quickly.'},
+  {q:'The two critical factors when choosing an EdTech tool are…',a:'The intended learning outcomes and your classroom context',w:['Price and popularity','Features and animations','What other schools use and the newest release'],e:'And don’t introduce too many tools at once.'}],
+ 7:[{q:'In a flipped classroom, learners first meet new content…',a:'On their own outside class, through notes or video',w:['During a teacher lecture in class','Only in the exam','Through homework after the lecture'],e:'Class time is then used for consolidation and collaboration.'},
+  {q:'Constructionism differs from constructivism because the learner is…',a:'Immersed in hands-on creation rather than reflecting',w:['Listening to a lecture','Reading the theory first','Working alone without technology'],e:'In this course, Google Classroom was reflective, while creating a Google Slide was immersive.'},
+  {q:'In the tyre example, which approach teaches the most?',a:'Changing the tyre yourself',w:['Reading the manual','Watching a demonstration','Watching a YouTube review'],e:'Hands-on learning, or constructionism.'},
+  {q:'The key takeaway on learner- vs teacher-centred approaches is…',a:'Strike a balance',w:['Always be fully learner-centred','Always be teacher-centred','Let learners decide everything'],e:'A partisan view is seldom a healthy view.'}]
+};
+
+const $=s=>document.querySelector(s);
+const rnd=n=>Math.random()*n|0;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+let uidc=1;const mk=(id,up)=>({uid:uidc++,id,up:!!up});
+let ac=null,muted=false;
+function tone(f,d,type='sine',v=.14,f2=null,delay=0){if(muted)return;try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();const t=ac.currentTime+delay,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
+const SFX={card:()=>tone(520,.08,'triangle',.1,780),strong:()=>[523,784,1046].forEach((f,i)=>tone(f,.16,'triangle',.13,null,i*.06)),neutral:()=>tone(440,.12,'sine',.1),back:()=>tone(200,.35,'sawtooth',.1,80),hit:()=>tone(140,.25,'square',.1,60),win:()=>[392,523,659,784,1046].forEach((f,i)=>tone(f,.22,'triangle',.12,null,i*.08)),click:()=>tone(900,.04,'square',.05),boss:()=>tone(90,.6,'sawtooth',.14,45),bad:()=>tone(220,.3,'sawtooth',.1,90)};
+let toastT;
+function toast(msg,btns){const t=$('#toast');t.innerHTML=msg;(btns||[]).forEach(([l,f])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{f();t.classList.remove('show');};t.appendChild(b);});t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),btns?7000:2400);}
+function floatAt(target,text,col){const el=typeof target==='string'?$(target):target;if(!el)return;const r=el.getBoundingClientRect();const d=document.createElement('div');d.className='flt';d.textContent=text;d.style.color=col;d.style.left=(r.left+r.width/2)+'px';d.style.top=(r.top+r.height*.35)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1300);}
+function flash(col){const d=document.createElement('div');d.className='flash';d.style.background=col;document.body.appendChild(d);setTimeout(()=>d.remove(),460);}
+function openOv(html,cls){const o=$('#ov');o.innerHTML=`<div class="panel ${cls||''}">${html}</div>`;o.classList.add('show');return o.firstElementChild;}
+function closeOv(){$('#ov').classList.remove('show');$('#ov').innerHTML='';}
+
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+function toggleFS(){const d=document,el=d.documentElement;try{if(fsEl()){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return;}const req=el.requestFullscreen||el.webkitRequestFullscreen;if(!req)return fsFallback();const p=req.call(el);if(p&&p.catch)p.catch(fsFallback);}catch(e){fsFallback();}}
+function fsFallback(){if(window.self!==window.top)toast('Full screen is blocked inside this frame.',[['Open in new tab',()=>window.open(location.href,'_blank')]]);else toast('Full screen isn’t supported here. Try F11 (Windows) or ⌃⌘F (Mac).');}
+function fsIcon(){const on=!!fsEl();$('#bFS').textContent=on?'🗗':'⛶';document.querySelectorAll('.fsb').forEach(b=>b.textContent=on?'🗗 Exit full screen':'⛶ Full screen');}
+document.addEventListener('fullscreenchange',fsIcon);document.addEventListener('webkitfullscreenchange',fsIcon);
+$('#bFS').onclick=toggleFS;
+function toggleMute(){muted=!muted;$('#bMute').textContent=muted?'🔇':'🔊';}
+$('#bMute').onclick=toggleMute;
+
+let G=null,B=null,playerName='';
+function newRun(){
+ uidc=1;
+ G={deck:['chalk','chalk','plan','plan','worksheet','coffee'].map(id=>mk(id)),morale:50,max:50,score:0,ch:0,faced:[],
+   st:{strong:0,neutral:0,back:0,solved:0,kq:0,kqr:0,turns:0},boss:null,snap:null,start:performance.now()};
+}
+function stat(inst){const c=CARDS[inst.id];let p=c.p||0,b=c.b||0;if(inst.up){if(p)p+=3;else b+=3;}return {c:c.c,p,b,d:c.d||0,h:c.h||0};}
+function addScore(n){G.score=Math.max(0,G.score+n);topbar();}
+function topbar(){
+ if(!G){$('#tChap').textContent='Final Challenge';$('#tMor').style.display='none';$('#tScore').textContent='⭐ 0';return;}
+ $('#tChap').textContent=G.ch<7?`Chapter ${G.ch+1} of 7 · Module ${G.ch+1}`:'FINAL BOSS';
+ $('#tMor').style.display='';$('#tMor').textContent=`❤️ ${G.morale}/${G.max}`;$('#tScore').textContent=`⭐ ${G.score}`;
+}
+
+function cardHTML(inst,o={}){
+ const c=CARDS[inst.id],s=stat(inst),mc=c.m<0?['#C8126E','#C8126E']:MC[c.m];
+ const bits=[];if(s.p)bits.push('💥'+s.p);if(s.b)bits.push('🛡️'+s.b);if(s.d)bits.push('🃏+'+s.d);if(s.h)bits.push('❤️+'+s.h);
+ return `<div class="card ${c.r==='l'?'legend':''} ${c.junk?'junk':''} ${o.dim?'dim':''} ${o.sel?'sel':''}" data-uid="${inst.uid}" style="--mg:${mc[1]}">
+  <div class="band"><div class="cost">${s.c}</div>${c.m>=0?`<div class="mt">${c.m?'M'+c.m:'START'}</div>`:''}${c.e}${o.key?`<div class="key">${o.key}</div>`:''}</div>
+  <div class="nm">${c.n}${inst.up?'+':''}</div><div class="st">${bits.join(' · ')||'&nbsp;'}</div><div class="fl">${c.t}</div></div>`;
+}
+
+function titleScreen(){
+ G=null;B=null;topbar();closeOv();
+ let best=0;try{best=+localStorage.getItem('clBest')||0;}catch(e){}
+ const fan=['tpack','cloudshare','samr','fastloop','handson'].map(id=>cardHTML(mk(id))).join('');
+ $('#screen').innerHTML=`<div class="panel title dark">
+  <div class="sub">Digital Skills Course · Final Challenge · Modules 1–7</div>
+  <h1 style="margin-top:8px">CLASSROOM LEGENDS</h1>
+  <div class="fan">${fan}</div>
+  <p>Seven chapters. Seven classroom crises. One final boss: <b>THE STATUS QUO</b>. Build a deck of tools and strategies from every module, then play the right card at the right moment. <b>Good judgement beats big numbers.</b></p>
+  <div class="rules">
+   <div style="--c:#8FAD15"><b>✅ Strong fit = ×2</b>Cards that genuinely solve the crisis deal double impact.</div>
+   <div style="--c:#9aa6c4"><b>➖ Partial fit = ½</b>Not a targeted fix? It only helps a little.</div>
+   <div style="--c:#C8126E"><b>⚠️ Backfire</b>Some tempting cards make things worse and cost you morale.</div>
+   <div style="--c:#00A1A3"><b>⏱ Time & 🛡️ Prep</b>3 time per turn. Prep blocks the crisis’s pressure.</div>
+  </div>
+  <input id="nm" maxlength="30" placeholder="Enter your name for your badge" value="${esc(playerName)}">
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">▶ BEGIN THE TERM</button><button class="ghost fsb" id="fs">⛶ Full screen</button></div>
+  ${best?`<p style="font-size:14px">🏅 Best score on this device: <b>${best}</b></p>`:''}
+ </div>`;
+ fsIcon();$('#fs').onclick=toggleFS;
+ $('#go').onclick=()=>{playerName=$('#nm').value.trim();SFX.win();newRun();mapScreen();};
+ $('#nm').onkeydown=e=>{if(e.key==='Enter')$('#go').click();};
+}
+
+function mapScreen(){
+ closeOv();topbar();
+ const nodes=[];
+ for(let i=0;i<8;i++){const cls=i<G.ch?'done':i===G.ch?'cur':'lock';const mg=i<7?MC[i+1][1]:'linear-gradient(135deg,#C8126E,#3a0638)';
+  nodes.push(`<div class="node ${cls}" style="--mg:${mg}" title="${i<7?MODS[i+1]:'Final Boss'}">${i<7?`<small>MODULE</small>${i+1}`:'🗿'}</div>`);if(i<7)nodes.push('<div class="link"></div>');}
+ const boss=G.ch>=7;
+ $('#screen').innerHTML=`<div class="panel">
+  <span class="tag">📅 Term Planner</span>
+  <h1 style="margin-top:8px">${boss?'The Status Quo awaits…':`Chapter ${G.ch+1}: ${MODS[G.ch+1]}`}</h1>
+  <div class="map">${nodes.join('')}</div>
+  <p>${boss?'Every module behind you. One last opponent: the voice that says <i>“We’ve always done it this way.”</i> It will throw three crises from across the course at you, back to back.':`Your next classroom crisis comes from <b>Module ${G.ch+1}</b>. First you’ll open a <b>Module ${G.ch+1} booster</b>: read the crisis, then choose the 3 cards you think will genuinely solve it.`}</p>
+  <div class="row"><span class="tag" style="background:#8FAD15">❤️ Morale ${G.morale}/${G.max}</span><span class="tag" style="background:#007DBA">🗂️ Deck ${G.deck.length} cards</span><span class="tag" style="background:#C8126E">⭐ ${G.score}</span></div>
+  <div class="row"><button class="btn ${boss?'m':'g'} big" id="go">${boss?'🗿 Face THE STATUS QUO':'Open booster ▶'}</button><button class="ghost" id="dk">🗂️ View deck</button></div>
+ </div>`;
+ $('#go').onclick=()=>{SFX.click();boss?bossIntro():chapterStart();};$('#dk').onclick=showDeck;
+}
+function showDeck(){
+ if(!G){toast('Start the game to build your deck.');return;}
+ const d=G.deck.slice().sort((a,b)=>CARDS[a.id].m-CARDS[b.id].m||a.id.localeCompare(b.id));
+ const c=openOv(`<span class="tag">🗂️ Your deck · ${d.length} cards</span><div class="grid nopick">${d.map(x=>cardHTML(x)).join('')}</div><div class="row"><button class="btn" id="cl">Close</button></div>`);
+ c.querySelector('#cl').onclick=closeOv;
+}
+$('#bDeck').onclick=showDeck;
+
+function chapterStart(){
+ const m=G.ch+1,pool=CRISES.filter(c=>c.m===m),cr=pool[rnd(pool.length)];G.cur=cr;
+ booster(m,cr,()=>startBattle(cr,false));
+}
+function booster(m,cr,done){
+ let pool=Object.keys(CARDS).filter(id=>m?CARDS[id].m===m:CARDS[id].m>0);
+ const offer=shuffle(pool).slice(0,m?5:6).map(id=>mk(id));
+ const sel=new Set();
+ const prev=cr?`<div class="preview"><div class="e">${cr.e}</div><div><div style="font-size:12px;letter-spacing:.12em;font-weight:800;opacity:.85">INCOMING CRISIS</div><b>${cr.n}</b><p>${cr.t}</p></div></div>`:
+  `<div class="preview"><div class="e">🗿</div><div><div style="font-size:12px;letter-spacing:.12em;font-weight:800;opacity:.85">FINAL PREPARATION</div><b>The Status Quo</b><p>Three crises from across the whole course. Pick versatile cards.</p></div></div>`;
+ $('#screen').innerHTML=`<div class="panel"><span class="tag" style="background:${m?MC[m][0]:'#C8126E'}">🎁 ${m?`Module ${m} booster · ${MODS[m]}`:'Legendary booster · All modules'}</span>
+  <h2>Choose <b>3 cards</b> to add to your deck</h2>${prev}
+  <p style="font-size:15px;color:#4a5680">Tip: some cards look powerful but might <b>backfire</b> on this crisis. Choose with judgement, not just big numbers.</p>
+  <div class="pick" id="pk">${offer.map(x=>cardHTML(x)).join('')}</div>
+  <div class="row"><button class="btn g big" id="add" disabled>Add 0/3 to deck</button><button class="ghost" id="dk">🗂️ Current deck (${G.deck.length})</button></div></div>`;
+ const upd=()=>{document.querySelectorAll('#pk .card').forEach(e=>e.classList.toggle('sel',sel.has(+e.dataset.uid)));$('#add').disabled=sel.size!==3;$('#add').textContent=`Add ${sel.size}/3 to deck`;};
+ document.querySelectorAll('#pk .card').forEach(e=>e.onclick=()=>{const u=+e.dataset.uid;if(sel.has(u))sel.delete(u);else if(sel.size<3)sel.add(u);else{toast('You can only choose 3. Deselect one first.');return;}SFX.click();upd();});
+ $('#dk').onclick=showDeck;
+ $('#add').onclick=()=>{offer.filter(x=>sel.has(x.uid)).forEach(x=>G.deck.push(mk(x.id)));SFX.win();done();};
+}
+
+const snapshot=()=>JSON.parse(JSON.stringify({deck:G.deck,morale:G.morale,score:G.score,st:G.st}));
+function startBattle(cr,boss){
+ closeOv();
+ if(!boss||G.boss.phase===0)G.snap=snapshot();
+ const ch=boss?8:G.ch+1;
+ const hp=boss?[36,40,44][G.boss.phase]:18+ch*3;
+ const pats=[['atk','distract','atk','drain'],['atk','atk','distract','drain'],['distract','atk','drain','atk']];
+ B={c:cr,boss,hp,max:hp,atk:boss?10+G.boss.phase:4+ch,pat:pats[rnd(3)],pi:0,
+   draw:shuffle(G.deck.map(x=>({...x}))),disc:[],hand:[],time:3,prep:0,drain:0,combo:0,ask:1,busy:false,turns:0,bs:{s:0,n:0,b:0}};
+ if(!G.faced.includes(cr.id))G.faced.push(cr.id);
+ topbar();renderBattle();startTurn();
+}
+function renderBattle(){
+ const c=B.c;
+ $('#screen').innerHTML=`<div id="battle">
+  <div class="cw">
+   <div class="crisis ${B.boss?'boss':''}" id="cr"><div class="cface">${c.e}</div>
+    <div class="cinfo">
+     <div><span class="mtag2" style="background:${MC[c.m][0]}">Module ${c.m} · ${MODS[c.m]}</span>${B.boss?`<span class="mtag2" style="background:#C8126E">🗿 Final boss · phase ${G.boss.phase+1}/3</span>`:''}</div>
+     <div class="cname">${B.boss?'The Status Quo: ':''}${c.n}</div><div class="ctext">${c.t}</div>
+     <div class="hp"><i id="hpb"></i><span id="hpt"></span></div>
+     <div class="row" style="margin-top:8px"><div class="intent" id="intent"></div><button class="ask" id="ask">🤝 Ask a colleague</button></div>
+    </div></div>
+   <div class="coach" id="coach"></div>
+  </div>
+  <div class="pbar">
+   <div class="mor">❤️<div class="mbar"><i id="mb"></i></div><span id="mt"></span></div>
+   <div class="pill" id="prep"></div><div class="orbs" id="orbs"></div><div class="pill" id="piles"></div><div class="pill" id="combo" style="display:none"></div>
+   <div style="flex:1"></div><button class="endt" id="endt">End turn ▶</button>
+  </div>
+  <div class="hand" id="hand"></div></div>`;
+ $('#endt').onclick=endTurn;$('#ask').onclick=ask;
+ coach('n',`<b class="h">📋 Crisis brief</b>${c.h}<div class="sm">Strong fits deal <b>×2</b>. Partial fits deal <b>½</b>. Some cards <b>backfire</b> (−4 morale). Keys: <span class="kbd">1–9</span> play a card · <span class="kbd">E</span> end turn</div>`);
+}
+function coach(cls,html){const c=$('#coach');if(!c)return;c.className='coach '+cls;c.innerHTML=`<div class="in">${html}</div>`;}
+function intentInfo(){const k=B.pat[B.pi%B.pat.length],v=B.atk;
+ if(k==='atk')return {k,p:v,txt:`⚔️ Next: Pressure ${v}`};
+ if(k==='distract')return {k,p:Math.max(2,v-3),txt:`🔔 Next: 2 Distractions + Pressure ${Math.max(2,v-3)}`};
+ return {k,p:Math.max(2,v-2),txt:`⚡ Next: Load-shedding (−1 ⏱) + Pressure ${Math.max(2,v-2)}`};}
+function upd(){
+ if(!B||!$('#battle'))return;
+ $('#hpb').style.width=(B.hp/B.max*100)+'%';$('#hpt').textContent=`Crisis ${B.hp} / ${B.max}`;
+ $('#intent').textContent=intentInfo().txt;$('#ask').disabled=!B.ask;
+ $('#mb').style.width=(G.morale/G.max*100)+'%';$('#mt').textContent=`${G.morale}/${G.max}`;
+ $('#prep').textContent=`🛡️ Prep ${B.prep}`;
+ $('#orbs').innerHTML='⏱ '+Array.from({length:Math.max(3,B.time)},(_,i)=>`<i class="orb ${i<B.time?'':'off'}"></i>`).join('');
+ $('#piles').textContent=`🂠 ${B.draw.length} · 🗑 ${B.disc.length}`;
+ const cb=$('#combo');cb.style.display=B.combo>1?'':'none';cb.textContent=`🔥 Combo ×${B.combo}`;
+ $('#hand').innerHTML=B.hand.map((h,i)=>cardHTML(h,{dim:stat(h).c>B.time,key:i<9?i+1:''})).join('');
+ document.querySelectorAll('#hand .card').forEach(e=>e.onclick=()=>play(+e.dataset.uid));
+ $('#endt').disabled=B.busy;topbar();
+}
+function drawN(n){for(let i=0;i<n;i++){if(!B.draw.length){if(!B.disc.length)break;B.draw=shuffle(B.disc);B.disc=[];}if(B.hand.length>=10)break;B.hand.push(B.draw.pop());}}
+function startTurn(){B.prep=0;B.time=Math.max(1,3-B.drain);B.drain=0;B.combo=0;B.turns++;drawN(5);B.busy=false;upd();}
+function play(uid){
+ if(!B||B.busy)return;
+ const i=B.hand.findIndex(h=>h.uid===uid);if(i<0)return;
+ const inst=B.hand[i],c=CARDS[inst.id],s=stat(inst);
+ if(s.c>B.time){toast('⏱ Not enough time this turn. End your turn to recover.');SFX.bad();return;}
+ B.busy=true;B.time-=s.c;const me=B;
+ const el=document.querySelector(`#hand .card[data-uid="${uid}"]`);if(el)el.classList.add('played');SFX.card();
+ setTimeout(()=>{
+  if(B!==me)return;
+  B.hand.splice(i,1);
+  if(c.junk){coach('n',`<b class="h">🔔 Distraction dismissed</b>Notifications and autoplay are designed to keep users engaged, not informed. Dismiss them before they drain you.`);B.busy=false;upd();return;}
+  const rel=B.c.s[inst.id]?'s':B.c.b[inst.id]?'b':'n';
+  const counts=s.p>0||rel!=='n';
+  let dmg=0;
+  if(rel==='s'){B.combo++;dmg=Math.max(s.p,4)*2+(B.combo>1?(B.combo-1)*2:0);}
+  else if(rel==='n'){dmg=Math.ceil(s.p/2);if(counts)B.combo=0;}
+  else{B.combo=0;}
+  if(rel!=='b'){B.prep+=s.b;if(s.h)G.morale=Math.min(G.max,G.morale+s.h);}
+  if(s.d)drawN(s.d);
+  B.hp=Math.max(0,B.hp-dmg);
+  if(counts){G.st[{s:'strong',n:'neutral',b:'back'}[rel]]++;B.bs[rel]++;}
+  const cr=$('#cr');
+  if(rel==='s'){SFX.strong();addScore(100+(B.combo>1?25*(B.combo-1):0));cr.classList.remove('hit');void cr.offsetWidth;cr.classList.add('hit');flash('rgba(143,173,21,.35)');
+   floatAt(cr,`STRONG FIT! −${dmg}`,'#c7ef3a');if(B.combo>1)setTimeout(()=>floatAt(cr,`🔥 COMBO ×${B.combo}`,'#7fe3e4'),250);
+   coach('s',`<b class="h">✅ ${c.e} ${c.n}: strong fit! ×2</b>${B.c.s[inst.id]}`);}
+  else if(rel==='n'){SFX.neutral();if(counts)addScore(20);if(dmg)floatAt(cr,`−${dmg}`,'#ffffff');if(s.b)floatAt('#prep',`+${s.b} 🛡️`,'#7fe3e4');
+   coach('n',counts?`<b class="h">➖ ${c.e} ${c.n}: partial fit (½ impact)</b>Useful in general, but not a targeted fix for “${B.c.n}”. <div class="sm">Hint: ${B.c.h}</div>`:`<b class="h">${c.e} ${c.n}</b>Support played: ${[s.b?`+${s.b} Prep`:'',s.d?`drew ${s.d}`:'',s.h?`+${s.h} morale`:''].filter(Boolean).join(', ')}.`);}
+  else{SFX.back();addScore(-50);G.morale=Math.max(0,G.morale-4);flash('rgba(200,18,110,.45)');floatAt('#mb','BACKFIRE! −4 ❤️','#ff7fbf');
+   $('#battle').animate([{transform:'translateX(-8px)'},{transform:'translateX(8px)'},{transform:'none'}],{duration:300});
+   coach('b',`<b class="h">⚠️ ${c.e} ${c.n} BACKFIRED!</b>${B.c.b[inst.id]}`);}
+  B.disc.push(inst);
+  const over=B.hp<=0||G.morale<=0;
+  B.busy=over;upd();
+  if(B.hp<=0)setTimeout(winBattle,450);else if(G.morale<=0)setTimeout(loseBattle,450);
+ },260);
+}
+function ask(){
+ if(!B.ask||B.busy)return;B.ask=0;SFX.click();
+ const h=B.hand.find(x=>B.c.s[x.id]);
+ if(h){coach('s',`<b class="h">🤝 A colleague leans over…</b>“Have you tried <b>${CARDS[h.id].n}</b>? It’s exactly what this situation needs.”`);upd();const e=document.querySelector(`#hand .card[data-uid="${h.uid}"]`);if(e)e.classList.add('hint');return;}
+ const inDeck=[...new Set([...B.draw,...B.disc].filter(x=>B.c.s[x.id]).map(x=>CARDS[x.id].n))];
+ coach('n',`<b class="h">🤝 A colleague leans over…</b>${inDeck.length?`“Nothing in your hand right now, but <b>${inDeck.join('</b>, <b>')}</b> in your deck would be perfect. Build Prep and hang in there.”`:'“Honestly? Nothing in your deck is a perfect fit. Use Prep and your best partial fits, and choose more carefully in the next booster.”'}`);upd();
+}
+function endTurn(){
+ if(!B||B.busy)return;B.busy=true;
+ const junk=B.hand.filter(h=>CARDS[h.id].junk).length;
+ if(junk){G.morale=Math.max(0,G.morale-2*junk);floatAt('#mb',`🔔 −${2*junk} ❤️`,'#ff7fbf');}
+ B.disc.push(...B.hand.filter(h=>!CARDS[h.id].junk));B.hand=[];
+ const it=intentInfo(),taken=Math.max(0,it.p-B.prep);
+ G.morale=Math.max(0,G.morale-taken);
+ if(it.k==='distract'){for(let i=0;i<2;i++)B.draw.splice(rnd(B.draw.length+1),0,mk('notif'));}
+ if(it.k==='drain')B.drain=1;
+ SFX.hit();const cr=$('#cr');cr.animate([{transform:'scale(1)'},{transform:'scale(1.04)'},{transform:'scale(1)'}],{duration:300});
+ floatAt('#mb',taken?`−${taken} ❤️`:'🛡️ BLOCKED!',taken?'#ff7fbf':'#7fe3e4');if(taken)flash('rgba(200,18,110,.25)');
+ if(it.k==='distract')setTimeout(()=>toast('🔔 2 Notifications were shuffled into your draw pile!'),200);
+ if(it.k==='drain')setTimeout(()=>toast('⚡ Load-shedding! You’ll have 1 less ⏱ next turn.'),200);
+ B.pi++;G.st.turns++;upd();
+ const me=B;setTimeout(()=>{if(B!==me)return;if(G.morale<=0)loseBattle();else startTurn();},650);
+}
+function debrief(){
+ const s=Object.entries(B.c.s).map(([id,r])=>`<li><b>${CARDS[id].e} ${CARDS[id].n}</b> (M${CARDS[id].m}): ${r}</li>`).join('');
+ const b=Object.entries(B.c.b).map(([id,r])=>`<li class="bk"><b>⚠️ ${CARDS[id].e} ${CARDS[id].n}</b>: ${r}</li>`).join('');
+ return `<ul class="debrief">${s}${b}</ul>`;
+}
+function winBattle(){
+ B.busy=true;SFX.win();G.st.solved++;
+ const bonus=200+Math.max(0,60-B.turns*10);addScore(bonus);
+ const last=B.boss&&G.boss.phase===2;
+ const c=openOv(`<div style="text-align:center"><div style="font-size:64px">🏆</div><span class="tag" style="background:#8FAD15">Crisis resolved in ${B.turns} turn${B.turns>1?'s':''}</span>
+  <h1 style="margin-top:8px">${B.c.n}: solved!</h1><p>✅ ${B.bs.s} strong · ➖ ${B.bs.n} partial · ⚠️ ${B.bs.b} backfire · <b>+${bonus} points</b></p></div>
+  <h2>🧠 Coach’s debrief: what works here, and what doesn’t</h2>${debrief()}
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">${B.boss?(last?'💥 Finish the Status Quo':'Next phase ▶'):'To the staffroom ☕'}</button></div>`);
+ c.querySelector('#go').onclick=()=>{
+  if(B.boss){if(last){B=null;victory();}else{G.boss.phase++;G.morale=Math.min(G.max,G.morale+10);startBattle(G.boss.list[G.boss.phase],true);toast('❤️ +10 morale between phases');}}
+  else{B=null;staffroom();}};
+}
+function loseBattle(){
+ B.busy=true;SFX.boss();
+ const c=openOv(`<div style="text-align:center"><div style="font-size:70px">🥵</div><span class="tag" style="background:#C8126E">Morale depleted</span><h1 style="margin-top:8px">Burnout!</h1>
+  <p>“${B.c.n}” wore you down. Take a breath: every attempt is revision. Here’s what would have worked:</p></div>${debrief()}
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">🔁 ${B.boss?'Restart the boss fight':'Try this crisis again'}</button><button class="ghost" id="q">Quit to title</button></div>`);
+ c.querySelector('#go').onclick=()=>{const s=JSON.parse(JSON.stringify(G.snap));G.deck=s.deck;G.morale=Math.max(s.morale,30);G.score=s.score;G.st=s.st;
+  if(B.boss){G.boss.phase=0;startBattle(G.boss.list[0],true);}else startBattle(B.c,false);};
+ c.querySelector('#q').onclick=titleScreen;
+}
+
+function staffroom(){
+ closeOv();const m=G.ch+1,pool=KQ[m],q=pool[rnd(pool.length)];
+ const opts=shuffle([{t:q.a,c:1},...q.w.map(t=>({t,c:0}))]);
+ $('#screen').innerHTML=`<div class="panel"><span class="tag" style="background:${MC[m][0]}">☕ Staffroom · Module ${m} knowledge check</span>
+  <h2>${q.q}</h2><div class="opts">${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${i+1}</span><span>${o.t}</span></button>`).join('')}</div><div id="res"></div></div>`;
+ let done=false;
+ const ans=i=>{if(done)return;done=true;G.st.kq++;const btns=[...document.querySelectorAll('.opt')];btns.forEach((b,j)=>{b.disabled=true;if(opts[j].c)b.classList.add('ok');});
+  const ok=opts[i].c;
+  if(ok){G.st.kqr++;addScore(150);SFX.strong();}else{btns[i].classList.add('bad');SFX.bad();G.morale=Math.min(G.max,G.morale+5);}
+  $('#res').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'✅ Correct! +150':'❌ Not quite. Have a coffee anyway: +5 ❤️'}</b><br>${q.e}</div>`+
+   (ok?`<h2 style="margin-top:14px">Choose your reward</h2><div class="choices"><button class="choice" id="r1"><div>❤️</div>Recharge<span>+15 morale</span></button><button class="choice" id="r2" style="background:linear-gradient(135deg,#8FAD15,#00A1A3)"><div>⬆️</div>Upgrade a card<span>+3 impact (or +3 prep)</span></button></div>`:
+   `<div class="row"><button class="btn" id="cont">Continue ▶</button></div>`);
+  if(ok){$('#r1').onclick=()=>{G.morale=Math.min(G.max,G.morale+15);SFX.win();retire();};$('#r2').onclick=upgrade;}
+  else $('#cont').onclick=retire;
+  topbar();
+ };
+ document.querySelectorAll('.opt').forEach((b,i)=>b.onclick=()=>ans(i));
+ document.onkeydown=e=>{if(!done&&$('.opt')){const n=parseInt(e.key)-1;if(n>=0&&n<opts.length)ans(n);}};
+}
+function upgrade(){
+ const d=G.deck.filter(x=>!x.up);
+ $('#screen').innerHTML=`<div class="panel"><span class="tag" style="background:#8FAD15">⬆️ Upgrade</span><h2>Choose a card to upgrade</h2><div class="grid">${d.map(x=>cardHTML(x)).join('')}</div></div>`;
+ document.querySelectorAll('.grid .card').forEach(e=>e.onclick=()=>{const x=G.deck.find(y=>y.uid===+e.dataset.uid);x.up=true;SFX.win();toast(`⬆️ ${CARDS[x.id].n} upgraded!`);retire();});
+}
+function retire(){
+ const d=G.deck.slice().sort((a,b)=>CARDS[a.id].m-CARDS[b.id].m);
+ $('#screen').innerHTML=`<div class="panel"><span class="tag">🧹 Spring clean</span><h2>Retire one card from your deck? (optional)</h2>
+  <p>A focused toolkit beats a cluttered one. <i>Don’t introduce too many tools, and certainly not all at once.</i> Retiring weak or risky cards means you’ll draw your best ones more often.</p>
+  <div class="row" style="margin-bottom:6px"><button class="btn g" id="keep">Keep my deck as is ▶</button></div>
+  <div class="grid">${d.map(x=>cardHTML(x)).join('')}</div></div>`;
+ const next=()=>{G.ch++;mapScreen();};
+ document.querySelectorAll('.grid .card').forEach(e=>e.onclick=()=>{if(G.deck.length<=8){toast('Keep at least 8 cards in your deck.');return;}const i=G.deck.findIndex(y=>y.uid===+e.dataset.uid);const n=CARDS[G.deck[i].id].n;G.deck.splice(i,1);SFX.click();toast(`🧹 ${n} retired.`);next();});
+ $('#keep').onclick=next;
+}
+
+function bossIntro(){
+ SFX.boss();
+ const mods=shuffle([1,2,3,4,5,6,7]);const list=[];
+ for(const m of mods){if(list.length===3)break;const p=CRISES.filter(c=>c.m===m&&!G.faced.includes(c.id));const q=p.length?p:CRISES.filter(c=>c.m===m);list.push(q[rnd(q.length)]);}
+ G.boss={list,phase:0};
+ const c=openOv(`<div style="text-align:center"><div style="font-size:110px;filter:drop-shadow(0 0 24px #C8126E)">🗿</div><h1 style="color:#fff;letter-spacing:.06em">THE STATUS QUO</h1>
+  <p style="color:#f3d6e6;font-size:18px"><i>“We’ve always done it this way. Chalk worked for my teachers, and it’ll work for yours.”</i></p>
+  <p style="color:#dfe7ff">Three back-to-back crises from <b>${list.map(x=>'Module '+x.m).join(', ')}</b>. Morale carries over (+10 between phases). First, one last <b>Legendary booster</b> from all modules.</p>
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">🎁 Open the final booster</button></div></div>`,'title dark');
+ c.querySelector('#go').onclick=()=>{closeOv();booster(0,null,()=>startBattle(list[0],true));};
+}
+function victory(){
+ closeOv();SFX.win();setTimeout(SFX.win,500);
+ const tot=G.st.strong+G.st.neutral+G.st.back,j=tot?Math.round(G.st.strong/tot*100):0,secs=Math.round((performance.now()-G.start)/1000);
+ const rank=j>=70?['👑','Classroom Legend','Your judgement is outstanding. You consistently matched the right strategy to the right problem.']:j>=55?['⚡','Transformation Agent','Strong, thoughtful choices across all seven modules.']:j>=40?['🔧','Digital Innovator','A solid foundation. Revisit the debriefs to sharpen your judgement even further.']:['🌱','Rising Practitioner','Every legend starts somewhere. Replay and use the coach’s debriefs to level up.'];
+ let best=0;try{best=+localStorage.getItem('clBest')||0;if(G.score>best)localStorage.setItem('clBest',G.score);}catch(e){}
+ $('#tChap').textContent='Term complete!';
+ $('#screen').innerHTML=`<div class="panel"><div style="text-align:center"><span class="tag" style="background:#00A1A3">Digital Skills Course · Final Challenge complete</span>
+  <div class="badge"><div><div class="e">${rank[0]}</div><b style="font-size:15px">${rank[1]}</b><span style="font-size:11px">Modules 1–7</span></div></div>
+  <h1>${playerName?esc(playerName)+', the':'The'} Status Quo has fallen!</h1><p>${rank[2]}</p></div>
+  <div class="sgrid"><div><b>${G.score}</b>final score${G.score>best&&best?'<br>🏅 NEW BEST':''}</div><div><b>${j}%</b>judgement</div><div><b>${G.st.strong}</b>strong plays</div><div><b>${G.st.back}</b>backfires</div><div><b>${G.st.kqr}/${G.st.kq}</b>knowledge checks</div><div><b>${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}</b>total time</div></div>
+  <p style="text-align:center;font-size:15px;color:#4a5680">📸 Screenshot your badge to celebrate completing the course.</p>
+  <div class="row" style="justify-content:center"><button class="btn g big" id="again">🔁 Play again</button><button class="ghost fsb" id="fs">⛶ Full screen</button></div>
+  <h2 style="text-align:center;margin-top:18px">Your final deck</h2><div class="grid nopick">${G.deck.map(x=>cardHTML(x)).join('')}</div></div>`;
+ fsIcon();$('#fs').onclick=toggleFS;$('#again').onclick=titleScreen;
+}
+
+window.addEventListener('keydown',e=>{
+ if(e.target.tagName==='INPUT')return;
+ if(e.code==='KeyF'){toggleFS();return;}
+ if(e.code==='KeyM'){toggleMute();return;}
+ if(!B||$('#ov').classList.contains('show')||!$('#battle'))return;
+ if(e.code==='KeyE'){endTurn();return;}
+ const n=parseInt(e.key);if(n>=1&&n<=9&&B.hand[n-1])play(B.hand[n-1].uid);
+});
+
+titleScreen();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Escape the Algorithm · Digital Skills Midpoint Challenge</title>
+<style>
+:root{--navy:#001489;--blue:#007DBA;--teal:#00A1A3;--green:#8FAD15;--mag:#C8126E;--ink:#0b1440;--zc:#007DBA}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000a3d;font-family:'Century Gothic','Futura','Avenir Next','Trebuchet MS',Arial,sans-serif;color:#fff;-webkit-user-select:none;user-select:none;touch-action:none}
+#game{position:fixed;inset:0;display:block}
+button{font-family:inherit;cursor:pointer;border:0}
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;display:none;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(180deg,rgba(0,20,137,.97),rgba(0,20,137,.86));border-bottom:3px solid var(--zc);z-index:5;flex-wrap:wrap;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+#hud.show{display:flex}
+.zonePill{background:var(--zc);padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;white-space:nowrap;box-shadow:0 0 14px var(--zc)}
+.zoneName{font-size:13px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.sp{flex:1}
+.stat{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);padding:5px 10px;border-radius:12px;font-weight:700;font-size:14px;white-space:nowrap}
+.bat{display:flex;gap:3px}
+.bat i{width:11px;height:18px;border-radius:3px;background:#8FAD15;box-shadow:0 0 6px #8FAD15;display:block}
+.bat i.off{background:rgba(255,255,255,.18);box-shadow:none}
+.inv{display:flex;gap:6px}
+.slot{position:relative;width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;border:2px solid transparent;transition:.2s}
+.slot.has{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.2)}
+.slot.empty{opacity:.35}
+.slot b{position:absolute;bottom:-4px;right:-4px;background:var(--mag);font-size:10px;border-radius:8px;padding:1px 5px}
+.slot small{position:absolute;top:-5px;left:-4px;background:#fff;color:var(--navy);font-size:9px;border-radius:6px;padding:0 4px;font-weight:700}
+.slot.active{border-color:#8FAD15;box-shadow:0 0 14px #8FAD15}
+.slot.cd{opacity:.5}
+.hbtn{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.14);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center}
+.hbtn:hover{background:rgba(255,255,255,.28)}
+#minimap{position:fixed;right:12px;bottom:12px;border-radius:12px;border:2px solid rgba(255,255,255,.5);background:rgba(0,10,61,.75);z-index:4;display:none}
+#powers{position:fixed;left:12px;bottom:12px;z-index:4;display:none;gap:6px;flex-direction:column}
+.pchip{background:rgba(0,20,137,.88);border-left:4px solid var(--c);padding:6px 10px;border-radius:10px;font-size:12px;font-weight:700}
+#banner{position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none;font-weight:800;font-size:clamp(16px,3vw,26px);padding:10px 22px;border-radius:16px;background:rgba(200,18,110,.92);box-shadow:0 0 30px rgba(200,18,110,.7);opacity:0;transition:opacity .3s;text-align:center}
+#banner.show{opacity:1}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);z-index:40;background:#fff;color:var(--ink);padding:12px 18px;border-radius:14px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center;border-left:6px solid var(--teal)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+#toast button{margin-left:10px;background:var(--navy);color:#fff;padding:6px 12px;border-radius:10px;font-weight:700}
+/* Touch */
+#touch{position:fixed;inset:auto 0 0 0;z-index:6;display:none;pointer-events:none;padding:14px;justify-content:space-between;align-items:flex-end}
+#touch.show{display:flex}
+.dpad{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(3,58px);gap:4px;pointer-events:auto}
+.dpad button,.acts button{background:rgba(0,20,137,.7);border:2px solid rgba(255,255,255,.55);color:#fff;border-radius:16px;font-size:24px}
+.dpad button:active,.acts button:active{background:var(--teal)}
+.acts{display:flex;flex-direction:column;gap:8px;pointer-events:auto;margin-bottom:120px}
+.acts button{width:58px;height:58px}
+/* Overlay & cards */
+#overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,10,61,.74);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:20;padding:14px}
+#overlay.show{display:flex}
+.card{position:relative;background:#fff;color:var(--ink);border-radius:24px;max-width:780px;width:100%;max-height:94vh;overflow:auto;padding:26px 28px;box-shadow:0 24px 70px rgba(0,0,0,.5);border-top:10px solid var(--zc);animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
+@keyframes pop{from{transform:scale(.8) translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.card h1{font-size:clamp(26px,5vw,46px);line-height:1.05;color:var(--navy)}
+.card h2{font-size:clamp(18px,2.6vw,24px);line-height:1.3;color:var(--navy);margin:8px 0 16px}
+.card p{line-height:1.5;margin:8px 0;font-size:15px}
+.tag{display:inline-flex;gap:6px;align-items:center;background:var(--zc);color:#fff;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:999px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:#f1f5fc;color:var(--ink);font-size:15px;padding:13px 14px;border-radius:14px;border:2px solid #dbe4f3;transition:.15s;font-weight:600;line-height:1.35}
+.opt:hover:not(:disabled){border-color:var(--zc);transform:translateX(4px);background:#fff}
+.opt .k{flex:none;width:28px;height:28px;border-radius:9px;background:var(--zc);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.opt.ok{background:#eef6d6;border-color:var(--green)}
+.opt.ok .k{background:var(--green)}
+.opt.bad{background:#fbe3ef;border-color:var(--mag)}
+.opt.bad .k{background:var(--mag)}
+.opt.gone{opacity:.25;text-decoration:line-through}
+.opt:disabled{cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.btn{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;font-weight:800;font-size:16px;padding:13px 22px;border-radius:14px;box-shadow:0 6px 18px rgba(0,20,137,.35);transition:.15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,20,137,.45)}
+.btn.big{font-size:20px;padding:16px 30px}
+.btn.g{background:linear-gradient(135deg,var(--green),var(--teal))}
+.btn.m{background:linear-gradient(135deg,var(--mag),var(--navy))}
+.ghost{background:transparent;color:var(--navy);font-weight:700;padding:10px 14px;border-radius:12px;border:2px solid #dbe4f3}
+.pw{background:#eaf7f7;color:#006b6d;font-weight:800;padding:10px 14px;border-radius:12px;border:2px solid var(--teal)}
+.fb{margin-top:14px;padding:14px 16px;border-radius:14px;display:none;line-height:1.45;font-size:15px}
+.fb.ok{display:block;background:#f2f8e2;border-left:6px solid var(--green)}
+.fb.bad{display:block;background:#fdeef5;border-left:6px solid var(--mag)}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+/* Title */
+.title{background:radial-gradient(circle at 20% 0%,#0b2bd0 0%,#001489 45%,#000a3d 100%);color:#fff;border-top-color:var(--teal);text-align:center}
+.title h1{color:#fff;font-size:clamp(30px,6vw,58px);letter-spacing:.02em;text-shadow:0 0 30px rgba(0,161,163,.8)}
+.title .sub{font-weight:800;letter-spacing:.2em;font-size:12px;color:#7fe3e4;text-transform:uppercase}
+.title p{color:#dfe7ff}
+.stripe{display:flex;height:6px;border-radius:6px;overflow:hidden;margin:14px auto;max-width:320px}
+.stripe i{flex:1}
+.title input{font-family:inherit;font-size:17px;padding:12px 16px;border-radius:14px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);color:#fff;width:min(340px,100%);text-align:center;outline:none}
+.title input::placeholder{color:#b8c4f0}
+.zgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0;text-align:left}
+.zg{background:rgba(255,255,255,.08);border-radius:14px;padding:10px 12px;border-left:5px solid var(--c);font-size:13px}
+.zg b{display:block;font-size:14px;margin-bottom:2px}
+.howto{text-align:left;background:rgba(255,255,255,.08);border-radius:14px;padding:12px 16px;margin-top:12px;font-size:13.5px;line-height:1.6}
+.howto summary{cursor:pointer;font-weight:800}
+.kbd{display:inline-block;background:#fff;color:var(--navy);border-radius:6px;padding:0 6px;font-weight:800;font-size:12px;margin:0 2px}
+/* Zone intro */
+.zbig{font-size:clamp(46px,9vw,90px);font-weight:900;color:var(--zc);line-height:1;letter-spacing:-.02em}
+.mission{display:grid;gap:8px;margin:14px 0}
+.mission div{background:#f1f5fc;border-radius:12px;padding:10px 14px;font-weight:600;font-size:14.5px}
+/* Guardian */
+.gface{font-size:clamp(70px,13vw,120px);text-align:center;animation:float 2.4s ease-in-out infinite;filter:drop-shadow(0 0 22px var(--zc))}
+@keyframes float{50%{transform:translateY(-12px) rotate(-4deg)}}
+.taunt{background:var(--ink);color:#fff;border-radius:16px;padding:12px 16px;font-style:italic;position:relative;margin:10px auto 6px;max-width:560px;text-align:center}
+.ghp{height:14px;border-radius:10px;background:#e3e8f3;overflow:hidden;margin:6px 0 14px}
+.ghp i{display:block;height:100%;background:linear-gradient(90deg,var(--mag),var(--zc));transition:width .4s}
+.ghead{display:flex;align-items:center;gap:12px}
+.ghead .mini{font-size:44px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.chip{background:#f1f5fc;border:2px solid #dbe4f3;color:var(--ink);font-weight:700;padding:12px 16px;border-radius:14px;font-size:15px;transition:.15s}
+.chip:hover:not(:disabled){border-color:var(--zc);transform:translateY(-3px)}
+.chip.ok{background:var(--green);color:#fff;border-color:var(--green)}
+.chip.bad{background:var(--mag);color:#fff;border-color:var(--mag)}
+.chip.used{visibility:hidden}
+.stair{display:flex;flex-direction:column-reverse;gap:6px;margin:12px auto;max-width:420px;min-height:40px}
+.stair div{color:#fff;font-weight:800;padding:10px 14px;border-radius:12px;animation:pop .35s}
+.sortcard{margin:14px auto;max-width:440px;background:var(--ink);color:#fff;font-weight:800;font-size:18px;text-align:center;padding:22px 18px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.25);min-height:84px;display:flex;align-items:center;justify-content:center}
+.sortcard.fly-l{animation:flyl .35s forwards}.sortcard.fly-r{animation:flyr .35s forwards}
+@keyframes flyl{to{transform:translateX(-140px) scale(.5);opacity:0}}@keyframes flyr{to{transform:translateX(140px) scale(.5);opacity:0}}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bin{border-radius:18px;padding:16px;color:#fff;font-weight:800;font-size:16px;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:.15s}
+.bin:hover{transform:scale(1.03)}
+.bin span{font-size:12px;opacity:.85}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:grid;gap:8px}
+.mi{background:#f1f5fc;border:2px solid #dbe4f3;color:var(--ink);font-weight:700;padding:11px 12px;border-radius:12px;font-size:14px;text-align:left}
+.mi.sel{border-color:var(--zc);background:#e6f4fb;box-shadow:0 0 0 3px rgba(0,125,186,.2)}
+.mi.done{color:#fff;border-color:transparent}
+.mi.bad{animation:shake .35s;border-color:var(--mag)}
+.reward{display:flex;gap:16px;align-items:center;background:linear-gradient(135deg,var(--navy),var(--zc));color:#fff;border-radius:18px;padding:16px 18px;margin:14px 0}
+.reward .ic{font-size:52px}
+.reward b{font-size:19px}
+/* Boss */
+.boss{background:radial-gradient(circle at 50% 0%,#5a0c63 0%,#1b0748 45%,#000a3d 100%);color:#fff;border-top-color:var(--mag)}
+.boss h2{color:#fff}
+.bossTop{display:flex;align-items:center;gap:16px}
+.bossFace{font-size:clamp(60px,10vw,96px);filter:drop-shadow(0 0 26px #C8126E);animation:float 2s ease-in-out infinite}
+.bossFace.hit{animation:bhit .5s}
+@keyframes bhit{0%{filter:brightness(4) drop-shadow(0 0 40px #fff)}30%{transform:translate(-14px,6px) rotate(-12deg)}60%{transform:translate(12px,-4px) rotate(10deg)}}
+.bhp{height:18px;border-radius:12px;background:rgba(255,255,255,.15);overflow:hidden;border:2px solid rgba(255,255,255,.35)}
+.bhp i{display:block;height:100%;background:linear-gradient(90deg,#C8126E,#ff5fae);transition:width .5s}
+.timer{height:8px;border-radius:6px;background:rgba(255,255,255,.15);overflow:hidden;margin:10px 0}
+.timer i{display:block;height:100%;background:linear-gradient(90deg,#8FAD15,#00A1A3)}
+.boss .opt{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.2)}
+.boss .opt:hover:not(:disabled){background:rgba(255,255,255,.16)}
+.boss .opt.ok{background:rgba(143,173,21,.35);border-color:#8FAD15}
+.boss .opt.bad{background:rgba(200,18,110,.4);border-color:#C8126E}
+.boss .fb.ok{background:rgba(143,173,21,.2);color:#fff}
+.boss .fb.bad{background:rgba(200,18,110,.25);color:#fff}
+.beam{position:fixed;left:50%;bottom:20%;width:12px;height:0;background:linear-gradient(0deg,#00A1A3,#fff);box-shadow:0 0 30px #00A1A3,0 0 60px #fff;border-radius:8px;z-index:30;transform:translateX(-50%);animation:beam .45s ease-out forwards;pointer-events:none}
+@keyframes beam{0%{height:0;opacity:1}70%{height:70vh;opacity:1}100%{height:70vh;opacity:0}}
+.flash{position:fixed;inset:0;background:#C8126E;opacity:0;z-index:29;pointer-events:none;animation:fl .5s}
+@keyframes fl{20%{opacity:.45}}
+/* End */
+.badge{width:200px;height:200px;margin:8px auto;border-radius:50%;background:conic-gradient(#001489,#007DBA,#00A1A3,#8FAD15,#C8126E,#001489);display:flex;align-items:center;justify-content:center;animation:spin 8s linear infinite;box-shadow:0 0 40px rgba(0,161,163,.6)}
+.badge>div{width:166px;height:166px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:spin 8s linear infinite reverse;color:var(--navy);text-align:center;padding:10px}
+.badge .e{font-size:54px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
+.sgrid div{background:#f1f5fc;border-radius:14px;padding:12px;text-align:center;font-size:12px;font-weight:700;color:#4a5680}
+.sgrid b{display:block;font-size:24px;color:var(--navy)}
+@media (max-width:640px){.zoneName{display:none}.card{padding:20px 18px}.stat{font-size:12px;padding:4px 8px}.slot,.hbtn{width:34px;height:34px;font-size:16px}#minimap{display:none!important}}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud">
+  <div class="zonePill" id="hZone">ZONE 1</div>
+  <div class="zoneName" id="hName"></div>
+  <div class="sp"></div>
+  <div class="stat" title="Battery">🔋<div class="bat" id="hBat"></div></div>
+  <div class="stat" title="Score">⭐ <span id="hScore">0</span></div>
+  <div class="stat" title="Streak">🔥 <span id="hStreak">0</span></div>
+  <div class="inv" id="hInv"></div>
+  <button class="hbtn" id="bMute" title="Sound (M)">🔊</button>
+  <button class="hbtn" id="bHelp" title="Pause / Help (P)">⏸</button>
+  <button class="hbtn" id="bFS" title="Full screen (F)">⛶</button>
+</div>
+<canvas id="minimap" width="300" height="220"></canvas>
+<div id="powers"></div>
+<div id="banner"></div>
+<div id="touch">
+  <div class="dpad">
+    <span></span><button data-d="u">▲</button><span></span>
+    <button data-d="l">◀</button><span></span><button data-d="r">▶</button>
+    <span></span><button data-d="d">▼</button><span></span>
+  </div>
+  <div class="acts">
+    <button id="tQR" title="QR Map">📱</button>
+    <button id="tBoost" title="URL Shortener boost">🔗</button>
+    <button id="tCloak" title="Canva Cloak">🎨</button>
+  </div>
+</div>
+<div id="overlay"><div id="modal"></div></div>
+<div id="toast"></div>
+
+<script>
+(()=>{
+'use strict';
+/* ============ BRAND ============ */
+const C={navy:'#001489',blue:'#007DBA',teal:'#00A1A3',green:'#8FAD15',mag:'#C8126E'};
+const EMOJI='"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+
+/* ============ CONTENT (Modules 1–4) ============ */
+const ZONES=[
+ {title:'The Foundation Citadel',module:'Module 1 · Introduction & Background',col:C.blue,w:8,h:6,bots:2,
+  story:'The Algorithm has frozen this citadel on the bottom step of SAMR. Remind it that digital teaching remains <b>teaching</b>.',
+  guardian:{name:'The Substitution Golem',face:'🗿',taunt:'"For a thousand years I have stood on the bottom step of SAMR. A PowerPoint is the PEAK of innovation! You will never climb higher!"',
+   stages:[
+    {type:'order',prompt:'Rebuild the SAMR staircase — click the steps from the BOTTOM to the TOP.',items:['Substitution','Augmentation','Modification','Redefinition'],cols:[C.navy,C.blue,C.teal,C.green]},
+    {type:'pick',prompt:'Power the 4C Core! Select the four Cs of modern learning.',correct:['Critical thinking','Creativity','Collaboration','Communication'],wrong:['Coding','Compliance','Copying','Calculation']},
+    {type:'order',prompt:'Restart the timeline — place the Industrial Revolutions in order (first to latest).',items:['Steam & factories (1760–1840)','Electricity (1870–1910)','The internet (1970–2000)','AI & the Internet of Things (2010–)'],cols:[C.navy,C.blue,C.teal,C.green]}
+   ]},
+  reward:{id:'lantern',ic:'🏮',name:'TPACK Lantern',desc:'Technical + Pedagogical + Content knowledge now light the way. Your vision radius is permanently expanded.'}},
+ {title:'The Environment Engine',module:'Module 2 · Digital Teaching & Learning Environment',col:C.teal,w:9,h:7,bots:3,
+  story:'Cables everywhere, 47 tabs open and a WOW Monster on the loose. Restore order to the teaching and learning environment.',
+  guardian:{name:'The WOW Monster',face:'🤩',taunt:'"Ooooh, SHINY! New app! NEW APP! Excitement IS engagement, right?! Let\'s try a different tool every single lesson!"',
+   stages:[
+    {type:'sort',prompt:'Sort each habit: does it build a focused learning environment, or feed the WOW chaos?',bins:[{n:'Focused Classroom',ic:'✅',c:C.teal},{n:'WOW Chaos',ic:'💥',c:C.mag}],
+     items:[['Organise files in cloud folders',0],['Bookmark folders for key sites',0],['A dedicated device charging station',0],['30-second end-of-lesson clean-up',0],['Embed a curated YouTube playlist',0],['Introduce one new tool at a time',0],['Share a QR code instead of a long URL',0],['A brand-new app every lesson',1],['Send learners to search YouTube alone',1],['Save everything on the desktop',1],['Write a 90-character URL on the board',1],['Choose tools for the wow, not the outcome',1]]}
+   ]},
+  reward:{id:'station',ic:'🔌',name:'Device Station',desc:'A tidy, dedicated charging station keeps learning powered. Max battery +1 and fully recharged.'}},
+ {title:'The Content Studio',module:'Module 3 · Digital Content',col:C.mag,w:10,h:7,bots:3,
+  story:'A Watermark Wraith is stamping stolen images onto everything. Source ethically, design with purpose and make video work for learning.',
+  guardian:{name:'The Watermark Wraith',face:'👻',taunt:'"Every image you find is MINE… stamped with my watermark for all eternity. Just crop it out — nobody will notice! Mwahaha!"',
+   stages:[
+    {type:'match',prompt:'Break the curse: match each free tool to what it does best.',pairs:[['Freepik','Clipart'],['Unsplash','Photos'],['Flaticon','Icons'],['Pixabay','All-in-one: photos, vectors & clipart'],['Loom','Screen recording'],['Clipchamp','Video editing']]},
+    {type:'sort',prompt:'Video in the classroom: is it a POWER or a RISK?',bins:[{n:'The Power',ic:'⚡',c:C.green},{n:'The Risk',ic:'⚠️',c:C.mag}],
+     items:[['Multimodal learning',0],['Self-paced learning',0],['Engagement & real-world context',0],['Pause, rewind and rewatch',0],['Cognitive overload',1],['Passive consumption',1],['Accessibility & the digital divide',1]]}
+   ]},
+  reward:{id:'cloak',ic:'🎨',name:'Canva Cloak',desc:'Press SPACE (or 🎨) to design yourself invisible to Distractions for 5 seconds. Recharges after 15 seconds.'}},
+ {title:'The Learning Hub',module:'Module 4 · Managing Learning',col:C.green,w:11,h:8,bots:4,
+  story:'Links are multiplying like hydra heads. Learners are lost between a dozen portals. Build one clear, central hub.',
+  guardian:{name:'The Link Hydra',face:'🐉',taunt:'"Cut off one link and TWO more grow! A WhatsApp group here, a website there, three classrooms everywhere! Your learners will drown in portals!"',
+   stages:[
+    {type:'sort',prompt:'Apply the decision rule: where does each belong?',bins:[{n:'LMS (Google Classroom)',ic:'🎓',c:C.navy},{n:'Website / Portal (Google Sites)',ic:'🌐',c:C.green}],
+     items:[['Structured assignments',0],['Learner submissions',0],['Grading & feedback',0],['Static resources',1],['Parent showcases',1],['Broader subject hubs',1]]},
+    {type:'pick',prompt:'Seal the hydra: select the FOUR things to look for in a digital classroom.',correct:['Accessibility & offline capability','Ease of use','Seamless content transfer & automation','Interactive & AI extras'],wrong:['The most expensive licence','Flashy animations everywhere','Works only on desktops','As many separate links as possible']}
+   ]},
+  reward:{id:'overdrive',ic:'🎓',name:'Classroom Overdrive',desc:'In the final battle, every answer on a streak of 2+ deals DOUBLE damage to The Algorithm.'}}
+];
+
+// q: question, a: correct, w: wrong options, e: explanation, tf: true/false item
+const Q=[
+ [ // Module 1
+  {q:'In the TPACK model, which THREE knowledge areas must intersect for an effective digitally enhanced lesson?',a:'Technical, Pedagogical and Content knowledge',w:['Technical, Administrative and Assessment knowledge','Pedagogical, Social and Curriculum knowledge','Content, Communication and Classroom knowledge'],e:'TPACK = Technical + Pedagogical + Content knowledge. Disregard one area and ICT integration won\'t be as effective as it could be.'},
+  {q:'A teacher replaces chalkboard notes with a stunning, beautifully animated PowerPoint. Where does this sit on the SAMR model?',a:'Substitution',w:['Augmentation','Modification','Redefinition'],e:'The uncomfortable truth of SAMR: even the most sophisticated PowerPoint or digital notes are still Substitution.'},
+  {q:'Which SAMR level describes technology that allows the creation of previously inconceivable tasks?',a:'Redefinition',w:['Substitution','Augmentation','Modification'],e:'Redefinition is the top step: tech makes tasks possible that could not exist before.'},
+  {q:'Which two SAMR levels together form the TRANSFORMATION zone?',a:'Modification and Redefinition',w:['Substitution and Augmentation','Augmentation and Modification','Substitution and Redefinition'],e:'S + A = Enhancement. M + R = Transformation. Enhancing is a great start — but keep climbing!'},
+  {q:'What should ALWAYS drive the use of a digital tool or AI in your lesson?',a:'Clear learning objectives',w:['The newest features available','What learners find most exciting','Whatever other schools are using'],e:'Digital teaching remains teaching. Tech without clear pedagogical goals creates distraction, not learning.'},
+  {q:'Which TWO principles are non-negotiable for digital integration in our South African context?',a:'Mobile-first design and data-conscious content',w:['Laptop-first design and HD video','Fibre-only access and printed backups','Social-media-first design and autoplay content'],e:'Materials must work on smartphones and use low-bandwidth, offline-friendly resources.'},
+  {q:'Research shows that learners who struggle with self-regulation or digital literacy in purely virtual setups tend to…',a:'Perform significantly worse without structured scaffolding',w:['Excel because of flexible pacing','Perform exactly the same as in class','Prefer working with no teacher guidance'],e:'Autonomy and digital literacy must be explicitly taught over time — otherwise achievement gaps widen.'},
+  {q:'What drives the Fourth Industrial Revolution?',a:'Artificial Intelligence and the Internet of Things',w:['The steam engine and factories','Electricity and mass production','The arrival of television'],e:'4IR (2010–): AI and the Internet of Things connect systems seamlessly, in real time.'},
+  {q:'True or False: YouTube\'s algorithms are designed to keep users INFORMED rather than engaged.',a:'False',tf:true,e:'False! They\'re designed to keep users ENGAGED, not informed — so recommended videos can pull learners away from your message.'},
+  {q:'Which device type has near-universal adoption in South Africa, with active subscriptions exceeding the population?',a:'Mobile smartphones',w:['Home desktop computers','Laptops','School-issued tablets'],e:'Mobile subscriptions exceed 170% of the population, while only around 12% have a computer at home.'},
+  {q:'True or False: Modern classrooms should treat digital platforms as emergency back-up plans only.',a:'False',tf:true,e:'False. Education has moved from survival-mode remote teaching to intentional hybrid and blended models — digital is a core extension of daily learning.'}
+ ],
+ [ // Module 2
+  {q:'Your teaching space is two-fold. What are the two parts?',a:'The physical environment and the digital environment',w:['The classroom and the staffroom','The textbook and the worksheet','The timetable and the curriculum'],e:'Your physical layout AND your digital workspace (desktop, cloud storage, virtual spaces) both shape your teaching.'},
+  {q:'With a smart classroom layout, how many learners can just 3 devices engage?',a:'20 learners',w:['3 learners','6 learners','9 learners'],e:'Food for thought: with group stations and pre-reading, 3 devices can engage 20 learners.'},
+  {q:'When learners share devices in groups, which skills are they working on?',a:'Communication and collaboration',w:['Typing speed and coding','Competition and memorisation','Independence and isolation'],e:'Sharing devices builds communication and collaboration skills. It will be noisy — embrace it!'},
+  {q:'Which of these is part of the 30-second end-of-lesson digital clean-up routine?',a:'Close all tabs, clear downloads from the desktop, put the device back on its charger',w:['Delete the browser and reinstall it','Leave everything open for the next class','Log out of the school Wi-Fi permanently'],e:'A 30-second habit keeps shared devices tidy and ready for the next learner.'},
+  {q:'What\'s the best way to share YouTube content with learners?',a:'Embed specific videos or create curated playlists',w:['Ask learners to search YouTube themselves','Share the YouTube home page','Turn on autoplay and let the algorithm decide'],e:'Curate the media — take control of the experience instead of handing it to the algorithm.'},
+  {q:'Which of these is NOT one of the hyperlink solutions from Module 2?',a:'Read the full URL out loud for learners to type',w:['Create a text link','Use a shortened URL','Generate a QR code'],e:'Nobody can be expected to type a long URL. Use text links, shortened URLs or QR codes.'},
+  {q:'When choosing ANY tool for a lesson, what should you always ask?',a:'What will the learners gain from this tool?',w:['Will this impress the learners?','Is this the newest tool available?','Does it have the most features?'],e:'Avoid the WOW factor — it isn\'t sustainable. Focus on what learners gain.'},
+  {q:'True or False: Excitement about a new digital tool is the same as engagement.',a:'False',tf:true,e:'False! Don\'t mistake excitement for engagement — the novelty wears off.'},
+  {q:'How should new digital tools be introduced?',a:'One at a time, with the learning outcomes driving the choice',w:['A new tool every lesson to keep things fresh','All at once in the first week','Only when learners ask for them'],e:'Too many new tools and the learning outcomes become secondary to learning the tools.'},
+  {q:'Why use a core set of tools and a uniform template?',a:'Familiarity builds comfort and keeps the focus on learning',w:['It\'s cheaper for the school','Learners dislike any variety','Policy forbids new tools'],e:'People find comfort in familiarity — ease of use should be front and centre.'},
+  {q:'True or False: Learners naturally take to digital learning like a duck to water.',a:'False',tf:true,e:'A common misconception! Digital learning is new to learners too.'},
+  {q:'In the sample bi-weekly routine, what is the Week 1 Friday slot (Gimkit or Prodigy) used for?',a:'Testing knowledge retention',w:['Testing baseline knowledge','A reading period','Curated exploration on Padlet'],e:'Monday tests baseline knowledge (Wayground/Kahoot); Friday tests retention (Gimkit/Prodigy).'}
+ ],
+ [ // Module 3
+  {q:'What is the smartest searching strategy from Module 3?',a:'Use a search engine to find a resource hub, then search inside that hub',w:['Google every individual resource separately','Only ever use the first search result','Avoid searching and create everything yourself'],e:'Searching within specialised platforms gives richer, higher-quality results with far less clutter.'},
+  {q:'You find the perfect image, but it carries a watermark. What should you do?',a:'Don\'t use it — find a free, permitted alternative',w:['Crop the watermark out','Use it — the watermark is small','Remove it with an editing tool'],e:'Always make sure you have permission. Watermarked graphics are illegal to use — and they don\'t look good.'},
+  {q:'Which site is recommended for free ICONS?',a:'Flaticon',w:['Unsplash','Topmarks','Loom'],e:'Flaticon = icons. Freepik = clipart. Unsplash = photos. Pixabay = all-in-one.'},
+  {q:'Which site is recommended for free PHOTOS?',a:'Unsplash',w:['Flaticon','Clipchamp','Thunderbolt Kids'],e:'Unsplash is the go-to for high-quality free photos.'},
+  {q:'Which of these is one of the reasons Module 3 promotes Canva for Education?',a:'Real-time collaboration & creativity between teachers and learners',w:['It only works offline','It replaces the curriculum','It automatically marks every test'],e:'Simplicity & design, access & versatility, and collaboration & creativity.'},
+  {q:'Which of these is a RISK of using video in learning?',a:'Cognitive overload',w:['Self-paced learning','Multimodal learning','Pacing flexibility'],e:'Too much visual and audio stimulation can overwhelm limited working memory.'},
+  {q:'Watching videos WITHOUT any active processing task mainly leads to…',a:'Passive consumption',w:['Multimodal learning','Deeper critical thinking','Better accessibility'],e:'Pair video with active tasks — otherwise critical thinking and retention drop.'},
+  {q:'Which free tool from Module 3 is used for SCREEN RECORDING?',a:'Loom',w:['Unsplash','Flaticon','Pixabay'],e:'Loom records your screen; Clipchamp handles additional edits; Chrome add-ons power up your browser.'},
+  {q:'Which tool is recommended for additional VIDEO EDITS?',a:'Clipchamp',w:['Freepik','Topmarks','Unsplash'],e:'Clipchamp polishes your recordings — no editing background required.'},
+  {q:'To make your videos accessible to ALL learners, you should…',a:'Add captions/descriptions and consider device and bandwidth access',w:['Make videos as long as possible','Use only high-definition files','Remove all audio'],e:'Video can deepen inequalities if it isn\'t designed to be universally accessible.'},
+  {q:'True or False: Canva for Education is fully cloud-based.',a:'True',tf:true,e:'True — it works as a live presentation tool, a printable materials generator or a self-directed learner resource.'},
+  {q:'Pixabay is a great site for…',a:'Photos, vectors and clipart — an all-in-one site',w:['Screen recording only','Grading assignments','Shortening URLs'],e:'Pixabay is the all-in-one resource site.'}
+ ],
+ [ // Module 4
+  {q:'Why move beyond messaging apps like WhatsApp to a dedicated LMS?',a:'An LMS solves organising, grading and content-delivery headaches',w:['WhatsApp is banned in schools','An LMS needs no internet at all','Messaging apps can\'t send text'],e:'Messaging apps are still useful for quick updates — but an LMS handles structure and grading.'},
+  {q:'Which of these is one of the FOUR things to look for in a digital classroom?',a:'Accessibility & offline capability',w:['The most colourful theme','Unlimited social-media integration','A built-in game store'],e:'Accessibility & offline capability, ease of use, seamless content transfer & automation, interactive & AI extras.'},
+  {q:'When exploring a new digital classroom tool, you should check it from…',a:'Both the TEACHER and the LEARNER perspective',w:['Only the teacher perspective','Only the principal\'s perspective','Only the parent\'s perspective'],e:'You\'ll probably need two accounts to do this properly.'},
+  {q:'Google Classroom works even better with…',a:'A registered Google Workspace',w:['A Facebook account','A WhatsApp group','Printed worksheets'],e:'A registered Google Workspace unlocks the full Google Classroom experience.'},
+  {q:'How has this very course let you experience Google Classroom?',a:'Through experiential learning — it IS the course\'s digital classroom',w:['Through a printed manual','Through a single video only','It hasn\'t — the course avoids it'],e:'You\'ve been experiencing it from the learner\'s side all along. Could it add value to your classroom?'},
+  {q:'Google Sites is best described as…',a:'A stripped-down, simple website builder',w:['A grading tool','A video editor','A messaging app'],e:'Its simplicity makes web design faster and easier — WIX is another option.'},
+  {q:'Which platform is mentioned as especially popular with younger learners?',a:'ClassDojo',w:['Google Sites','Loom','WIX'],e:'A ClassDojo classroom is always popular with younger learners.'},
+  {q:'According to the decision rule, use the LMS (Google Classroom) for…',a:'Structured assignments, submission and grading',w:['Parent showcases','Static resource libraries','Broader subject hubs'],e:'LMS for structure, submission and grading; website/portal for static resources, showcases and subject hubs.'},
+  {q:'What\'s the risk of spreading resources across too many digital spaces?',a:'More work for you and confusion for learners',w:['Learners will learn faster','Data costs drop to zero','Nothing — more is always better'],e:'Centralise to prevent friction. Avoid cluttering learners with too many separate links.'},
+  {q:'True or False: The decision rule says to use a website/portal for parent showcases and static resources.',a:'True',tf:true,e:'True. Structured work goes in the LMS; showcases and static resources go on the site.'},
+  {q:'Which native AI tool is mentioned as enhancing Google Classroom?',a:'Gemini',w:['Siri','Alexa','Cortana'],e:'Gemini integration supports smart grading, lesson adaptations and personalised feedback.'}
+ ]
+];
+const TFX=[
+ {q:'True or False: The SAMR model should be seen as stairs to climb.',a:'True',tf:true,e:'There are steps to take to reach the top — from enhancement to transformation.'},
+ {q:'True or False: Watermarked images are fine to use as long as you credit them.',a:'False',tf:true,e:'Always ensure you have permission. Avoid watermarked graphics.'},
+ {q:'True or False: Data-conscious content means low-bandwidth files and offline-accessible resources.',a:'True',tf:true,e:'Lightweight, offline-friendly content respects learners\' data realities.'},
+ {q:'True or False: The FIRST Industrial Revolution was driven by the internet.',a:'False',tf:true,e:'Steam drove the first (1760–1840). The internet drove the third.'},
+ {q:'True or False: Messaging apps remain useful for quick updates.',a:'True',tf:true,e:'Yes — but an LMS solves organising, grading and content delivery.'},
+ {q:'True or False: Google Classroom launched in 2014.',a:'True',tf:true,e:'Google Classroom 2014, Meet and Teams 2017, Zoom way back in 2011.'},
+ {q:'True or False: Introducing several new tools every week keeps learners focused on the outcomes.',a:'False',tf:true,e:'Introduce tools one at a time and let outcomes drive the choice.'},
+ {q:'True or False: Modification means technology allows significant task redesign.',a:'True',tf:true,e:'Modification = significant task redesign. Part of the transformation zone.'},
+ {q:'True or False: Augmentation means a direct substitute with NO functional change.',a:'False',tf:true,e:'That\'s Substitution. Augmentation adds functional improvement.'},
+ {q:'True or False: Centralising your digital spaces helps prevent friction for learners.',a:'True',tf:true,e:'Fewer, clearer spaces = less confusion.'},
+ {q:'True or False: A shortened URL is harder for learners to use than a long one.',a:'False',tf:true,e:'Shortened URLs, text links and QR codes make links easy.'},
+ {q:'True or False: Searching inside dedicated resource hubs gives less cluttered results.',a:'True',tf:true,e:'Find the hub with a search engine, then search inside the hub.'}
+];
+const DISTRACT=['🔔 99+ unread notifications!','▶ Autoplay: next video in 3…','📸 Someone tagged you in a meme','💬 "Did you see this?!" ×14','🛒 Recommended for you…','📺 Just ONE more video…','🎵 A new trend is going viral!'];
+const BOSS_TAUNTS=['"Engagement over information! ENGAGEMENT!"','"Autoplay in 3… 2… 1…"','"You have 99+ unread notifications…"','"Recommended for you: 10 hours of cat videos."','"Just one more scroll. Just one more…"','"Why read the learning objective when you could watch THIS?"'];
+
+/* ============ HELPERS ============ */
+const $=s=>document.querySelector(s);
+const rnd=n=>Math.random()*n|0;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const DV={u:[0,-1],d:[0,1],l:[-1,0],r:[1,0]};
+const DIRS=[[0,-1],[1,0],[0,1],[-1,0]];
+const k2=(x,y)=>x+','+y;
+const hash=(x,y)=>((x*73856093)^(y*19349663))>>>0;
+
+/* ============ AUDIO ============ */
+let ac=null,muted=false;
+function tone(f,d,type='sine',v=.15,f2=null,delay=0){
+ if(muted)return; try{
+  if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();
+  const t=ac.currentTime+delay,o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.02);
+ }catch(e){}
+}
+const SFX={
+ byte:()=>tone(1300,.07,'square',.05,1800),
+ pick:()=>{tone(660,.1,'triangle',.12,990);tone(990,.15,'triangle',.12,1480,.08);},
+ ok:()=>{[523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.13,null,i*.08));},
+ bad:()=>{tone(220,.3,'sawtooth',.1,90);},
+ hit:()=>{tone(160,.25,'square',.12,60);},
+ door:()=>{tone(200,.4,'sawtooth',.07,900);},
+ power:()=>{[392,523,659,784,1046,1318].forEach((f,i)=>tone(f,.22,'triangle',.12,null,i*.07));},
+ zap:()=>{tone(1400,.25,'sawtooth',.08,200);},
+ boss:()=>{tone(90,.6,'sawtooth',.14,45);},
+ click:()=>tone(900,.04,'square',.05)
+};
+
+/* ============ CANVAS ============ */
+const cv=$('#game'),ctx=cv.getContext('2d');
+const fog=document.createElement('canvas'),fctx=fog.getContext('2d');
+const mm=$('#minimap'),mctx=mm.getContext('2d');
+let DPR=1,VW=0,VH=0,T=48;
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);VW=window.innerWidth;VH=window.innerHeight;
+ cv.width=VW*DPR;cv.height=VH*DPR;cv.style.width=VW+'px';cv.style.height=VH+'px';fog.width=cv.width;fog.height=cv.height;
+ T=Math.max(30,Math.min(66,Math.floor(Math.min(VW,VH)/10)));}
+window.addEventListener('resize',resize);resize();
+
+/* ============ STATE ============ */
+let state='title',zi=0,L=null,P=null,bots=[],parts=[],texts=[],bg=[];
+let score=0,battery=5,maxBat=5,streak=0,bestStreak=0,playerName='';
+let stats,inv,powers,tm;
+const cam={x:0,y:0};
+function resetRun(){
+ score=0;maxBat=5;battery=5;streak=0;bestStreak=0;zi=0;
+ stats={answered:0,correct:0,bytes:0,gMist:0,start:performance.now(),end:0,reboots:0,firstTry:0};
+ inv={lens:1,shield:1,boost:0,qr:1};
+ powers={lantern:false,station:false,cloak:false,overdrive:false};
+ tm={boost:0,cloak:0,cloakCD:0,reveal:0,invuln:0,blackout:0,nextBlackout:75,shake:0};
+}
+
+/* ============ MAZE ============ */
+function genMaze(w,h){
+ const W=2*w+1,H=2*h+1,g=[];for(let y=0;y<H;y++)g.push(new Array(W).fill(1));
+ const vis=Array.from({length:h},()=>new Array(w).fill(false));
+ const st=[[0,0]];vis[0][0]=true;g[1][1]=0;
+ while(st.length){const [cx,cy]=st[st.length-1],nb=[];
+  for(const [dx,dy] of DIRS){const nx=cx+dx,ny=cy+dy;if(nx>=0&&ny>=0&&nx<w&&ny<h&&!vis[ny][nx])nb.push([nx,ny,dx,dy]);}
+  if(!nb.length){st.pop();continue;}
+  const [nx,ny,dx,dy]=nb[rnd(nb.length)];vis[ny][nx]=true;g[2*cy+1+dy][2*cx+1+dx]=0;g[2*ny+1][2*nx+1]=0;st.push([nx,ny]);}
+ return g;
+}
+function bfs(g,sx,sy,tx,ty,pass){
+ const H=g.length,W=g[0].length,prev=new Map(),q=[[sx,sy]];prev.set(k2(sx,sy),null);
+ while(q.length){const [x,y]=q.shift();if(x===tx&&y===ty)break;
+  for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=W||ny>=H)continue;const kk=k2(nx,ny);
+   if(prev.has(kk))continue;if(!(nx===tx&&ny===ty)&&!pass(g[ny][nx]))continue;prev.set(kk,[x,y]);q.push([nx,ny]);}}
+ if(!prev.has(k2(tx,ty)))return null;
+ const path=[];let c=[tx,ty];while(c){path.unshift(c);c=prev.get(k2(c[0],c[1]));}return path;
+}
+function buildLevel(i){
+ const Z=ZONES[i],g=genMaze(Z.w,Z.h),H=g.length,W=g[0].length;
+ const path=bfs(g,1,1,W-2,H-2,v=>v!==1);
+ const doors=[];
+ const place=idx=>{for(let d=0;d<10;d++)for(const s of [idx+d,idx-d]){if(s<3||s>path.length-5)continue;const [x,y]=path[s];
+   if((x&1)===(y&1))continue;if(g[y][x]!==0)continue;if(doors.some(o=>Math.abs(o.i-s)<4))continue;return s;}return -1;};
+ [.2,.43,.66].forEach(f=>{const s=place(Math.round(f*(path.length-1)));if(s>=0){const [x,y]=path[s];g[y][x]=2;doors.push({x,y,i:s});}});
+ doors.sort((a,b)=>a.i-b.i);doors.forEach((d,n)=>d.num=n+1);
+ const [gx,gy]=path[path.length-2],[ex,ey]=path[path.length-1];g[gy][gx]=3;g[ey][ex]=4;
+ const onPath=new Set(path.map(p=>k2(p[0],p[1])));
+ const ends=[];
+ for(let y=1;y<H;y+=2)for(let x=1;x<W;x+=2){if((x===1&&y===1)||(x===ex&&y===ey)||onPath.has(k2(x,y)))continue;
+  let n=0;for(const [dx,dy] of DIRS)if(g[y+dy][x+dx]!==1)n++;if(n===1)ends.push([x,y]);}
+ const pick=new Map(),es=shuffle(ends),must=['qr','lens','shield','solar'],extra=['lens','shield','solar','boost','qr','boost','solar'];
+ const nP=Math.min(es.length,4+i);
+ for(let j=0;j<nP;j++){const t=j<must.length?must[j]:extra[rnd(extra.length)];pick.set(k2(es[j][0],es[j][1]),t);}
+ if(!Array.from(pick.values()).includes('boost')&&es[nP])pick.set(k2(es[nP][0],es[nP][1]),'boost');
+ const bytes=new Set();
+ for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(g[y][x]===0&&!(x===1&&y===1)&&!pick.has(k2(x,y))&&Math.random()<.22)bytes.add(k2(x,y));
+ const seen=Array.from({length:H},()=>new Array(W).fill(false));
+ L={i,Z,g,W,H,doors,pick,bytes,seen,gateOpen:false,used:new Set(),t0:performance.now(),b0:stats.bytes,gx,gy,ex,ey,firstTry0:stats.firstTry};
+ P={x:1,y:1,fx:1,fy:1,tx:1,ty:1,t:0,moving:false,dir:'r',px:1,py:1};
+ spawnBots();cam.x=(1.5)*T;cam.y=(1.5)*T;markSeen();
+ document.documentElement.style.setProperty('--zc',Z.col);
+}
+function spawnBots(){
+ bots=[];const c=[];
+ for(let y=1;y<L.H-1;y++)for(let x=1;x<L.W-1;x++)if(L.g[y][x]===0&&Math.abs(x-P.x)+Math.abs(y-P.y)>9)c.push([x,y]);
+ shuffle(c).slice(0,L.Z.bots).forEach(([x,y])=>bots.push({x,y,fx:x,fy:y,tx:x,ty:y,t:1,px:x,py:y,last:null,n:1+rnd(98),ph:Math.random()*6}));
+}
+
+/* ============ INPUT ============ */
+const KEYMAP={ArrowUp:'u',KeyW:'u',ArrowDown:'d',KeyS:'d',ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r'};
+let dstack=[],mk=null;
+function clearHeld(){dstack=[];}
+window.addEventListener('keydown',e=>{
+ if(e.target&&e.target.tagName==='INPUT'){if(e.key==='Enter'&&mk)mk(e);return;}
+ if(e.code==='KeyF'){toggleFS();return;}
+ if(e.code==='KeyM'){toggleMute();return;}
+ if($('#overlay').classList.contains('show')){if(mk)mk(e);return;}
+ if(state!=='play')return;
+ const d=KEYMAP[e.code];
+ if(d){e.preventDefault();if(!dstack.includes(d))dstack.push(d);return;}
+ if(e.code==='KeyQ')useQR();else if(e.code==='KeyE')useBoost();else if(e.code==='Space'){e.preventDefault();useCloak();}
+ else if(e.code==='KeyP'||e.code==='Escape')showPause();
+});
+window.addEventListener('keyup',e=>{const d=KEYMAP[e.code];if(d)dstack=dstack.filter(x=>x!==d);});
+window.addEventListener('blur',clearHeld);
+document.querySelectorAll('.dpad button').forEach(b=>{
+ const d=b.dataset.d;
+ b.addEventListener('pointerdown',e=>{e.preventDefault();if(!dstack.includes(d))dstack.push(d);});
+ ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>{dstack=dstack.filter(x=>x!==d);}));
+});
+$('#tQR').onclick=()=>useQR();$('#tBoost').onclick=()=>useBoost();$('#tCloak').onclick=()=>useCloak();
+const isTouch=('ontouchstart' in window)||matchMedia('(pointer:coarse)').matches;
+
+/* ============ FULLSCREEN ============ */
+function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement;}
+function toggleFS(){
+ const d=document,el=d.documentElement;
+ try{
+  if(fsEl()){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return;}
+  const req=el.requestFullscreen||el.webkitRequestFullscreen;
+  if(!req){fsFallback();return;}
+  const p=req.call(el);if(p&&p.catch)p.catch(fsFallback);
+ }catch(e){fsFallback();}
+}
+function fsFallback(){
+ if(window.self!==window.top){toast('Full screen is blocked inside this frame.',[['Open in new tab',()=>window.open(location.href,'_blank')]]);}
+ else toast('Full screen isn\'t supported here. Try F11 (Windows) or ⌃⌘F (Mac).');
+}
+function fsIcon(){const on=!!fsEl();document.querySelectorAll('.fsb').forEach(b=>b.textContent=on?'🗗 Exit full screen':'⛶ Full screen');$('#bFS').textContent=on?'🗗':'⛶';}
+document.addEventListener('fullscreenchange',fsIcon);document.addEventListener('webkitfullscreenchange',fsIcon);
+$('#bFS').onclick=toggleFS;
+function toggleMute(){muted=!muted;$('#bMute').textContent=muted?'🔇':'🔊';}
+$('#bMute').onclick=toggleMute;$('#bHelp').onclick=()=>{if(state==='play')showPause();};
+
+/* ============ UI BITS ============ */
+let toastT=null;
+function toast(msg,btns){const t=$('#toast');t.innerHTML=msg;(btns||[]).forEach(([l,f])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{f();t.classList.remove('show');};t.appendChild(b);});
+ t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),btns?7000:2600);}
+let banT=null;
+function banner(msg,col){const b=$('#banner');b.innerHTML=msg;b.style.background=col||'rgba(200,18,110,.92)';b.classList.add('show');clearTimeout(banT);banT=setTimeout(()=>b.classList.remove('show'),2600);}
+function float(x,y,text,col){texts.push({x,y,text,col:col||'#fff',life:1.4});}
+function burst(x,y,col,n=18,spd=4){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=Math.random()*spd+1;parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.6+Math.random()*.6,col,sz:2+Math.random()*4});}}
+const INV=[['lens','🔍','','Search Lens: removes 2 wrong answers'],['shield','🛡️','','Firewall Shield: blocks one battery hit'],['qr','📱','Q','QR Map: reveals the maze & path'],['boost','🔗','E','URL Shortener: speed boost']];
+function updateHUD(){
+ if(!L)return;
+ $('#hZone').textContent='ZONE '+(L.i+1);$('#hName').textContent=L.Z.title+' · '+L.Z.module;
+ $('#hBat').innerHTML=Array.from({length:maxBat},(_,i)=>`<i class="${i<battery?'':'off'}"></i>`).join('');
+ $('#hScore').textContent=score;$('#hStreak').textContent=streak;
+ let h=INV.map(([id,ic,key,tip])=>`<button class="slot ${inv[id]?'has':'empty'} ${(id==='boost'&&tm.boost>0)?'active':''}" data-s="${id}" title="${tip}">${ic}${key?`<small>${key}</small>`:''}${inv[id]?`<b>${inv[id]}</b>`:''}</button>`).join('');
+ if(powers.cloak)h+=`<button class="slot has ${tm.cloak>0?'active':''} ${tm.cloakCD>0&&tm.cloak<=0?'cd':''}" data-s="cloak" title="Canva Cloak">🎨<small>␣</small></button>`;
+ $('#hInv').innerHTML=h;
+ $('#hInv').querySelectorAll('.slot').forEach(b=>b.onclick=()=>{const s=b.dataset.s;if(s==='qr')useQR();else if(s==='boost')useBoost();else if(s==='cloak')useCloak();else toast(INV.find(v=>v[0]===s)[3]+(s==='lens'?' — use it inside a Knowledge Gate.':' — works automatically.'));});
+ const pw=[];if(powers.lantern)pw.push(['🏮 TPACK Lantern',C.blue]);if(powers.station)pw.push(['🔌 Device Station',C.teal]);if(powers.cloak)pw.push(['🎨 Canva Cloak',C.mag]);if(powers.overdrive)pw.push(['🎓 Classroom Overdrive',C.green]);
+ $('#powers').innerHTML=pw.map(([t,c])=>`<div class="pchip" style="--c:${c}">${t}</div>`).join('');
+ $('#tCloak').style.display=powers.cloak?'':'none';
+}
+function showHUD(on){$('#hud').classList.toggle('show',on);$('#minimap').style.display=on?'block':'none';$('#powers').style.display=on?'flex':'none';$('#touch').classList.toggle('show',on&&isTouch);}
+function openModal(html,cls,zc){const m=$('#modal');m.innerHTML=`<div class="card ${cls||''}" style="${zc?'--zc:'+zc:''}">${html}</div>`;$('#overlay').classList.add('show');clearHeld();return m.firstElementChild;}
+function closeModal(){$('#overlay').classList.remove('show');mk=null;clearHeld();}
+function addScore(n,x,y,col){score=Math.max(0,score+n);if(x!=null)float(x,y,(n>0?'+':'')+n,col);updateHUD();}
+
+/* ============ POWERS ============ */
+function useQR(){if(state!=='play'||!inv.qr)return;inv.qr--;tm.reveal=8;for(const r of L.seen)r.fill(true);SFX.power();banner('📱 QR MAP SCANNED — the maze is revealed!',C.teal);updateHUD();}
+function useBoost(){if(state!=='play'||!inv.boost)return;inv.boost--;tm.boost=8;SFX.power();banner('🔗 URL SHORTENED — speed boost!',C.blue);updateHUD();}
+function useCloak(){if(state!=='play'||!powers.cloak)return;if(tm.cloakCD>0){toast('🎨 Canva Cloak recharging…');return;}tm.cloak=5;tm.cloakCD=20;SFX.power();banner('🎨 CANVA CLOAK — invisible to Distractions!',C.mag);updateHUD();}
+function visionR(){let r=powers.lantern?5.2:3.4;if(tm.blackout>0)r*=.6;return r;}
+function markSeen(){const r=Math.max(2.4,visionR());for(let y=Math.floor(P.y-r);y<=P.y+r;y++)for(let x=Math.floor(P.x-r);x<=P.x+r;x++){if(y<0||x<0||y>=L.H||x>=L.W)continue;if((x-P.x)**2+(y-P.y)**2<=r*r)L.seen[y][x]=true;}}
+
+/* ============ GAMEPLAY ============ */
+function tryMove(d){
+ P.dir=d;const [dx,dy]=DV[d],nx=P.x+dx,ny=P.y+dy,v=L.g[ny]&&L.g[ny][nx];
+ if(v===undefined||v===1)return;
+ if(v===2){const door=L.doors.find(o=>o.x===nx&&o.y===ny);openDoor(door);return;}
+ if(v===3){openGuardian();return;}
+ P.fx=P.x;P.fy=P.y;P.tx=nx;P.ty=ny;P.t=0;P.moving=true;
+}
+function arrive(){
+ const kk=k2(P.x,P.y);
+ if(L.bytes.has(kk)){L.bytes.delete(kk);stats.bytes++;SFX.byte();addScore(10,P.x,P.y,'#7ff');burst(P.x+.5,P.y+.5,L.Z.col,8,2);}
+ if(L.pick.has(kk)){const t=L.pick.get(kk);L.pick.delete(kk);SFX.pick();burst(P.x+.5,P.y+.5,'#fff',24,5);
+  const M={lens:['🔍 Search Lens','Removes 2 wrong answers at a Knowledge Gate'],shield:['🛡️ Firewall Shield','Blocks the next battery hit'],qr:['📱 QR Map','Press Q to reveal the maze'],boost:['🔗 URL Shortener','Press E for a speed boost'],solar:['☀️ Solar Cell','+1 battery — and it ends load-shedding!']};
+  if(t==='solar'){if(battery<maxBat)battery++;else addScore(50);tm.blackout=0;}else inv[t]++;
+  banner(`${M[t][0]}<br><span style="font-size:.6em;font-weight:600">${M[t][1]}</span>`,C.navy);updateHUD();}
+ markSeen();
+ if(L.g[P.y][P.x]===4&&L.gateOpen)zoneComplete();
+}
+function hit(why,wx,wy){
+ if(inv.shield>0){inv.shield--;tm.invuln=1.2;banner('🛡️ Firewall Shield absorbed it!',C.teal);SFX.zap();updateHUD();return false;}
+ battery--;streak=0;tm.invuln=1.6;tm.shake=.4;SFX.hit();
+ if(why==='bot'){float(wx,wy,DISTRACT[rnd(DISTRACT.length)],'#ff9ccc');}
+ updateHUD();return true;
+}
+function checkDead(){if(battery<=0){showReboot();return true;}return false;}
+function showReboot(){
+ state='modal';SFX.boss();
+ const c=openModal(`<div style="text-align:center"><div style="font-size:84px">🪫</div><span class="tag" style="background:${C.mag}">Battery depleted</span>
+ <h1 style="margin-top:10px">LOAD-SHEDDING!</h1><p>Distractions drained your battery. Grid reliability is a real challenge in our context — that's why we plan <b>offline-ready</b> and <b>data-conscious</b>!</p>
+ <p>You'll reboot at the zone entrance. Opened gates stay open. <b>−150 points.</b></p>
+ <div class="row" style="justify-content:center"><button class="btn g big" id="rb">⚡ Reboot & recharge</button></div></div>`,'',C.mag);
+ const go=()=>{battery=maxBat;stats.reboots++;addScore(-150);P={x:1,y:1,fx:1,fy:1,tx:1,ty:1,t:0,moving:false,dir:'r',px:1,py:1};spawnBots();tm.invuln=2;tm.blackout=0;closeModal();state='play';updateHUD();};
+ c.querySelector('#rb').onclick=go;mk=e=>{if(e.key==='Enter')go();};
+}
+function update(dt){
+ for(const k of ['boost','cloak','cloakCD','reveal','invuln','blackout','shake'])if(tm[k]>0)tm[k]=Math.max(0,tm[k]-dt);
+ tm.nextBlackout-=dt;
+ if(tm.nextBlackout<=0){tm.nextBlackout=65+Math.random()*45;tm.blackout=10;SFX.boss();banner('⚡ LOAD-SHEDDING STAGE 2! Vision reduced — a ☀️ Solar Cell ends it',C.mag);}
+ // player
+ const spd=tm.boost>0?9:5.4;
+ if(!P.moving&&dstack.length)tryMove(dstack[dstack.length-1]);
+ if(P.moving){P.t+=dt*spd;if(P.t>=1){P.x=P.tx;P.y=P.ty;P.moving=false;P.t=0;P.px=P.x;P.py=P.y;arrive();if(state==='play'&&dstack.length)tryMove(dstack[dstack.length-1]);}
+  else{P.px=P.fx+(P.tx-P.fx)*P.t;P.py=P.fy+(P.ty-P.fy)*P.t;}
+  if(tm.boost>0&&Math.random()<.6)parts.push({x:P.px+.5,y:P.py+.5,vx:0,vy:0,life:.4,col:C.teal,sz:5});}
+ if(state!=='play')return;
+ // bots
+ const bspd=2.3+L.i*.35;
+ for(const b of bots){
+  b.t+=dt*bspd;
+  if(b.t>=1){b.x=b.tx;b.y=b.ty;b.t=0;b.fx=b.x;b.fy=b.y;
+   let opts=DIRS.filter(([dx,dy])=>{const v=L.g[b.y+dy][b.x+dx];return v===0||v===4;});
+   if(opts.length>1&&b.last)opts=opts.filter(([dx,dy])=>!(dx===-b.last[0]&&dy===-b.last[1]));
+   let ch=opts[rnd(opts.length)];
+   const dist=Math.abs(b.x-P.x)+Math.abs(b.y-P.y);
+   if(tm.cloak<=0&&dist<7&&Math.random()<.6)ch=opts.slice().sort((a,c)=>(Math.abs(b.x+a[0]-P.x)+Math.abs(b.y+a[1]-P.y))-(Math.abs(b.x+c[0]-P.x)+Math.abs(b.y+c[1]-P.y)))[0];
+   if(ch){b.tx=b.x+ch[0];b.ty=b.y+ch[1];b.last=ch;}else{b.tx=b.x;b.ty=b.y;}
+  }
+  b.px=b.fx+(b.tx-b.fx)*b.t;b.py=b.fy+(b.ty-b.fy)*b.t;
+  if(tm.invuln<=0&&tm.cloak<=0&&Math.hypot(b.px-P.px,b.py-P.py)<.62){if(hit('bot',P.px+.5,P.py)){if(checkDead())return;}
+   b.last=null;b.tx=b.fx;b.ty=b.fy;b.t=1-b.t;[b.fx,b.tx]=[b.tx,b.fx];[b.fy,b.ty]=[b.ty,b.fy];}
+ }
+}
+
+/* ============ RENDER ============ */
+let time=0;
+function emoji(e,x,y,s){ctx.font=`${s}px ${EMOJI}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(e,x,y);}
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function drawWorld(dt){
+ const Z=L.Z,g=L.g;
+ const tx=(P.px+.5)*T,ty=(P.py+.5)*T;cam.x+=(tx-cam.x)*Math.min(1,dt*8);cam.y+=(ty-cam.y)*Math.min(1,dt*8);
+ const hudH=$('#hud').offsetHeight||56;
+ let ox=cam.x-VW/2,oy=cam.y-(VH+hudH)/2;
+ {const mw=L.W*T,mh=L.H*T,avail=VH-hudH;
+  if(mw<=VW)ox=(mw-VW)/2;else ox=Math.max(-T*.5,Math.min(mw-VW+T*.5,ox));
+  if(mh<=avail)oy=mh/2-(hudH+VH)/2;else oy=Math.max(-hudH-T*.5,Math.min(mh-VH+T*.5,oy));}
+ if(tm.shake>0){ox+=(Math.random()-.5)*14*tm.shake/.4;oy+=(Math.random()-.5)*14*tm.shake/.4;}
+ ox=Math.round(ox);oy=Math.round(oy);
+ ctx.fillStyle='#000a3d';ctx.fillRect(0,0,VW,VH);
+ const x0=Math.max(0,Math.floor(ox/T)),x1=Math.min(L.W-1,Math.ceil((ox+VW)/T)),y0=Math.max(0,Math.floor(oy/T)),y1=Math.min(L.H-1,Math.ceil((oy+VH)/T));
+ for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+  const v=g[y][x],sx=x*T-ox,sy=y*T-oy,h=hash(x,y);
+  if(v===1){
+   ctx.fillStyle=C.navy;ctx.fillRect(sx,sy,T+1,T+1);
+   ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(sx,sy,T,T*.12);
+   if(y+1<L.H&&g[y+1][x]!==1){ctx.fillStyle='#000c5a';ctx.fillRect(sx,sy+T*.72,T+1,T*.28+1);ctx.fillStyle=Z.col;ctx.globalAlpha=.9;ctx.fillRect(sx,sy+T*.72,T+1,2);ctx.globalAlpha=1;}
+   if(h%6===0){ctx.fillStyle=Z.col;ctx.globalAlpha=.35+.25*Math.sin(time*2+h);ctx.beginPath();ctx.arc(sx+T*.5,sy+T*.38,T*.06,0,7);ctx.fill();ctx.fillRect(sx+T*.5,sy+T*.36,T*.5,1.5);ctx.globalAlpha=1;}
+   continue;
+  }
+  ctx.fillStyle=(x+y)%2?'#eef3fb':'#e5edf8';ctx.fillRect(sx,sy,T+1,T+1);
+  if(h%9===0){ctx.fillStyle=Z.col;ctx.globalAlpha=.18;ctx.beginPath();ctx.arc(sx+T/2,sy+T/2,T*.08,0,7);ctx.fill();ctx.globalAlpha=1;}
+  if(y>0&&g[y-1][x]===1){ctx.fillStyle='rgba(0,20,137,.12)';ctx.fillRect(sx,sy,T,T*.18);}
+  const kk=k2(x,y),bob=Math.sin(time*3+h)*T*.06;
+  if(L.bytes.has(kk)){ctx.save();ctx.translate(sx+T/2,sy+T/2+bob);ctx.rotate(time*1.5+h);ctx.fillStyle=Z.col;ctx.shadowColor=Z.col;ctx.shadowBlur=10;ctx.fillRect(-T*.1,-T*.1,T*.2,T*.2);ctx.fillStyle='#fff';ctx.fillRect(-T*.04,-T*.04,T*.08,T*.08);ctx.restore();}
+  if(L.pick.has(kk)){const t=L.pick.get(kk);ctx.save();ctx.shadowColor='#fff';ctx.shadowBlur=18;ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.arc(sx+T/2,sy+T/2+bob,T*.34,0,7);ctx.fill();ctx.restore();
+   ctx.strokeStyle=Z.col;ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx+T/2,sy+T/2+bob,T*.34+3+Math.sin(time*4)*2,0,7);ctx.stroke();
+   emoji({lens:'🔍',shield:'🛡️',qr:'📱',boost:'🔗',solar:'☀️'}[t],sx+T/2,sy+T/2+bob,T*.42);}
+  if(v===2){const d=L.doors.find(o=>o.x===x&&o.y===y);ctx.save();rr(ctx,sx+3,sy+3,T-6,T-6,8);ctx.fillStyle=Z.col;ctx.shadowColor=Z.col;ctx.shadowBlur=16+8*Math.sin(time*4);ctx.fill();ctx.restore();
+   ctx.save();rr(ctx,sx+3,sy+3,T-6,T-6,8);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=4;for(let i=-T;i<T*2;i+=10){ctx.beginPath();ctx.moveTo(sx+i,sy);ctx.lineTo(sx+i+T,sy+T);ctx.stroke();}ctx.restore();
+   ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(sx+T/2,sy+T/2+bob*.5,T*.24,0,7);ctx.fill();
+   ctx.fillStyle=C.navy;ctx.font=`900 ${T*.32}px Century Gothic,Arial`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('?',sx+T/2,sy+T/2+bob*.5+1);
+   ctx.fillStyle='#fff';ctx.font=`800 ${T*.18}px Arial`;ctx.fillText(d?d.num:'',sx+T*.84,sy+T*.18);}
+  if(v===3){ctx.save();const gr=ctx.createLinearGradient(sx,sy,sx+T,sy+T);gr.addColorStop(0,C.mag);gr.addColorStop(1,C.navy);rr(ctx,sx+1,sy+1,T-2,T-2,10);ctx.fillStyle=gr;ctx.shadowColor=C.mag;ctx.shadowBlur=20+10*Math.sin(time*3);ctx.fill();ctx.restore();
+   emoji(Z.guardian.face,sx+T/2,sy+T/2+bob,T*.62);}
+  if(v===4){const on=L.gateOpen;ctx.save();ctx.translate(sx+T/2,sy+T/2);ctx.globalAlpha=on?1:.35;
+   for(let i=0;i<3;i++){ctx.rotate(time*(on?2:.5)*(i%2?-1:1));ctx.strokeStyle=[C.teal,C.green,C.blue][i];ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,T*(.18+i*.1),0,4.4);ctx.stroke();}
+   ctx.restore();if(on){ctx.fillStyle='rgba(143,173,21,.25)';ctx.beginPath();ctx.arc(sx+T/2,sy+T/2,T*.5,0,7);ctx.fill();}}
+ }
+ // reveal path
+ if(tm.reveal>0){let tgt=L.doors.find(d=>L.g[d.y][d.x]===2);let t=tgt?[tgt.x,tgt.y]:(!L.gateOpen?[L.gx,L.gy]:[L.ex,L.ey]);
+  const path=bfs(g,P.x,P.y,t[0],t[1],v=>v===0||v===4);
+  if(path){ctx.fillStyle=C.green;path.forEach(([x,y],i)=>{if(i===0)return;ctx.globalAlpha=.5+.5*Math.sin(time*6-i*.6);ctx.beginPath();ctx.arc((x+.5)*T-ox,(y+.5)*T-oy,T*.09,0,7);ctx.fill();});ctx.globalAlpha=1;}}
+ // bots
+ for(const b of bots){const bx=(b.px+.5)*T-ox,by=(b.py+.5)*T-oy+Math.sin(time*4+b.ph)*T*.06;
+  ctx.save();if(tm.cloak>0)ctx.globalAlpha=.55;ctx.shadowColor=C.mag;ctx.shadowBlur=14;ctx.fillStyle=C.mag;rr(ctx,bx-T*.32,by-T*.3,T*.64,T*.5,T*.14);ctx.fill();
+  ctx.beginPath();ctx.moveTo(bx-T*.1,by+T*.18);ctx.lineTo(bx-T*.2,by+T*.34);ctx.lineTo(bx+T*.04,by+T*.18);ctx.fill();ctx.restore();
+  emoji('🔔',bx,by-T*.05,T*.3);
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(bx+T*.3,by-T*.3,T*.15,0,7);ctx.fill();ctx.fillStyle=C.mag;ctx.font=`800 ${T*.14}px Arial`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(b.n,bx+T*.3,by-T*.29);}
+ // player
+ const px=(P.px+.5)*T-ox,py=(P.py+.5)*T-oy,bob=P.moving?Math.abs(Math.sin(time*14))*T*.06:Math.sin(time*3)*T*.03;
+ if(!(tm.invuln>0&&Math.floor(time*12)%2)){
+  ctx.save();if(tm.cloak>0)ctx.globalAlpha=.4;
+  ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(px,py+T*.34,T*.26,T*.08,0,0,7);ctx.fill();
+  ctx.shadowColor=tm.boost>0?C.teal:L.Z.col;ctx.shadowBlur=18;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(px,py-bob,T*.32,0,7);ctx.fill();ctx.shadowBlur=0;
+  ctx.lineWidth=4;ctx.strokeStyle=L.Z.col;ctx.stroke();
+  const [fx,fy]=DV[P.dir];ctx.fillStyle=C.navy;
+  ctx.beginPath();ctx.arc(px-T*.1+fx*T*.07,py-bob-T*.02+fy*T*.06,T*.05,0,7);ctx.arc(px+T*.1+fx*T*.07,py-bob-T*.02+fy*T*.06,T*.05,0,7);ctx.fill();
+  ctx.strokeStyle=C.navy;ctx.lineWidth=2;ctx.beginPath();ctx.arc(px+fx*T*.05,py-bob+T*.08,T*.08,.2,2.9);ctx.stroke();
+  // grad cap
+  ctx.fillStyle=C.navy;ctx.beginPath();ctx.moveTo(px-T*.34,py-bob-T*.3);ctx.lineTo(px,py-bob-T*.44);ctx.lineTo(px+T*.34,py-bob-T*.3);ctx.lineTo(px,py-bob-T*.18);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=C.green;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px,py-bob-T*.31);ctx.lineTo(px+T*.26,py-bob-T*.26);ctx.lineTo(px+T*.27,py-bob-T*.1);ctx.stroke();
+  ctx.restore();}
+ // particles (world)
+ for(const p of parts){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.col;ctx.fillRect(p.x*T-ox-p.sz/2,p.y*T-oy-p.sz/2,p.sz,p.sz);}ctx.globalAlpha=1;
+ // fog
+ if(tm.reveal<=0){
+  fctx.setTransform(DPR,0,0,DPR,0,0);fctx.globalCompositeOperation='source-over';fctx.clearRect(0,0,VW,VH);
+  fctx.fillStyle=tm.blackout>0?'rgba(2,4,25,.97)':'rgba(0,8,45,.93)';fctx.fillRect(0,0,VW,VH);
+  fctx.globalCompositeOperation='destination-out';fctx.fillStyle='rgba(0,0,0,.45)';
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(L.seen[y][x])fctx.fillRect(x*T-ox,y*T-oy,T,T);
+  const r=visionR()*T,gr=fctx.createRadialGradient(px,py,r*.1,px,py,r);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.6,'rgba(0,0,0,.92)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  fctx.fillStyle=gr;fctx.beginPath();fctx.arc(px,py,r,0,7);fctx.fill();fctx.globalCompositeOperation='source-over';
+  ctx.drawImage(fog,0,0,VW,VH);}
+ // texts
+ ctx.textAlign='center';ctx.textBaseline='middle';
+ for(const t of texts){ctx.globalAlpha=Math.min(1,t.life);ctx.font=`800 ${Math.max(13,T*.3)}px Century Gothic,Arial`;ctx.lineWidth=4;ctx.strokeStyle='rgba(0,10,61,.85)';const yy=t.y*T-oy-(1.4-t.life)*T*.8;ctx.strokeText(t.text,t.x*T-ox,yy);ctx.fillStyle=t.col;ctx.fillText(t.text,t.x*T-ox,yy);}ctx.globalAlpha=1;
+ if(tm.blackout>0){ctx.fillStyle=`rgba(200,18,110,${.08+.06*Math.sin(time*6)})`;ctx.fillRect(0,0,VW,VH);}
+}
+let mmT=0;
+function drawMini(){
+ const W=L.W,H=L.H,s=Math.min(300/W,220/H),ow=(300-W*s)/2,oh=(220-H*s)/2;
+ mctx.clearRect(0,0,300,220);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(!L.seen[y][x])continue;const v=L.g[y][x];
+  mctx.fillStyle=v===1?'rgba(0,125,186,.45)':v===2?L.Z.col:v===3?C.mag:v===4?C.green:'rgba(255,255,255,.85)';mctx.fillRect(ow+x*s,oh+y*s,s+.5,s+.5);}
+ mctx.fillStyle=Math.floor(time*4)%2?C.mag:'#fff';mctx.beginPath();mctx.arc(ow+(P.px+.5)*s,oh+(P.py+.5)*s,Math.max(3,s*.7),0,7);mctx.fill();
+ const sc=Math.min(150,VW*.28)/300;mm.style.width=300*sc+'px';mm.style.height=220*sc+'px';
+}
+function drawBG(dt){
+ ctx.fillStyle='#000a3d';ctx.fillRect(0,0,VW,VH);
+ const s=40;ctx.strokeStyle='rgba(0,125,186,.12)';ctx.lineWidth=1;
+ const off=(time*20)%s;for(let x=-s;x<VW+s;x+=s){ctx.beginPath();ctx.moveTo(x+off,0);ctx.lineTo(x+off,VH);ctx.stroke();}
+ for(let y=-s;y<VH+s;y+=s){ctx.beginPath();ctx.moveTo(0,y+off);ctx.lineTo(VW,y+off);ctx.stroke();}
+ if(bg.length<70&&Math.random()<.5){const cs=[C.blue,C.teal,C.green,C.mag,'#fff'];bg.push({x:Math.random()*VW,y:-10,v:40+Math.random()*120,c:cs[rnd(5)],s:3+Math.random()*6,r:Math.random()*6,conf:false});}
+ for(const p of bg){p.y+=p.v*dt;p.r+=dt*3;if(p.conf){p.x+=p.vx*dt;p.vx*=.99;}
+  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.globalAlpha=p.conf?1:.55;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*(p.conf?.5:1));ctx.restore();}
+ bg=bg.filter(p=>p.y<VH+20);
+}
+function confetti(n){const cs=[C.blue,C.teal,C.green,C.mag,'#fff','#FFC600'];for(let i=0;i<n;i++)bg.push({x:VW/2+(Math.random()-.5)*200,y:VH*.4,v:60+Math.random()*200,vx:(Math.random()-.5)*900,c:cs[rnd(6)],s:8+Math.random()*8,r:Math.random()*6,conf:true});}
+let last=performance.now();
+function loop(now){
+ const dt=Math.min(.05,(now-last)/1000);last=now;time+=dt;
+ ctx.setTransform(DPR,0,0,DPR,0,0);
+ if(L&&(state==='play'||state==='modal')){
+  if(state==='play')update(dt);
+  for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.92;p.vy*=.92;p.life-=dt;}parts=parts.filter(p=>p.life>0);
+  for(const t of texts)t.life-=dt;texts=texts.filter(t=>t.life>0);
+  drawWorld(dt);mmT-=dt;if(mmT<=0){mmT=.15;drawMini();}
+  if(state==='play'&&Math.floor(time*4)!==Math.floor((time-dt)*4))updateHUD();
+ }else drawBG(dt);
+ requestAnimationFrame(loop);
+}
+
+/* ============ KNOWLEDGE GATES ============ */
+function nextQ(){
+ const pool=Q[L.i];if(L.used.size>=pool.length)L.used.clear();
+ let i;do{i=rnd(pool.length);}while(L.used.has(i));L.used.add(i);return pool[i];
+}
+function buildOpts(q){return q.tf?[{t:'True',c:q.a==='True'},{t:'False',c:q.a==='False'}]:shuffle([{t:q.a,c:true},...q.w.map(t=>({t,c:false}))]);}
+function openDoor(door){
+ state='modal';SFX.door();
+ const q=nextQ(),opts=buildOpts(q);let done=false;
+ const card=openModal(`<span class="tag">🔒 Knowledge Gate ${door.num} of 3 · ${L.Z.module.split('·')[0].trim()}</span>
+  <h2>${q.q}</h2><div class="opts">${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${q.tf?(i?'F':'T'):i+1}</span><span>${o.t}</span></button>`).join('')}</div>
+  <div class="row">${inv.lens&&!q.tf?`<button class="pw" id="lens">🔍 Use Search Lens (${inv.lens} left)</button>`:''}<button class="ghost" id="back">↩ Step back</button>
+  <span style="margin-left:auto;font-size:12px;color:#6a7599">Wrong answer = −1 🔋 · Keys 1–4</span></div><div class="fb" id="fb"></div>`);
+ const btns=[...card.querySelectorAll('.opt')];
+ const answer=i=>{
+  if(done||btns[i].disabled)return;done=true;stats.answered++;
+  btns.forEach((b,j)=>{b.disabled=true;if(opts[j].c)b.classList.add('ok');});
+  const fb=card.querySelector('#fb'),firstTry=!door.tried;door.tried=true;
+  if(opts[i].c){
+   stats.correct++;streak++;bestStreak=Math.max(bestStreak,streak);if(firstTry)stats.firstTry++;
+   const pts=(firstTry?150:75)+Math.min(streak,5)*20;addScore(pts);SFX.ok();
+   fb.className='fb ok';fb.innerHTML=`<b>✅ ACCESS GRANTED! +${pts}</b>${streak>1?` · 🔥 Streak ×${streak}`:''}<br>${q.e}`;
+   L.g[door.y][door.x]=0;burst(door.x+.5,door.y+.5,L.Z.col,40,7);burst(door.x+.5,door.y+.5,'#fff',20,5);float(door.x+.5,door.y,'UNLOCKED!',L.Z.col);
+  }else{
+   btns[i].classList.add('bad');card.classList.add('shake');SFX.bad();const lost=hit('wrong');
+   fb.className='fb bad';fb.innerHTML=`<b>❌ ACCESS DENIED${lost?' · −1 🔋':' · 🛡️ Shield absorbed the hit'}</b><br>${q.e}<br><i>The gate will ask you a different question next time.</i>`;
+  }
+  const row=document.createElement('div');row.className='row';row.innerHTML='<button class="btn" id="cont">Continue ▶</button>';fb.after(row);
+  const cont=()=>{closeModal();state='play';updateHUD();checkDead();};
+  row.querySelector('#cont').onclick=cont;mk=e=>{if(e.key==='Enter'||e.key===' ')cont();};
+  const ln=card.querySelector('#lens');if(ln)ln.remove();
+ };
+ btns.forEach((b,i)=>b.onclick=()=>answer(i));
+ const back=()=>{closeModal();state='play';};
+ card.querySelector('#back').onclick=back;
+ const ln=card.querySelector('#lens');
+ if(ln)ln.onclick=()=>{inv.lens--;let n=0;shuffle(btns.map((b,i)=>i)).forEach(i=>{if(n<2&&!opts[i].c){btns[i].disabled=true;btns[i].classList.add('gone');n++;}});ln.remove();SFX.pick();updateHUD();};
+ mk=e=>{if(done)return;const n=q.tf?{t:0,T:0,f:1,F:1,'1':0,'2':1}[e.key]:parseInt(e.key)-1;if(n>=0&&n<btns.length)answer(n);if(e.key==='Escape')back();};
+}
+
+/* ============ GUARDIANS ============ */
+function openGuardian(){
+ state='modal';SFX.boss();const G=L.Z.guardian;
+ const card=openModal(`<div style="text-align:center"><span class="tag" style="background:${C.mag}">⚠ Guardian encountered</span>
+  <div class="gface">${G.face}</div><h1>${G.name}</h1><div class="taunt">${G.taunt}</div>
+  <p>Defeat the Guardian in <b>${G.stages.length} phase${G.stages.length>1?'s':''}</b> to unlock the portal and claim a new power. Mistakes cost points, not battery.</p>
+  <div class="row" style="justify-content:center"><button class="btn m big" id="fight">⚔️ BATTLE!</button><button class="ghost" id="back">↩ Not yet</button></div></div>`);
+ card.querySelector('#fight').onclick=()=>runGuardian(0,0);card.querySelector('#back').onclick=()=>{closeModal();state='play';};
+ mk=e=>{if(e.key==='Enter')runGuardian(0,0);};
+}
+function stageSize(s){return s.type==='order'?s.items.length:s.type==='pick'?s.correct.length:s.type==='sort'?s.items.length:s.pairs.length;}
+function runGuardian(si,mist){
+ const G=L.Z.guardian,S=G.stages[si];mk=null;
+ const total=G.stages.reduce((a,s)=>a+stageSize(s),0),before=G.stages.slice(0,si).reduce((a,s)=>a+stageSize(s),0);
+ let progress=0;
+ const card=openModal(`<div class="ghead"><div class="mini gface" style="font-size:48px">${G.face}</div><div style="flex:1"><span class="tag">Phase ${si+1} of ${G.stages.length}</span>
+  <div style="font-weight:800;margin-top:4px">${G.name}</div><div class="ghp"><i id="hp" style="width:${100-before/total*100}%"></i></div></div></div>
+  <h2>${S.prompt}</h2><div id="arena"></div><div class="fb" id="fb"></div>`);
+ const hp=card.querySelector('#hp'),A=card.querySelector('#arena'),face=card.querySelector('.mini');
+ const good=()=>{progress++;hp.style.width=(100-(before+progress)/total*100)+'%';SFX.click();face.classList.remove('shake');void face.offsetWidth;face.classList.add('shake');addScore(15);};
+ const bad=el=>{mist++;stats.gMist++;SFX.bad();addScore(-20);(el||card).classList.remove('shake');void (el||card).offsetWidth;(el||card).classList.add('shake');};
+ const finish=()=>{SFX.ok();setTimeout(()=>{if(si+1<G.stages.length)runGuardian(si+1,mist);else guardianWin(mist);},650);};
+ if(S.type==='order'){
+  A.innerHTML=`<div class="stair" id="st"></div><div class="chips">${shuffle(S.items).map(t=>`<button class="chip">${t}</button>`).join('')}</div>`;
+  const st=A.querySelector('#st');let n=0;
+  A.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{if(b.textContent===S.items[n]){const d=document.createElement('div');d.textContent=(n+1)+'. '+b.textContent;d.style.background=S.cols[n];d.style.marginLeft=(n*6)+'%';st.appendChild(d);b.classList.add('used');n++;good();if(n===S.items.length)finish();}else bad(b);});
+ }else if(S.type==='pick'){
+  A.innerHTML=`<p style="text-align:center;font-weight:700" id="cnt">0 / ${S.correct.length} found</p><div class="chips">${shuffle([...S.correct,...S.wrong]).map(t=>`<button class="chip">${t}</button>`).join('')}</div>`;
+  let n=0;A.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{if(b.disabled)return;b.disabled=true;if(S.correct.includes(b.textContent)){b.classList.add('ok');n++;good();A.querySelector('#cnt').textContent=`${n} / ${S.correct.length} found`;if(n===S.correct.length)finish();}else{b.classList.add('bad');bad(b);}});
+ }else if(S.type==='sort'){
+  const items=shuffle(S.items);let n=0;
+  A.innerHTML=`<p style="text-align:center;font-size:13px;color:#6a7599" id="cnt">Card 1 of ${items.length} · use ← / → keys or tap a bin</p><div class="sortcard" id="sc"></div>
+   <div class="bins">${S.bins.map((b,i)=>`<button class="bin" data-b="${i}" style="background:${b.c}"><div style="font-size:28px">${b.ic}</div>${b.n}<span id="bc${i}">0 sorted</span></button>`).join('')}</div>`;
+  const sc=A.querySelector('#sc'),counts=[0,0];sc.textContent=items[0][0];
+  const choose=bi=>{if(n>=items.length)return;const it=items[n];if(it[1]===bi){counts[bi]++;A.querySelector('#bc'+bi).textContent=counts[bi]+' sorted';good();sc.classList.add(bi?'fly-r':'fly-l');n++;
+    setTimeout(()=>{sc.classList.remove('fly-l','fly-r');if(n<items.length){sc.textContent=items[n][0];A.querySelector('#cnt').textContent=`Card ${n+1} of ${items.length} · use ← / → keys or tap a bin`;}else{sc.textContent='✔ All sorted!';finish();}},330);}
+   else{bad(sc);const fb=card.querySelector('#fb');fb.className='fb bad';fb.innerHTML=`Not quite — <b>${it[0]}</b> belongs in <b>${S.bins[it[1]].n}</b>. Try again!`;}};
+  A.querySelectorAll('.bin').forEach(b=>b.onclick=()=>choose(+b.dataset.b));
+  mk=e=>{if(e.key==='ArrowLeft'||e.key==='1')choose(0);if(e.key==='ArrowRight'||e.key==='2')choose(1);};
+ }else if(S.type==='match'){
+  const cols=[C.navy,C.blue,C.teal,C.green,C.mag,'#5b2d8a'];
+  const L2=shuffle(S.pairs.map(p=>p[0])),R2=shuffle(S.pairs.map(p=>p[1]));
+  A.innerHTML=`<p style="text-align:center;font-size:13px;color:#6a7599">Tap a tool, then tap what it does best.</p><div class="match"><div class="col">${L2.map(t=>`<button class="mi" data-l="${t}">${t}</button>`).join('')}</div><div class="col">${R2.map(t=>`<button class="mi" data-r="${t}">${t}</button>`).join('')}</div></div>`;
+  let sel=null,n=0;
+  A.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{if(b.classList.contains('done'))return;A.querySelectorAll('[data-l]').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b;SFX.click();});
+  A.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!sel||b.classList.contains('done'))return;const pr=S.pairs.find(p=>p[0]===sel.dataset.l);
+   if(pr[1]===b.dataset.r){const c=cols[n%cols.length];[sel,b].forEach(x=>{x.classList.remove('sel');x.classList.add('done');x.style.background=c;});n++;sel=null;good();if(n===S.pairs.length)finish();}
+   else{b.classList.remove('bad');void b.offsetWidth;b.classList.add('bad');bad(b);}});
+ }
+}
+function guardianWin(mist){
+ const G=L.Z.guardian,R=L.Z.reward,bonus=Math.max(100,350-mist*30);
+ powers[R.id]=true;if(R.id==='station'){maxBat++;battery=maxBat;}
+ L.gateOpen=true;L.g[L.gy][L.gx]=0;addScore(bonus);burst(L.gx+.5,L.gy+.5,C.mag,60,9);burst(L.gx+.5,L.gy+.5,L.Z.col,40,6);SFX.power();
+ const card=openModal(`<div style="text-align:center"><div class="gface" style="animation:bhit .8s;opacity:.6">💥</div><span class="tag" style="background:${C.green}">Guardian defeated</span>
+  <h1 style="margin-top:8px">${G.name} is down!</h1><p>${mist===0?'<b>FLAWLESS VICTORY!</b> Not a single mistake.':`You defeated it with ${mist} mistake${mist>1?'s':''}.`} <b>+${bonus} points</b></p></div>
+  <div class="reward"><div class="ic">${R.ic}</div><div><div style="font-size:12px;letter-spacing:.1em;opacity:.85">NEW POWER UNLOCKED</div><b>${R.name}</b><div style="font-size:14px;margin-top:4px">${R.desc}</div></div></div>
+  <p style="text-align:center">The portal is now open. Step into it to clear the zone! 🌀</p>
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">Continue ▶</button></div>`);
+ const go=()=>{closeModal();state='play';updateHUD();};card.querySelector('#go').onclick=go;mk=e=>{if(e.key==='Enter')go();};
+}
+
+/* ============ ZONES ============ */
+function zoneIntro(i){
+ state='modal';buildLevel(i);showHUD(true);updateHUD();const Z=ZONES[i];
+ const card=openModal(`<span class="tag">${Z.module}</span><div class="zbig" style="margin-top:12px">ZONE ${i+1}</div><h1>${Z.title}</h1><p>${Z.story}</p>
+  <div class="mission"><div>🔒 Unlock <b>3 Knowledge Gates</b> — answer correctly or lose 🔋</div><div>${Z.guardian.face} Defeat <b>${Z.guardian.name}</b> to win a new power</div><div>🌀 Reach the <b>portal</b> · collect 💠 data bytes · grab power-ups in dead ends</div><div>🔔 Dodge the <b>Distractions</b> — they drain your battery</div></div>
+  <div class="row"><button class="btn big" id="go">Enter Zone ${i+1} ▶</button></div>`);
+ const go=()=>{closeModal();state='play';L.t0=performance.now();banner(`ZONE ${i+1} · ${Z.title.toUpperCase()}`,Z.col);};card.querySelector('#go').onclick=go;mk=e=>{if(e.key==='Enter')go();};
+}
+function zoneComplete(){
+ state='modal';SFX.power();const secs=Math.round((performance.now()-L.t0)/1000),b=stats.bytes-L.b0,ft=stats.firstTry-L.firstTry0,bonus=Math.max(0,300-secs)+b*5;
+ addScore(bonus);const lastZ=L.i===ZONES.length-1;
+ const card=openModal(`<div style="text-align:center"><div style="font-size:70px">🌀</div><span class="tag" style="background:${C.green}">Zone ${L.i+1} cleared</span><h1 style="margin-top:8px">${L.Z.title} restored!</h1></div>
+  <div class="sgrid"><div><b>${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}</b>time</div><div><b>${b}</b>data bytes</div><div><b>${ft}/3</b>gates first try</div><div><b>+${bonus}</b>zone bonus</div></div>
+  ${lastZ?`<p style="text-align:center">The four modules are restored… but something stirs at the heart of the network. <b>THE ALGORITHM</b> has noticed you. 👁️</p>`:`<p style="text-align:center">Next up: <b>${ZONES[L.i+1].title}</b> · ${ZONES[L.i+1].module}</p>`}
+  <div class="row" style="justify-content:center"><button class="btn ${lastZ?'m':'g'} big" id="go">${lastZ?'👁️ Face THE ALGORITHM':'Next zone ▶'}</button></div>`);
+ const go=()=>{closeModal();if(lastZ)bossIntro();else zoneIntro(L.i+1);};card.querySelector('#go').onclick=go;mk=e=>{if(e.key==='Enter')go();};
+}
+
+/* ============ FINAL BOSS ============ */
+let B=null;
+function bossIntro(){
+ state='modal';SFX.boss();
+ const card=openModal(`<div style="text-align:center"><div class="bossFace" style="font-size:110px">👁️</div><h1 style="color:#fff;font-size:clamp(34px,7vw,60px);letter-spacing:.08em">THE ALGORITHM</h1>
+  <div class="taunt" style="background:rgba(255,255,255,.1)">"I was designed to keep users <b>engaged</b>, not <b>informed</b>. Your learners belong to ME now. One more video… one more scroll… forever."</div>
+  <p style="color:#e8dcff">Rapid-fire questions from <b>all four modules</b>. Each correct answer fires a knowledge beam. Wrong answers or running out of time cost 🔋. ${powers.overdrive?'<br>🎓 <b>Classroom Overdrive is active</b> — streaks of 2+ deal DOUBLE damage!':''}</p>
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">⚡ SHUT IT DOWN</button></div></div>`,'boss');
+ const go=()=>{B={hp:12,max:12,pool:shuffle([...Q.flat(),...TFX]),idx:0};battery=maxBat;updateHUD();bossRound();};card.querySelector('#go').onclick=go;mk=e=>{if(e.key==='Enter')go();};
+}
+let bTimer=null;
+function bossRound(){
+ clearInterval(bTimer);
+ const q=B.pool[B.idx++%B.pool.length],opts=buildOpts(q);let done=false,tl=20;
+ const card=openModal(`<div class="bossTop"><div class="bossFace" id="bf">👁️</div><div style="flex:1"><div style="font-weight:900;letter-spacing:.1em">THE ALGORITHM · ${B.hp}/${B.max}</div><div class="bhp"><i style="width:${B.hp/B.max*100}%"></i></div>
+  <div style="margin-top:8px;font-style:italic;color:#ffb3d6;font-size:14px">${BOSS_TAUNTS[rnd(BOSS_TAUNTS.length)]}</div></div></div>
+  <div class="timer"><i id="tb" style="width:100%"></i></div><h2>${q.q}</h2>
+  <div class="opts">${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${q.tf?(i?'F':'T'):i+1}</span><span>${o.t}</span></button>`).join('')}</div>
+  <div class="row" style="justify-content:space-between"><div>🔋 ${'▮'.repeat(Math.max(0,battery))}<span style="opacity:.3">${'▮'.repeat(Math.max(0,maxBat-battery))}</span></div><div>🔥 Streak ${streak}</div></div><div class="fb" id="fb"></div>`,'boss');
+ const btns=[...card.querySelectorAll('.opt')],tb=card.querySelector('#tb');
+ const resolve=i=>{
+  if(done)return;done=true;clearInterval(bTimer);stats.answered++;
+  btns.forEach((b,j)=>{b.disabled=true;if(opts[j].c)b.classList.add('ok');});
+  const fb=card.querySelector('#fb'),ok=i>=0&&opts[i].c;
+  if(ok){stats.correct++;streak++;bestStreak=Math.max(bestStreak,streak);const dmg=(powers.overdrive&&streak>=2)?2:1;B.hp=Math.max(0,B.hp-dmg);addScore(100*dmg);
+   SFX.zap();const bm=document.createElement('div');bm.className='beam';document.body.appendChild(bm);setTimeout(()=>bm.remove(),500);
+   const bf=card.querySelector('#bf');bf.classList.add('hit');card.querySelector('.bhp i').style.width=(B.hp/B.max*100)+'%';
+   fb.className='fb ok';fb.innerHTML=`<b>⚡ DIRECT HIT! −${dmg} HP${dmg>1?' · OVERDRIVE CRITICAL!':''}</b><br>${q.e}`;}
+  else{if(i>=0)btns[i].classList.add('bad');streak=0;const fl=document.createElement('div');fl.className='flash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),500);
+   const lost=hit('boss');card.classList.add('shake');SFX.bad();
+   fb.className='fb bad';fb.innerHTML=`<b>${i<0?'⏱ TOO SLOW!':'💥 THE ALGORITHM STRIKES!'} ${lost?'−1 🔋':'🛡️ Shield absorbed it'}</b><br>${q.e}`;}
+  const row=document.createElement('div');row.className='row';row.style.justifyContent='center';
+  row.innerHTML=`<button class="btn ${B.hp<=0?'g':''}" id="nx">${B.hp<=0?'💥 Finish it!':battery<=0?'…':'Next ▶'}</button>`;fb.after(row);
+  const nx=()=>{if(B.hp<=0)bossWin();else if(battery<=0)bossLose();else bossRound();};row.querySelector('#nx').onclick=nx;mk=e=>{if(e.key==='Enter'||e.key===' ')nx();};
+ };
+ btns.forEach((b,i)=>b.onclick=()=>resolve(i));
+ mk=e=>{if(done)return;const n=q.tf?{t:0,T:0,f:1,F:1,'1':0,'2':1}[e.key]:parseInt(e.key)-1;if(n>=0&&n<btns.length)resolve(n);};
+ bTimer=setInterval(()=>{tl-=.1;tb.style.width=Math.max(0,tl/20*100)+'%';if(tl<=0)resolve(-1);},100);
+}
+function bossLose(){
+ stats.reboots++;
+ const card=openModal(`<div style="text-align:center"><div style="font-size:84px">📵</div><h1 style="color:#fff">Attention hijacked!</h1><p style="color:#e8dcff">The Algorithm pulled you into an endless scroll. Shake it off — every attempt is revision. <b>−200 points.</b></p>
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">🔁 Reboot & try again</button></div></div>`,'boss');
+ const go=()=>{addScore(-200);battery=maxBat;B.hp=B.max;updateHUD();bossRound();};card.querySelector('#go').onclick=go;mk=e=>{if(e.key==='Enter')go();};
+}
+function bossWin(){
+ clearInterval(bTimer);SFX.power();setTimeout(SFX.ok,600);
+ const card=openModal(`<div style="text-align:center"><div class="bossFace hit" style="font-size:120px">💥</div><h1 style="color:#fff;font-size:clamp(30px,6vw,52px)">THE ALGORITHM IS OFFLINE</h1>
+  <p style="color:#e8dcff">Learning objectives are back in charge. Engagement serves learning again — not the other way around.</p>
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">🏆 Claim your badge</button></div></div>`,'boss');
+ const go=()=>endScreen();card.querySelector('#go').onclick=go;mk=e=>{if(e.key==='Enter')go();};
+}
+function endScreen(){
+ state='end';L=null;showHUD(false);stats.end=performance.now();confetti(160);setTimeout(()=>confetti(120),900);
+ const acc=stats.answered?Math.round(stats.correct/stats.answered*100):0,secs=Math.round((stats.end-stats.start)/1000);
+ const rank=acc>=90?['🚀','SAMR Redefiner','You didn\'t just climb the SAMR staircase — you redefined it.']:acc>=75?['⚡','Transformation Agent','You\'re firmly in the transformation zone. Keep modifying and redefining!']:acc>=55?['🔧','Digital Augmenter','Strong foundations with real functional improvement. Revisit a few modules to climb higher.']:['🌱','Brave Substitutor','Every expert started on the first step. Revisit Modules 1–4 and play again!'];
+ let best=0;try{best=+localStorage.getItem('etaBest')||0;if(score>best)localStorage.setItem('etaBest',score);}catch(e){}
+ const card=openModal(`<div style="text-align:center"><span class="tag">Digital Skills Course · Midpoint Challenge Complete</span>
+  <div class="badge"><div><div class="e">${rank[0]}</div><b style="font-size:15px">${rank[1]}</b><span style="font-size:11px">Modules 1–4</span></div></div>
+  <h1>${playerName?playerName.replace(/[<>&]/g,'')+', you':'You'} escaped the Algorithm!</h1><p>${rank[2]}</p></div>
+  <div class="sgrid"><div><b>${score}</b>final score${score>best&&best?'<br>🏅 NEW BEST':''}</div><div><b>${acc}%</b>accuracy</div><div><b>${bestStreak}</b>best streak</div><div><b>${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}</b>total time</div><div><b>${stats.bytes}</b>data bytes</div><div><b>${stats.reboots}</b>reboots</div></div>
+  <p style="text-align:center;font-size:14px;color:#4a5680">📸 Take a screenshot of this badge to celebrate your progress at the midpoint of the course.</p>
+  <div class="row" style="justify-content:center"><button class="btn g big" id="again">🔁 Play again</button><button class="ghost fsb" id="fs">⛶ Full screen</button></div>`,'',C.teal);
+ card.querySelector('#again').onclick=()=>{closeModal();titleScreen();};card.querySelector('#fs').onclick=toggleFS;fsIcon();
+}
+function showPause(){
+ state='modal';
+ const card=openModal(`<span class="tag">⏸ Paused</span><h1 style="margin-top:8px">How to play</h1>
+  <div class="mission"><div>🕹 Move: <span class="kbd">↑↓←→</span> or <span class="kbd">WASD</span> (on-screen pad on touch devices)</div>
+  <div>🔒 Walk into a <b>?</b> gate to answer a question · ${'<span class="kbd">1–4</span>'} to answer</div>
+  <div>🔍 Search Lens (${inv.lens}) — removes 2 wrong answers · 🛡️ Firewall Shield (${inv.shield}) — blocks a hit</div>
+  <div>📱 QR Map (${inv.qr}) <span class="kbd">Q</span> · 🔗 URL Shortener (${inv.boost}) <span class="kbd">E</span>${powers.cloak?' · 🎨 Canva Cloak <span class="kbd">SPACE</span>':''}</div>
+  <div>☀️ Solar Cells restore battery and end load-shedding · 🔔 Distractions drain battery</div>
+  <div><span class="kbd">F</span> full screen · <span class="kbd">M</span> sound · <span class="kbd">P</span> pause</div></div>
+  <div class="row"><button class="btn" id="go">▶ Resume</button><button class="ghost fsb" id="fs">⛶ Full screen</button><button class="ghost" id="quit">Quit to title</button></div>`);
+ const go=()=>{closeModal();state='play';};card.querySelector('#go').onclick=go;card.querySelector('#fs').onclick=toggleFS;fsIcon();
+ card.querySelector('#quit').onclick=()=>{closeModal();L=null;showHUD(false);titleScreen();};mk=e=>{if(e.key==='Enter'||e.key==='Escape'||e.key==='p'||e.key==='P')go();};
+}
+
+/* ============ TITLE ============ */
+function titleScreen(){
+ state='title';showHUD(false);document.documentElement.style.setProperty('--zc',C.teal);
+ let best=0;try{best=+localStorage.getItem('etaBest')||0;}catch(e){}
+ const card=openModal(`<div class="sub">Digital Skills Course · Midpoint Challenge</div>
+  <h1 style="margin-top:8px">ESCAPE THE<br>ALGORITHM</h1>
+  <div class="stripe"><i style="background:${C.navy}"></i><i style="background:${C.blue}"></i><i style="background:${C.teal}"></i><i style="background:${C.green}"></i><i style="background:${C.mag}"></i></div>
+  <p>A rogue recommendation engine — built to keep people <b>engaged, not informed</b> — has scrambled the first four modules of your course into a labyrinth. Navigate four zones, unlock Knowledge Gates, defeat the Guardians, earn powers and shut it down for good.</p>
+  <div class="zgrid">${ZONES.map((z,i)=>`<div class="zg" style="--c:${z.col}"><b>${z.guardian.face} Zone ${i+1}</b>${z.module.split('· ')[1]}</div>`).join('')}</div>
+  <input id="nm" maxlength="30" placeholder="Enter your name for your badge" value="${playerName}">
+  <div class="row" style="justify-content:center"><button class="btn g big" id="go">▶ START THE MISSION</button><button class="ghost fsb" id="fs" style="color:#fff;border-color:rgba(255,255,255,.4)">⛶ Full screen</button></div>
+  ${best?`<p style="font-size:13px">🏅 Best score on this device: <b>${best}</b></p>`:''}
+  <details class="howto"><summary>How to play</summary>
+  Move with <span class="kbd">↑↓←→</span> / <span class="kbd">WASD</span> or the on-screen pad. Walk into <b>?</b> gates to answer questions — wrong answers drain your 🔋 battery.
+  Explore dead ends for power-ups: 🔍 Search Lens, 🛡️ Firewall Shield, 📱 QR Map <span class="kbd">Q</span>, 🔗 URL Shortener <span class="kbd">E</span>, ☀️ Solar Cell.
+  Avoid 🔔 Distractions, survive load-shedding, and beat each Guardian's challenge to earn a permanent power. <span class="kbd">F</span> toggles full screen.</details>`,'title');
+ fsIcon();
+ const go=()=>{playerName=card.querySelector('#nm').value.trim();SFX.power();resetRun();closeModal();bg=[];zoneIntro(0);};
+ card.querySelector('#go').onclick=go;card.querySelector('#fs').onclick=toggleFS;mk=e=>{if(e.key==='Enter')go();};
+}
+
+titleScreen();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
